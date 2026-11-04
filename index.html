@@ -4,69 +4,73 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   
-  <!-- REGLA 5: Seguridad CSP (Content Security Policy) para prevenir ataques XSS -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
+  <!-- REGLA 5: Seguridad CSP (Content Security Policy) adaptada para permitir Firebase, Google Maps GPS y Visor 3D -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
-  <!-- SEO y Metadatos Escalables (Como en los segundos 0:00 - 0:05 del video 1) -->
-  <title id="meta-title">KALON | Tienda Oficial & Experiencia 3D</title>
-  <meta name="description" id="meta-desc" content="Diseños de lujo, productos premium resistentes y experiencia interactiva 3D.">
+  <!-- SEO y Metadatos Escalables (Controlables desde tu Panel de Administrador) -->
+  <title id="meta-title">KALON NAILS | Estudio & Domicilio en El Junquito (Panorama) + 3D</title>
+  <meta name="description" id="meta-desc" content="Especialistas en sistemas de Polygel, Soft Gel, Manicura Rusa y Nail Art 3D en El Junquito (Sector Panorama) y servicio a domicilio con agendamiento online.">
   <meta name="theme-color" content="#0a0a0a">
 
   <!-- Conexión con Manifest para GitHub Pages / PWA -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- Tipografías Elegantes (Serif para títulos de lujo, Sans-Serif para lectura limpia y Cursiva para detalles) -->
+  <!-- Tipografías de Lujo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
 
-  <!-- Íconos Vectoriales Ligeros (RemixIcon) -->
+  <!-- Íconos RemixIcon -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
   <!-- Enlace a nuestra hoja de estilos (Archivo 2) -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- Motor 3D Interactivo (Google Model Viewer para objetos .GLB / .GLTF giratorios) -->
+  <!-- Motor 3D Interactivo (Google Model Viewer para tu archivo unas-demo.glb) -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
 </head>
 <body>
 
-  <!-- 1. PANTALLA DE CARGA / PRELOADER (Segundos 0:06 - 0:07 del video 1 - Animado con Anime.js) -->
+  <!-- 1. PANTALLA DE CARGA / PRELOADER (Animado con Anime.js) -->
   <div id="preloader" class="preloader" aria-live="polite">
     <div class="preloader-inner">
-      <span class="preloader-subtitle" id="preloader-sub">BIENVENIDO A</span>
+      <span class="preloader-subtitle" id="preloader-sub">ESTUDIO DE UÑAS & ARTE 3D</span>
       <h1 class="preloader-title" id="preloader-brand">K A L O N</h1>
       <div class="preloader-line"></div>
     </div>
   </div>
 
-  <!-- 2. BARRA SUPERIOR DE ANUNCIOS EN MOVIMIENTO / MARQUEE (Segundo 0:08 del video 1) -->
+  <!-- 2. BARRA SUPERIOR DE ANUNCIOS EN MOVIMIENTO / MARQUEE -->
   <div class="topbar">
     <div class="marquee-wrapper">
       <div class="marquee-track" id="marquee-track">
-        <!-- Se llena dinámicamente desde app.js para cualquier rubro -->
+        <!-- Se llena en tiempo real desde Firebase / app.js -->
       </div>
     </div>
   </div>
 
-  <!-- 3. CABECERA FIJA / HEADER (Segundo 0:08 del video 1) -->
+  <!-- 3. CABECERA FIJA / HEADER -->
   <header class="site-header" id="site-header">
     <button class="icon-btn" id="open-menu-btn" aria-label="Abrir menú de navegación">
       <i class="ri-menu-line"></i>
     </button>
 
-    <a href="#" class="brand-logo" id="header-logo">kalon</a>
+    <a href="#" class="brand-logo" id="header-logo">kalon nails</a>
 
     <div class="header-actions">
-      <button class="icon-btn cart-trigger" id="open-cart-btn" aria-label="Ver carrito de compras">
+      <!-- Acceso discreto a tu Panel de Administrador ("El Baile de Control") -->
+      <a href="admin.html" class="icon-btn" title="Panel de Control Admin" aria-label="Panel Administrador">
+        <i class="ri-settings-4-line"></i>
+      </a>
+      <button class="icon-btn cart-trigger" id="open-cart-btn" aria-label="Ver bolsa y agendar cita">
         <i class="ri-shopping-bag-line"></i>
         <span class="cart-badge" id="cart-count">0</span>
       </button>
     </div>
   </header>
 
-  <!-- 4. MENÚ LATERAL DESPLEGABLE / DRAWER (Segundos 0:34 - 0:35 del video 1) -->
+  <!-- 4. MENÚ LATERAL DESPLEGABLE / DRAWER -->
   <div class="drawer-backdrop" id="drawer-backdrop"></div>
   <aside class="side-drawer" id="side-drawer" aria-hidden="true">
     <div class="drawer-header">
@@ -76,39 +80,79 @@
     </div>
 
     <div class="drawer-body">
-      <!-- Buscador en vivo con sanitización contra XSS -->
       <div class="search-box">
         <i class="ri-search-line"></i>
-        <input type="search" id="live-search-input" placeholder="Buscar productos ..." autocomplete="off" maxlength="60">
+        <input type="search" id="live-search-input" placeholder="Buscar sistema (Polygel, Soft Gel, Kapping...)" autocomplete="off" maxlength="60">
       </div>
-      <!-- Resultados rápidos del buscador -->
       <div id="search-results-box" class="search-results-box"></div>
 
-      <!-- Lista de navegación dinámica -->
       <nav class="drawer-nav" id="drawer-nav-list">
         <!-- Se genera desde app.js -->
       </nav>
     </div>
   </aside>
 
-  <!-- 5. CARRITO DE COMPRAS LATERAL (Para cerrar pedidos por WhatsApp de forma escalable) -->
+  <!-- 5. CARRITO + SISTEMA DE AGENDAMIENTO (ESTUDIO PANORAMA O DOMICILIO CON GPS) -->
   <aside class="side-cart" id="side-cart" aria-hidden="true">
     <div class="cart-header">
-      <h3>Tu Bolsa de Compras</h3>
+      <h3>Tu Cita & Servicios</h3>
       <button class="icon-btn" id="close-cart-btn" aria-label="Cerrar carrito">
         <i class="ri-close-line"></i>
       </button>
     </div>
+
     <div class="cart-items-container" id="cart-items-container">
-      <!-- Productos agregados -->
+      <!-- Servicios de uñas seleccionados -->
     </div>
+
+    <!-- Formulario de Modalidad, Domicilio GPS y Registro en Firestore -->
+    <div class="cart-booking-box">
+      <h4 class="booking-box-title"><i class="ri-calendar-check-line"></i> Datos de tu Cita</h4>
+      
+      <input type="text" id="booking-client-name" class="booking-input" placeholder="Tu Nombre y Apellido *" maxlength="50">
+      <input type="tel" id="booking-client-phone" class="booking-input" placeholder="Tu WhatsApp (Ej: 0412...)" maxlength="20">
+      
+      <div class="booking-row-2">
+        <input type="date" id="booking-date" class="booking-input">
+        <input type="time" id="booking-time" class="booking-input">
+      </div>
+
+      <label class="booking-label">Modalidad de Atención:</label>
+      <div class="delivery-mode-selector">
+        <button type="button" class="mode-btn is-active" data-mode="estudio" id="mode-estudio-btn">
+          <i class="ri-store-2-line"></i> En Estudio (Panorama)
+        </button>
+        <button type="button" class="mode-btn" data-mode="domicilio" id="mode-domicilio-btn">
+          <i class="ri-e-bike-2-line"></i> A Domicilio
+        </button>
+      </div>
+
+      <!-- Caja desplegable solo cuando la clienta elige "A Domicilio" -->
+      <div id="domicilio-fields" class="domicilio-fields" style="display: none;">
+        <select id="booking-zone-select" class="booking-input">
+          <option value="0">Selecciona tu zona de domicilio...</option>
+          <option value="3">El Junquito - Sector Panorama / Km 11-13 (+ $3)</option>
+          <option value="5">El Junquito - Pueblo / Km 14 al Km 23 (+ $5)</option>
+          <option value="5">El Junquito - Km 4 al Km 10 / La Yaguara (+ $5)</option>
+          <option value="8">Caracas - Zonas Céntricas / Oeste / Este (+ $8)</option>
+        </select>
+
+        <input type="text" id="booking-address-ref" class="booking-input" placeholder="Dirección exacta y punto de referencia" maxlength="120">
+
+        <button type="button" class="btn-outline-gold btn-full gps-btn" id="get-gps-btn">
+          <i class="ri-map-pin-user-line"></i> Adjuntar mi Ubicación GPS Exacta
+        </button>
+        <p id="gps-status-msg" class="gps-status-msg"></p>
+      </div>
+    </div>
+
     <div class="cart-footer">
       <div class="cart-total-row">
-        <span>Subtotal:</span>
+        <span>Total Estimado:</span>
         <strong id="cart-total-price">$ 0</strong>
       </div>
       <button class="btn-primary btn-full" id="checkout-whatsapp-btn">
-        <i class="ri-whatsapp-line"></i> PEDIR POR WHATSAPP
+        <i class="ri-whatsapp-line"></i> GUARDAR CITA Y ENVIAR A WHATSAPP
       </button>
     </div>
   </aside>
@@ -116,211 +160,247 @@
   <!-- CONTENIDO PRINCIPAL ESCALABLE -->
   <main id="main-content">
 
-    <!-- 6. SECCIÓN HERO / PORTADA PRINCIPAL (Segundos 0:08 - 0:09 del video 1) -->
+    <!-- 6. SECCIÓN HERO / PORTADA PRINCIPAL -->
     <section class="hero-section" id="hero-section">
       <div class="hero-bg-media" id="hero-bg-media"></div>
       <div class="hero-content">
-        <p class="hero-kicker" id="hero-kicker">DISEÑOS DE LUJO PARA</p>
+        <p class="hero-kicker" id="hero-kicker">ARTE Y PRECISIÓN EN TUS MANOS</p>
         <h2 class="hero-headline">
-          <span id="hero-title-main">REFLEJAR TU ESENCIA EN CADA</span>
+          <span id="hero-title-main">DISEÑOS EXCLUSIVOS EN CADA</span>
           <em class="hero-script" id="hero-title-accent">detalle</em>
         </h2>
         <p class="hero-lead" id="hero-lead">
-          La unión perfecta entre arte corporal, comodidad y autenticidad.
+          Especialistas en Polygel, Soft Gel y Manicura Rusa. Atención en El Junquito (Panorama) y Servicio VIP a Domicilio.
         </p>
-        <a href="#colecciones" class="btn-dark" id="hero-cta-btn">COMPRAR AHORA</a>
+        <a href="#showcase-3d" class="btn-dark" id="hero-cta-btn">VER MODELO 3D & SERVICIOS</a>
 
         <div class="hero-trust-badges" id="hero-badges">
-          <!-- Sellos inferiores como "Hipoalergénicos" / "Resistentes al agua" -->
+          <!-- Sellos de esterilización, duración +21 días y servicio a domicilio -->
         </div>
       </div>
     </section>
 
     <!-- Barra divisoria suave -->
     <div class="section-divider-banner">
-      <span>✦ <span id="divider-text">NOVEDADES & EXPERIENCIA 3D</span></span>
+      <span>✦ <span id="divider-text">INSPECCIÓN 3D DE MATERIALES & ACABADOS</span></span>
     </div>
 
-    <!-- 7. NUEVO MÓDULO: ESCAPARATE 3D INTERACTIVO GIRATORIO (Tu mejora solicitada) -->
+    <!-- 7. ESCAPARATE 3D DE TUS MANOS + FICHA TÉCNICA DE MATERIALES DE UÑAS -->
     <section class="showcase-3d-section" id="showcase-3d">
       <div class="section-header">
-        <span class="section-subtitle" id="3d-subtitle">INTERACCIÓN 360°</span>
-        <h2 class="section-title" id="3d-title">Explora en 3D</h2>
-        <p class="section-desc" id="3d-desc">Gira, acerca y examina cada ángulo de nuestro producto estrella con tu dedo o cursor.</p>
+        <span class="section-subtitle" id="3d-subtitle">INTERACCIÓN 360° REAL</span>
+        <h2 class="section-title" id="3d-title">Escultura & Materiales en 3D</h2>
+        <p class="section-desc" id="3d-desc">Gira el modelo con tu dedo para apreciar el relieve, la curvatura C, el brillo y conoce los productos exactos que aplicamos.</p>
       </div>
 
-      <div class="viewer-3d-card">
-        <div class="viewer-badge">360° INTERACTIVO</div>
-        <!-- Visor 3D manipulable. En app.js podrás cambiar el archivo .glb por joyas, máquinas de barbería, gorras, zapatos, etc. -->
-        <model-viewer 
-          id="main-3d-model"
-          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-          alt="Modelo 3D Interactivo del Producto"
-          auto-rotate
-          camera-controls
-          shadow-intensity="1"
-          exposure="1"
-          touch-action="pan-y">
-        </model-viewer>
+      <div class="showcase-3d-grid">
+        <!-- Tarjeta del Visor 3D (Carga tu archivo unas-demo.glb o el enlace que subas al Admin) -->
+        <div class="viewer-3d-card">
+          <div class="viewer-badge">MANOS 3D • 360°</div>
+          
+          <model-viewer 
+            id="main-3d-model"
+            src="./unas-demo.glb"
+            alt="Modelo 3D de Uñas en Polygel y Esmaltado Azul Cobalto"
+            auto-rotate
+            camera-controls
+            shadow-intensity="1.2"
+            exposure="1.05"
+            touch-action="pan-y">
+          </model-viewer>
 
-        <div class="viewer-controls">
-          <button class="btn-outline-gold" id="toggle-3d-rotate">
-            <i class="ri-refresh-line"></i> Pausar / Girar
-          </button>
-          <span class="viewer-hint"><i class="ri-hand-coin-line"></i> Desliza para rotar</span>
+          <div class="viewer-controls">
+            <button class="btn-outline-gold" id="toggle-3d-rotate">
+              <i class="ri-refresh-line"></i> Pausar / Girar
+            </button>
+            <span class="viewer-hint"><i class="ri-hand-coin-line"></i> Desliza para ver las uñas</span>
+          </div>
+        </div>
+
+        <!-- Ficha Técnica Interactiva de Materiales Usados en las Uñas -->
+        <div class="nail-specs-card" id="nail-specs-card">
+          <span class="section-subtitle">FICHA TÉCNICA DEL SISTEMA</span>
+          <h3 class="specs-title" id="specs-main-title">¿Qué materiales tiene este diseño?</h3>
+          <p class="specs-intro" id="specs-intro">Toca cada etapa técnica para ver la marca, el polímero y el tipo de brillo empleado:</p>
+
+          <div class="specs-accordion-list" id="nail-tech-specs">
+            <!-- Se inyecta dinámicamente desde app.js / Firebase (Polygel, Rubber Base, Esmalte, Top Coat) -->
+          </div>
+
+          <div class="specs-cta-box">
+            <button type="button" class="btn-gold btn-full" id="book-3d-look-btn">
+              QUIERO ESTE SISTEMA EN MIS UÑAS →
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 8. CARRUSEL DE COLECCIONES / SETS EN OFERTA (Segundos 0:10 - 0:16 del video 1) -->
+    <!-- 8. CARRUSEL DE SISTEMAS DE UÑAS / PROMOCIONES -->
     <section class="collections-section" id="colecciones">
       <div class="section-header">
-        <span class="section-subtitle" id="sets-subtitle">COLECCIONES</span>
-        <h2 class="section-title" id="sets-title">Sets Destacados</h2>
-        <p class="section-desc" id="sets-desc">Combinaciones seleccionadas para un look equilibrado, seguro y con estilo.</p>
+        <span class="section-subtitle" id="sets-subtitle">SISTEMAS & PROMOS</span>
+        <h2 class="section-title" id="sets-title">Servicios Destacados</h2>
+        <p class="section-desc" id="sets-desc">Estructuras resistentes, ligeras y con acabado de salón europeo.</p>
       </div>
 
       <div class="carousel-container" id="sets-carousel">
-        <!-- Tarjetas de productos generadas con Lodash desde app.js -->
+        <!-- Tarjetas generadas con Lodash desde Firebase/app.js -->
       </div>
       <div class="carousel-dots" id="sets-dots"></div>
     </section>
 
-    <!-- 9. BLOQUES DE CATEGORÍAS VISUALES (Segundos 0:17 - 0:20 del video 1) -->
+    <!-- 9. BLOQUES DE ESPECIALIDADES VISUALES -->
     <section class="categories-section" id="categorias">
       <div class="section-header">
-        <h2 class="section-title" id="cat-main-title">Categorías Principales</h2>
-        <p class="section-desc" id="cat-main-desc">Explora nuestras categorías cuidadosamente seleccionadas.</p>
+        <h2 class="section-title" id="cat-main-title">Especialidades</h2>
+        <p class="section-desc" id="cat-main-desc">Elige la técnica ideal según el largo y estilo que deseas lucir.</p>
       </div>
 
       <div class="categories-grid" id="categories-grid">
-        <!-- Tarjetas verticales con imagen y "ver más →" -->
+        <!-- Polygel, Soft Gel, Manicura Rusa / Kapping -->
       </div>
     </section>
 
-    <!-- 10. FILTRO DINÁMICO DE NOVEDADES (Segundos 0:21 - 0:22 del video 1) -->
+    <!-- 10. FILTRO DINÁMICO DE TÉCNICAS Y ADICIONALES -->
     <section class="arrivals-section" id="novedades">
       <div class="section-header">
-        <span class="section-subtitle">RECIÉN LLEGADO</span>
-        <h2 class="section-title">Novedades</h2>
+        <span class="section-subtitle">CATÁLOGO POR TÉCNICA</span>
+        <h2 class="section-title">Explora Servicios</h2>
       </div>
 
-      <!-- Botones tipo píldora para filtrar en tiempo real sin recargar -->
       <div class="filter-pills" id="filter-pills-container">
-        <!-- Se inyectan desde app.js -->
+        <!-- Píldoras: POLYGEL, SOFT GEL, MANICURA RUSA, CUIDADOS -->
       </div>
 
       <div class="carousel-container" id="arrivals-carousel">
-        <!-- Productos filtrados con Lodash y animados con Anime.js -->
+        <!-- Servicios filtrados con Lodash y animados con Anime.js -->
       </div>
     </section>
 
-    <!-- 11. ESCAPARATE INTERACTIVO "TOCA CADA PUNTO" CON D3.JS (Segundos 0:22 - 0:24 del video 1) -->
+    <!-- 11. ESCAPARATE INTERACTIVO "TOCA CADA PUNTO DE LA MANO" CON D3.JS -->
     <section class="lookbook-section" id="lookbook">
       <div class="lookbook-card">
         <div class="lookbook-image-wrapper" id="lookbook-wrapper">
-          <img id="lookbook-img" src="" alt="Escaparate Interactivo" loading="lazy">
-          <!-- D3.js dibujará aquí los puntos dorados pulsantes -->
+          <img id="lookbook-img" src="" alt="Detalle de Set de Uñas Interactivo" loading="lazy">
+          <!-- D3.js dibuja los puntos dorados sobre cada detalle de la uña -->
           <div id="hotspots-layer" class="hotspots-layer"></div>
         </div>
 
-        <!-- Tarjeta flotante que aparece al tocar un punto dorado -->
         <div id="hotspot-popover" class="hotspot-popover" aria-hidden="true"></div>
       </div>
 
       <div class="section-header lookbook-text">
-        <span class="section-subtitle" id="lookbook-subtitle">ÚLTIMA COLECCIÓN</span>
-        <h2 class="section-title">Arte en <em>cada</em> detalle</h2>
-        <p class="section-desc" id="lookbook-desc">Cada pieza es elaborada en materiales premium. Diseños exclusivos inspirados en elegancia y precisión.</p>
-        <p class="lookbook-instruction">✦ TOCA CADA PUNTO Y DESCUBRE EL PRODUCTO</p>
+        <span class="section-subtitle" id="lookbook-subtitle">DETALLE DE SALÓN</span>
+        <h2 class="section-title">Perfección en <em>cada</em> uña</h2>
+        <p class="section-desc" id="lookbook-desc">Sellado perfecto en cutícula, ápice balanceado para evitar quiebres y encapsulados de alto brillo.</p>
+        <p class="lookbook-instruction">✦ TOCA CADA PUNTO DORADO PARA VER LA TÉCNICA Y SU VALOR</p>
       </div>
     </section>
 
-    <!-- 12. BANNER PROMOCIONAL / CUIDADOS Y BENEFICIOS (Segundos 0:24 - 0:26 del video 1) -->
+    <!-- 12. BANNER DE BIOSEGURIDAD, CUIDADOS Y BENEFICIOS -->
     <section class="promo-care-section" id="cuidados">
       <div class="promo-care-banner" id="promo-care-banner">
         <div class="promo-care-content">
-          <span class="promo-kicker" id="care-kicker">CALIDAD PROFESIONAL</span>
-          <h2 class="promo-title" id="care-title">Tus productos también merecen cuidados.</h2>
-          <p class="promo-desc" id="care-desc">Todo lo necesario para un mantenimiento seguro, limpio y profesional todos los días.</p>
-          <a href="#novedades" class="btn-dark" id="care-btn">VER PRODUCTOS →</a>
+          <span class="promo-kicker" id="care-kicker">BIOSEGURIDAD Y SALUD UNGUEAL</span>
+          <h2 class="promo-title" id="care-title">Tus uñas naturales sanas y protegidas.</h2>
+          <p class="promo-desc" id="care-desc">Trabajamos con herramientas esterilizadas, monómeros libres de MMA y aceites hidratantes de cutícula de grado profesional.</p>
+          <a href="#novedades" class="btn-dark" id="care-btn">VER SERVICIOS →</a>
         </div>
         <div class="promo-care-img-box">
-          <img id="care-img" src="" alt="Producto de cuidado" loading="lazy">
+          <img id="care-img" src="" alt="Cuidado profesional de uñas" loading="lazy">
         </div>
       </div>
 
       <div class="benefits-grid" id="benefits-grid">
-        <!-- 4 cajas de garantías (Higiene, Materiales certificados, etc.) -->
+        <!-- 4 cajas de garantías -->
       </div>
     </section>
 
-    <!-- 13. TESTIMONIOS / CLIENTES REALES (Segundo 0:27 del video 1) -->
+    <!-- 13. TESTIMONIOS REALES + FORMULARIO CONECTADO A CLOUD FIRESTORE -->
     <section class="testimonials-section" id="testimonios">
       <div class="section-header">
-        <h2 class="section-title">Testimonios</h2>
+        <span class="section-subtitle"> EXPERIENCIAS REALES</span>
+        <h2 class="section-title">Clientas Felices</h2>
       </div>
+      
       <div class="carousel-container" id="testimonials-carousel">
-        <!-- Fotos y reseñas de clientes -->
+        <!-- Reseñas cargadas en vivo desde Firebase Firestore + por defecto -->
+      </div>
+
+      <!-- Formulario para que las clientas dejen su reseña y se guarde en Firestore -->
+      <div class="review-form-card">
+        <h3 class="review-form-title">¿Ya te atendiste con nosotras? Deja tu reseña</h3>
+        <form id="client-review-form" class="review-form" novalidate>
+          <input type="text" id="review-name" placeholder="Tu Nombre (Ej: Mariana L. - Panorama)" required maxlength="45">
+          <select id="review-service" required>
+            <option value="Sistema en Polygel">Sistema en Polygel</option>
+            <option value="Soft Gel / Press On">Soft Gel / Press On</option>
+            <option value="Kapping / Nivelación">Kapping / Nivelación</option>
+            <option value="Manicura Rusa + Semipermanente">Manicura Rusa + Semipermanente</option>
+            <option value="Servicio a Domicilio VIP">Servicio a Domicilio VIP</option>
+          </select>
+          <textarea id="review-comment" rows="3" placeholder="Cuéntanos qué tal te pareció el acabado, la duración y la atención..." required maxlength="220"></textarea>
+          <button type="submit" class="btn-outline-gold btn-full">PUBLICAR MI RESEÑA</button>
+          <p id="review-feedback" class="newsletter-feedback" aria-live="polite"></p>
+        </form>
       </div>
     </section>
 
-    <!-- 14. UBICACIÓN Y CITA POR WHATSAPP (Segundo 0:28 del video 1) -->
+    <!-- 14. UBICACIÓN EN EL JUNQUITO (PANORAMA) Y COBERTURA A DOMICILIO -->
     <section class="location-section" id="ubicacion">
       <div class="location-card">
-        <span class="section-subtitle">NUESTRO ESPACIO</span>
-        <h2 class="section-title" id="loc-title">Visítanos</h2>
-        <p class="location-city" id="loc-city">SEDE PRINCIPAL</p>
+        <span class="section-subtitle">ESTUDIO & RUTA MÓVIL</span>
+        <h2 class="section-title" id="loc-title">El Junquito — Panorama</h2>
+        <p class="location-city" id="loc-city">ATENCIÓN EN SITIO Y A DOMICILIO CON PREVIA CITA</p>
 
         <ul class="location-details" id="loc-details">
-          <!-- Dirección, Horario y Teléfono inyectados desde app.js -->
+          <!-- Dirección en Panorama, Horario y Cobertura de Domicilio -->
         </ul>
 
-        <a href="#" target="_blank" rel="noopener noreferrer" class="btn-outline-gold btn-full" id="loc-whatsapp-btn">
-          AGENDAR CITA POR WHATSAPP
-        </a>
+        <button type="button" class="btn-gold btn-full" id="open-booking-drawer-btn">
+          <i class="ri-calendar-event-line"></i> AGENDAR CITA O PEDIR DOMICILIO AQUÍ
+        </button>
       </div>
     </section>
 
-    <!-- 15. COMPONENTE EXTRA CON REACT (Simulador Rápido de Presupuesto / Kit Personalizado) -->
+    <!-- 15. COTIZADOR INTERACTIVO EN REACT (Calculadora de Set de Uñas Personalizado) -->
     <section class="react-widget-section">
       <div id="react-custom-kit-root"></div>
     </section>
 
   </main>
 
-  <!-- 16. PIE DE PÁGINA / FOOTER CON ACORDEONES (Segundos 0:29 - 0:31 del video 1) -->
+  <!-- 16. PIE DE PÁGINA / FOOTER -->
   <footer class="site-footer">
-    <div class="footer-accordions" id="footer-accordions">
-      <!-- Acordeones de SOPORTE, CATEGORÍAS y CONTÁCTANOS -->
-    </div>
+    <div class="footer-accordions" id="footer-accordions"></div>
 
     <div class="footer-socials" id="footer-socials">
-      <a href="#" aria-label="Facebook" rel="noopener noreferrer"><i class="ri-facebook-circle-fill"></i></a>
       <a href="#" aria-label="Instagram" rel="noopener noreferrer"><i class="ri-instagram-line"></i></a>
       <a href="#" aria-label="TikTok" rel="noopener noreferrer"><i class="ri-tiktok-fill"></i></a>
+      <a href="#" aria-label="WhatsApp" rel="noopener noreferrer"><i class="ri-whatsapp-line"></i></a>
     </div>
 
     <div class="footer-newsletter">
-      <p class="newsletter-title">SUSCRÍBETE</p>
+      <p class="newsletter-title">CLUB VIP DE DESCUENTOS EN UÑAS</p>
       <form id="newsletter-form" class="newsletter-form" novalidate>
-        <input type="email" id="newsletter-email" placeholder="Correo electrónico" required maxlength="80">
-        <button type="submit" class="btn-gold btn-full">SUSCRIBIRME</button>
+        <input type="email" id="newsletter-email" placeholder="Tu correo electrónico" required maxlength="80">
+        <button type="submit" class="btn-gold btn-full">UNIRME AL CLUB</button>
         <p id="newsletter-feedback" class="newsletter-feedback" aria-live="polite"></p>
       </form>
     </div>
 
     <div class="footer-legal-links">
-      <button type="button" class="text-link" id="open-legal-modal">Ver la política de cookies y privacidad</button>
-      <p class="copyright">© <span id="current-year">2026</span> <span id="footer-brand-name">KALON</span>. Todos los derechos reservados.</p>
+      <button type="button" class="text-link" id="open-legal-modal">Política de Cookies, Privacidad y Uso de GPS</button>
+      <p class="copyright">© <span id="current-year">2026</span> <span id="footer-brand-name">KALON NAILS</span> • El Junquito, Panorama. Todos los derechos reservados.</p>
     </div>
   </footer>
 
-  <!-- 17. BANNER DE COOKIES FIJO INFERIOR (Segundos 0:08 - 0:52 del video 1 - Regla 5 Seguridad Legal) -->
+  <!-- 17. BANNER DE COOKIES FIJO INFERIOR (Regla 5 Seguridad Legal) -->
   <aside class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Aviso de privacidad y cookies">
     <p class="cookie-text">
-      Usamos cookies propias para que la tienda funcione y, si nos das permiso, de terceros para entender cómo se navega y mejorar la experiencia. 
-      <button type="button" class="cookie-policy-trigger" id="cookie-policy-link">Ver la política de cookies.</button>
+      Usamos cookies propias para guardar tu cita y, bajo tu permiso expreso, geolocalización GPS únicamente cuando solicitas servicio de uñas a domicilio. 
+      <button type="button" class="cookie-policy-trigger" id="cookie-policy-link">Ver política legal.</button>
     </p>
     <div class="cookie-actions">
       <button type="button" class="btn-cookie-outline" id="cookie-essential-btn">SOLO LO ESENCIAL</button>
@@ -328,53 +408,50 @@
     </div>
   </aside>
 
-  <!-- 18. MODAL DE POLÍTICA DE COOKIES Y HABEAS DATA (Segundos 0:39 - 0:43 del video 1) -->
+  <!-- 18. MODAL DE POLÍTICA LEGAL Y USO DE UBICACIÓN DOMICILIO -->
   <div class="legal-modal" id="legal-modal" aria-hidden="true" role="dialog">
     <div class="legal-modal-content">
       <div class="legal-modal-header">
-        <h2>Política de cookies y Tratamiento de Datos</h2>
+        <h2>Política de Privacidad, Cookies y Geolocalización</h2>
         <button class="icon-btn" id="close-legal-modal" aria-label="Cerrar política legal">
           <i class="ri-close-line"></i>
         </button>
       </div>
       <div class="legal-modal-body">
-        <p>Esta página explica qué son las cookies, cuáles usamos en nuestra plataforma y cómo puedes decidir sobre ellas en cualquier momento.</p>
+        <h3>1. Uso de Cookies</h3>
+        <p>Guardamos en tu navegador únicamente los servicios seleccionados en tu bolsa y tu preferencia de privacidad durante 6 meses.</p>
         
-        <h3>Qué son</h3>
-        <p>Una cookie es un archivo pequeño que una web guarda en tu navegador. Algunas son imprescindibles para que la tienda funcione —recordar tu carrito, mantener tu sesión mientras compras— y otras sirven para entender cómo se navega el sitio.</p>
+        <h3>2. Uso de Ubicación GPS para Domicilios</h3>
+        <p>La función de ubicación GPS solo se activa si tú presionas voluntariamente el botón "Adjuntar mi Ubicación GPS" al pedir un servicio a domicilio. Esas coordenadas solo se utilizan para que la especialista llegue a tu domicilio en El Junquito o Caracas.</p>
         
-        <h3>Cuáles usamos</h3>
-        <p><strong>Necesarias — siempre activas:</strong> Sin ellas la tienda no funciona, así que no requieren tu permiso. Guardan tu selección de carrito y tu preferencia de privacidad.</p>
-        
-        <h3>Cuánto duran</h3>
-        <p>La cookie que guarda tu decisión dura <strong>6 meses</strong>. Las de la tienda duran lo que dure tu visita o tu sesión de compra.</p>
-        
-        <h3>Base legal y Protección de Datos</h3>
-        <p>Tratamos tus datos conforme a las normativas vigentes de protección de datos personales y comercio electrónico (Habeas Data). Ningún dato bancario ni personal sensible se almacena sin cifrado en este servidor.</p>
+        <h3>3. Protección de Datos (Habeas Data)</h3>
+        <p>Los datos de tu cita (nombre, teléfono, fecha y servicio) se almacenan de forma cifrada en Google Firebase exclusivamente para coordinar tu atención.</p>
       </div>
     </div>
   </div>
 
   <!-- =========================================================================
-       ECOSISTEMA DE LIBRERÍAS SOLICITADAS (CDN Oficiales Seguros)
+       ECOSISTEMA DE LIBRERÍAS + FIREBASE SDK (Conectado a mipaginawed-519fd)
        ========================================================================= -->
-  <!-- 1. jQuery (Manipulación rápida del DOM y eventos de interfaz) -->
+  <!-- 1. jQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  
-  <!-- 2. Lodash (Filtrado de catálogo, cálculo de descuentos y manejo de datos) -->
+  <!-- 2. Lodash -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-  
-  <!-- 3. Anime.js (Animaciones fluidas para el preloader, tarjetas y transiciones) -->
+  <!-- 3. Anime.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-  
-  <!-- 4. D3.js (Coordenadas dinámicas del escaparate interactivo "Shop the Look") -->
+  <!-- 4. D3.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-
-  <!-- 5. React & ReactDOM (Para el módulo interactivo de armado de kits) -->
+  <!-- 5. React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 
-  <!-- Nuestro motor principal escalable (Archivo 3) -->
+  <!-- 6. Google Firebase SDKs (App, Realtime Database, Cloud Firestore y Auth) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <!-- Nuestro motor principal conectado a tu Firebase (Archivo 3) -->
   <script src="app.js"></script>
 </body>
 </html>
