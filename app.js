@@ -927,3 +927,9 @@ $(document).ready(function () {
     }
   });
 });
+// Registro seguro del Service Worker para GitHub Pages (HTTPS)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
