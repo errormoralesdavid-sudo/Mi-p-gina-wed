@@ -1,281 +1,310 @@
 /**
  * ============================================================================
- * ARCHIVO 3: app.js - MOTOR ESCALABLE, SEGURO Y MULTILIBRERÍA
- * Librerías integradas: jQuery, Lodash (_), Anime.js (anime), D3.js (d3), React
+ * ARCHIVO 3: app.js - MOTOR DEMO DE UÑAS (EL JUNQUITO - PANORAMA) + FIREBASE
+ * Conectado a: Realtime Database, Cloud Firestore, Anime.js, D3.js, Lodash, React
  * ============================================================================
  */
 
 "use strict";
 
 /* ============================================================================
-   1. CONFIGURACIÓN MAESTRA ESCALABLE (REGLA 6)
-   Modifica este bloque para adaptar la página a CUALQUIER rubro en 5 minutos
-   (Joyería, Barbería & Streetwear, Gastronomía, Calzado, Tecnología, etc.)
+   1. CONEXIÓN OFICIAL A TU PROYECTO FIREBASE (mipaginawed-519fd)
    ============================================================================ */
-const STORE_CONFIG = {
-  brandName: "kalon",
+const firebaseConfig = {
+  apiKey: "AIzaSyBJ_cmnwIqaE_2WW5tJVOGgebsquSLKBxs",
+  authDomain: "mipaginawed-519fd.firebaseapp.com",
+  databaseURL: "https://mipaginawed-519fd-default-rtdb.firebaseio.com",
+  projectId: "mipaginawed-519fd",
+  storageBucket: "mipaginawed-519fd.firebasestorage.app",
+  messagingSenderId: "1024677348695",
+  appId: "1:1024677348695:web:51d9c155ad9389c6ae2a12",
+  measurementId: "G-968MQ61PQ6"
+};
+
+let dbRealtime = null;
+let dbFirestore = null;
+
+try {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  dbRealtime = firebase.database();
+  dbFirestore = firebase.firestore();
+} catch (err) {
+  console.warn("Modo local activo si Firebase aún no responde:", err);
+}
+
+/* ============================================================================
+   2. CONFIGURACIÓN MAESTRA DEL RUBRO DE UÑAS (REGLA 6 - ESCALABLE)
+   Si modificas algo desde admin.html, Firebase sobrescribe este objeto en vivo
+   ============================================================================ */
+let STORE_CONFIG = {
+  brandName: "kalon nails",
   brandSpaced: "K A L O N",
   currencySymbol: "$",
-  whatsappNumber: "573134052039", // Cambia por tu número con código de país
-  
-  // Textos del cintillo superior en movimiento (Segundo 0:08 del video 1)
+  whatsappNumber: "584120000000", // Cambia desde el Panel Admin por el número en Venezuela
+
   marqueeMessages: [
-    "ENVÍO GRATIS EN COMPRAS SUPERIORES A $150.000",
-    "DISEÑOS EXCLUSIVOS DE GRADO PREMIUM",
-    "MATERIALES HIPOALERGÉNICOS Y RESISTENTES AL AGUA",
-    "ATENCIÓN PERSONALIZADA Y GARANTÍA CERTIFICADA"
+    "ESTUDIO EN EL JUNQUITO (SECTOR PANORAMA) Y SERVICIO VIP A DOMICILIO",
+    "ESPECIALISTAS EN POLYGEL, SOFT GEL, KAPPING Y MANICURA RUSA",
+    "MATERIALES HIPOALERGÉNICOS LIBRES DE MMA • DURACIÓN +21 DÍAS",
+    "AGENDA TU CITA ONLINE Y ADJUNTA TU UBICACIÓN GPS EN 1 CLIC"
   ],
 
-  // Menú lateral desplegable (Segundos 0:34 - 0:35 del video 1)
   navigation: [
     { label: "INICIO", href: "#main-content", hasSubmenu: false },
-    { label: "EXPLORAR EN 3D", href: "#showcase-3d", hasSubmenu: false },
-    { label: "COLECCIÓN PRINCIPAL", href: "#colecciones", hasSubmenu: true },
-    { label: "CATEGORÍAS", href: "#categorias", hasSubmenu: true },
-    { label: "NOVEDADES", href: "#novedades", hasSubmenu: true },
-    { label: "ESCAPARATE INTERACTIVO", href: "#lookbook", hasSubmenu: false },
-    { label: "CUIDADOS Y CALIDAD", href: "#cuidados", hasSubmenu: false },
-    { label: "TESTIMONIOS", href: "#testimonios", hasSubmenu: false },
-    { label: "VISÍTANOS / CONTACTO", href: "#ubicacion", hasSubmenu: false }
+    { label: "MANOS 3D & MATERIALES", href: "#showcase-3d", hasSubmenu: false },
+    { label: "SISTEMAS EN PROMO", href: "#colecciones", hasSubmenu: true },
+    { label: "ESPECIALIDADES", href: "#categorias", hasSubmenu: true },
+    { label: "CATÁLOGO DE SERVICIOS", href: "#novedades", hasSubmenu: true },
+    { label: "DETALLE TÉCNICO (LOOKBOOK)", href: "#lookbook", hasSubmenu: false },
+    { label: "BIOSEGURIDAD", href: "#cuidados", hasSubmenu: false },
+    { label: "RESEÑAS DE CLIENTAS", href: "#testimonios", hasSubmenu: false },
+    { label: "PANORAMA & DOMICILIO", href: "#ubicacion", hasSubmenu: false }
   ],
 
-  // Portada Principal / Hero (Segundos 0:08 - 0:09 del video 1)
   hero: {
-    kicker: "DISEÑOS DE LUJO PARA",
-    titleMain: "REFLEJAR TU ESENCIA EN CADA",
+    kicker: "ARTE Y PRECISIÓN EN TUS MANOS",
+    titleMain: "DISEÑOS EXCLUSIVOS EN CADA",
     titleAccent: "detalle",
-    lead: "La unión perfecta entre arte, comodidad y autenticidad en cada pieza.",
-    ctaText: "COMPRAR AHORA",
-    bgImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80",
+    lead: "Estructuras en Polygel, Soft Gel y Manicura Rusa de alta durabilidad. Atención en El Junquito (Panorama) o vamos hasta la comodidad de tu casa.",
+    ctaText: "EXPLORAR MANOS 3D & PRECIOS",
+    bgImage: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80",
     badges: [
-      { icon: "ri-shield-check-line", text: "Materiales Hipoalergénicos" },
-      { icon: "ri-drop-line", text: "Resistentes al agua y uso diario" }
+      { icon: "ri-shield-check-line", text: "Herramientas 100% Esterilizadas" },
+      { icon: "ri-e-bike-2-line", text: "Estudio en Panorama + Servicio a Domicilio" }
     ]
   },
 
-  // Visor 3D Interactivo (Puedes poner cualquier archivo .glb tuyo o de GitHub)
+  // Configuración del Visor 3D + Ficha Técnica de Materiales de Uñas
   model3D: {
-    subtitle: "INTERACCIÓN 360° EN TIEMPO REAL",
-    title: "Explora cada ángulo en 3D",
-    desc: "Gira con tu dedo o cursor nuestro modelo interactivo antes de comprar.",
-    // URL de modelo .glb (Puedes reemplazarlo por una joya, máquina de barbería, gorra, etc.)
-    glbUrl: "https://modelviewer.dev/shared-assets/models/MaterialsVariantsShoe.glb"
+    subtitle: "INTERACCIÓN 360° • MODELO REAL",
+    title: "Escultura & Materiales en 3D",
+    desc: "Gira las manos con tu dedo para inspeccionar el relieve 3D, el sellado de cutícula y conoce qué productos exactos usamos.",
+    // Carga tu archivo unas-demo.glb descargado; si no está en la carpeta aún, usa un respaldo seguro
+    glbUrl: "./unas-demo.glb",
+    systemPrice: 25,
+    systemTitle: "SISTEMA ESCULPIDO AZUL COBALTO 3D (POLYGEL)",
+    techSpecs: [
+      {
+        layer: "1. PREPARACIÓN & CUTÍCULA",
+        name: "Manicura Rusa Combinada + Deshidratador pH",
+        detail: "Limpieza profunda del bolsillo de la cutícula con brocas diamantadas de grano suave y nivelación de pH con Nail Prep sin ácido para evitar desprendimientos."
+      },
+      {
+        layer: "2. BASE ADHERENTE & PROTECCIÓN",
+        name: "Rubber Base Gel Flexible (Capa Amortiguadora)",
+        detail: "Base elástica vitaminada que protege la uña natural, corrige estrías y absorbe impactos cotidianos sin quebrar la estructura."
+      },
+      {
+        layer: "3. ESTRUCTURA & ESCULPIDO",
+        name: "Polygel Acrigel de Alta Densidad (Grado Salón)",
+        detail: "Combina la fuerza del acrílico con la ligereza y flexibilidad del gel. Cero olor a monómero fuerte, curvatura C estilizada y duración de 21 a 30 días."
+      },
+      {
+        layer: "4. COLOR, RELIEVE & BRILLO ESPEJO",
+        name: "Gel Semipermanente Azul Cobalto + Top Coat Cristal UV",
+        detail: "Pigmento mineral de alta cobertura curado en lámpara LED/UV, texturizado artístico en relieve 3D y sellado con Top Coat Diamond anti-rayaduras."
+      }
+    ]
   },
 
-  // Carrusel de Sets / Colecciones Destacadas (Segundos 0:10 - 0:16 del video 1)
+  // Carrusel de Sistemas Destacados / Promociones
   setsProducts: [
     {
-      id: "set-opalo",
-      title: "SET ÓPALO TITANIO",
-      oldPrice: 155000,
-      price: 124000,
+      id: "set-polygel-esculpido",
+      title: "SISTEMA EN POLYGEL + ESMALTADO GEL",
+      oldPrice: 30,
+      price: 22,
       inStock: true,
       isOffer: true,
-      image: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"
     },
     {
-      id: "set-black",
-      title: "SET BLACK TITANIO",
-      oldPrice: 155600,
-      price: 124500,
-      inStock: false, // Se mostrará como AGOTADO igual que en el segundo 0:11 del video 1
-      isOffer: true,
-      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80"
-    },
-    {
-      id: "set-purpura",
-      title: "SET PÚRPURA TITANIO",
-      oldPrice: 118000,
-      price: 94400,
+      id: "set-softgel-press",
+      title: "SISTEMA SOFT GEL / EXTENSIONES TIPS GEL",
+      oldPrice: 25,
+      price: 18,
       inStock: true,
       isOffer: true,
-      image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"
     },
     {
-      id: "set-olive",
-      title: "SET OLIVE TITANIO",
-      oldPrice: 202000,
-      price: 171500,
+      id: "set-kapping-rubber",
+      title: "KAPPING / NIVELACIÓN RUBBER EN UÑA NATURAL",
+      oldPrice: 20,
+      price: 15,
       inStock: true,
       isOffer: true,
-      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80"
     },
     {
-      id: "set-monarca",
-      title: "SET MONARCA TITANIO",
-      oldPrice: 239500,
-      price: 203500,
+      id: "set-duo-manos-pies",
+      title: "COMBO VIP: MANICURA RUSA + PEDISPA",
+      oldPrice: 32,
+      price: 25,
       inStock: true,
       isOffer: true,
-      image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80"
     }
   ],
 
-  // Bloques de Categorías Visuales (Segundos 0:17 - 0:20 del video 1)
+  // Bloques de Especialidades
   categories: [
     {
-      id: "cat-1",
-      name: "Piercing Ear",
-      image: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=700&q=80",
-      filterTarget: "EAR"
+      id: "cat-polygel",
+      name: "Sistemas en Polygel",
+      image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=80",
+      filterTarget: "POLYGEL"
     },
     {
-      id: "cat-2",
-      name: "Piercing Face",
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=700&q=80",
-      filterTarget: "FACE"
+      id: "cat-softgel",
+      name: "Soft Gel & Kapping",
+      image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=700&q=80",
+      filterTarget: "SOFT GEL"
     },
     {
-      id: "cat-3",
-      name: "Piercing Body",
-      image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=700&q=80",
-      filterTarget: "BODY"
+      id: "cat-rusa",
+      name: "Manicura Rusa & Spa",
+      image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=700&q=80",
+      filterTarget: "MANICURA RUSA"
     }
   ],
 
-  // Filtros y Productos de "Novedades" (Segundos 0:21 - 0:22 del video 1)
-  arrivalFilters: ["CUIDADOS", "BODY", "EAR", "FACE"],
+  // Filtros y Catálogo por Técnica
+  arrivalFilters: ["POLYGEL", "SOFT GEL", "MANICURA RUSA", "ADICIONALES"],
   arrivalsProducts: [
     {
-      id: "nov-hilos",
-      title: "HILOS DE LIMPIEZA",
-      category: "CUIDADOS",
-      oldPrice: 25000,
-      price: 18000,
+      id: "srv-polygel-natural",
+      title: "POLYGEL TONO COVER / BABY BOOMER",
+      category: "POLYGEL",
+      oldPrice: 28,
+      price: 22,
       inStock: true,
-      image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"
     },
     {
-      id: "nov-spray",
-      title: "SPRAY AFTERCARE PRO",
-      category: "CUIDADOS",
-      oldPrice: 45000,
-      price: 36000,
+      id: "srv-polygel-mantenimiento",
+      title: "MANTENIMIENTO DE POLYGEL (15-21 DÍAS)",
+      category: "POLYGEL",
+      oldPrice: 20,
+      price: 16,
       inStock: true,
-      image: "https://images.unsplash.com/photo-1608248597359-0e6d526a6c18?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80"
     },
     {
-      id: "nov-body-gold",
-      title: "CURVED BARBELL GOLD",
-      category: "BODY",
-      oldPrice: 95000,
-      price: 78000,
+      id: "srv-softgel-decorado",
+      title: "SOFT GEL + EFECTO CHROME / OJO DE GATO",
+      category: "SOFT GEL",
+      oldPrice: 24,
+      price: 19,
       inStock: true,
-      image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"
     },
     {
-      id: "nov-ear-helix",
-      title: "ARO HELIX ZIRCONIA",
-      category: "EAR",
-      oldPrice: 82000,
-      price: 68000,
+      id: "srv-rusa-semi",
+      title: "MANICURA RUSA + SEMIPERMANENTE",
+      category: "MANICURA RUSA",
+      oldPrice: 16,
+      price: 12,
       inStock: true,
-      image: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80"
     },
     {
-      id: "nov-face-septum",
-      title: "CLICKER SEPTUM TITANIO",
-      category: "FACE",
-      oldPrice: 89000,
-      price: 72000,
+      id: "srv-retiro-seguro",
+      title: "RETIRO SEGURO + HIDRATACIÓN QUERATINA",
+      category: "ADICIONALES",
+      oldPrice: 8,
+      price: 5,
       inStock: true,
-      image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80"
+      image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80"
     }
   ],
 
-  // Escaparate Interactivo D3.js "Toca cada punto" (Segundos 0:22 - 0:24 del video 1)
+  // Escaparate Interactivo D3.js ("Toca cada punto de la uña")
   lookbook: {
-    image: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
     hotspots: [
-      { id: "hs-1", x: 38, y: 28, title: "Labret Marquise Gold", price: 65000 },
-      { id: "hs-2", x: 64, y: 36, title: "stud Tragus Titanio", price: 48000 },
-      { id: "hs-3", x: 52, y: 54, title: "Aro Conch Brillante", price: 79000 },
-      { id: "hs-4", x: 46, y: 74, title: "Candonga Lóbulo Minimal", price: 55000 }
+      { id: "hs-cuticula", x: 34, y: 32, title: "Limpieza de Cutícula Rusa + Sellado", price: 12 },
+      { id: "hs-polygel", x: 52, y: 48, title: "Esculpido en Polygel + Ápice Balanceado", price: 22 },
+      { id: "hs-nailart", x: 66, y: 62, title: "Diseño Relieve 3D + Top Coat Cristal", price: 4 }
     ]
   },
 
-  // Sección de Cuidados y 4 Garantías (Segundos 0:24 - 0:26 del video 1)
   carePromo: {
-    kicker: "AFTERCARE PROFESIONAL",
-    title: "Tus piezas también merecen cuidados.",
-    desc: "Todo lo necesario para un mantenimiento seguro, limpieza profesional y durabilidad diaria.",
-    image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80",
+    kicker: "BIOSEGURIDAD Y SALUD UNGUEAL",
+    title: "Tus uñas naturales sanas y fuertes.",
+    desc: "Usamos preparadores libres de ácidos agresivos, limas personalizadas y esterilización grado médico en estudio y a domicilio.",
+    image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80",
     benefits: [
-      { icon: "ri-shield-star-line", text: "Higiene segura donde estés" },
-      { icon: "ri-award-line", text: "Materiales estériles y certificados" },
-      { icon: "ri-sparkling-line", text: "Limpieza suave y efectiva" },
-      { icon: "ri-heart-pulse-line", text: "Adaptación y cuidado óptimo" }
+      { icon: "ri-shield-star-line", text: "Esterilización en cada cita" },
+      { icon: "ri-award-line", text: "Polygel y geles certificados" },
+      { icon: "ri-e-bike-2-line", text: "Maletín completo a domicilio" },
+      { icon: "ri-sparkling-line", text: "Brillo intacto por +21 días" }
     ]
   },
 
-  // Testimonios (Segundo 0:27 del video 1)
   testimonials: [
     {
-      name: "Valentina M.",
-      quote: "La calidad del titanio es increíble, cero alergias y el brillo se mantiene intacto.",
-      image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80"
+      name: "Mariana G. (Panorama)",
+      quote: "Me hizo el sistema en Polygel a domicilio aquí en Panorama y me duraron 25 días intactas sin levantarse nada.",
+      image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"
     },
     {
-      name: "Camila R.",
-      quote: "Me encantó la asesoría por WhatsApp y lo rápido que llegó mi set completo.",
-      image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"
-    },
-    {
-      name: "Daniela G.",
-      quote: "Diseños súper delicados y elegantes, exactamente como se ven en el catálogo.",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80"
+      name: "Estefanía R. (El Junquito Km 12)",
+      quote: "Súper delicada con la cutícula, no lastima nada y lleva absolutamente todos los colores y lámpara a tu casa.",
+      image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"
     }
   ],
 
-  // Ubicación y Contacto (Segundo 0:28 del video 1)
   location: {
-    title: "Visítanos en nuestra sede",
-    city: "ATENCIÓN EXCLUSIVA Y ASESORÍA",
-    address: "Calle Principal #26A-16, Zona Comercial",
-    hours: "Lunes – Sábado • 10AM – 6PM",
-    phone: "+57 313 405 2039"
+    title: "El Junquito — Sector Panorama",
+    city: "ATENCIÓN EN ESTUDIO PRIVADO Y A DOMICILIO",
+    address: "El Junquito, Sector Panorama (también cubrimos todo El Junquito y Caracas a domicilio)",
+    hours: "Lunes a Sábado • 9:00 AM – 6:00 PM (Previa Cita)",
+    phone: "+58 412-0000000"
   },
 
-  // Acordeones del Pie de Página (Segundos 0:29 - 0:31 del video 1)
   footerAccordions: [
     {
-      title: "SOPORTE",
-      content: "Preguntas frecuentes, guía de tallas, envíos nacionales, cambios y garantías de satisfacción."
+      title: "¿CÓMO FUNCIONA EL SERVICIO A DOMICILIO?",
+      content: "Seleccionas tus servicios en la web, eliges 'A Domicilio', adjuntas tu ubicación GPS y llevamos mesa portátil, lámpara UV/LED, extractor y todos los materiales hasta tu hogar."
     },
     {
-      title: "CATEGORÍAS",
-      content: "Sets completos, Línea de Titanio Grado Implante, Cuidados Profesionales y Accesorios."
+      title: "DIFERENCIA ENTRE POLYGEL, SOFT GEL Y KAPPING",
+      content: "El Polygel es ideal para esculpir largo con máxima resistencia; Soft Gel usa tips de gel completos de rápida aplicación; Kapping recubre el largo de tu propia uña natural para que no se parta."
     },
     {
-      title: "CONTÁCTANOS",
-      content: "Atención personalizada vía WhatsApp, correo electrónico oficial y agendamiento de citas."
+      title: "GARANTÍA Y RECOMENDACIONES",
+      content: "Todos nuestros sistemas cuentan con garantía de aplicación de 5 días. Recomendamos aplicar aceite de cutícula diariamente y usar guantes al manipular químicos fuertes."
     }
   ]
 };
 
 /* ============================================================================
-   2. UTILIDADES DE SEGURIDAD (REGLA 5) Y FORMATO DE MONEDA
+   3. SEGURIDAD XSS (REGLA 5) Y FORMATEO DE PRECIOS
    ============================================================================ */
-
-// Sanitiza cualquier texto ingresado por el usuario para evitar ataques XSS
 function sanitizeInput(str) {
   if (typeof str !== "string") return "";
   return _.escape(str.trim()).replace(/[<>/"'`;()]/g, "");
 }
 
-// Formatea precios numéricos a formato legible ($ 124.000)
 function formatCurrency(amount) {
-  return `${STORE_CONFIG.currencySymbol} ${Number(amount).toLocaleString("es-CO")}`;
+  return `${STORE_CONFIG.currencySymbol} ${Number(amount).toLocaleString("es-VE")}`;
 }
 
 /* ============================================================================
-   3. ESTADO DEL CARRITO DE COMPRAS (Persistencia segura en localStorage)
+   4. ESTADO DEL CARRITO, MODALIDAD DOMICILIO Y UBICACIÓN GPS
    ============================================================================ */
 let cartState = [];
+let deliveryMode = "estudio"; // "estudio" o "domicilio"
+let deliveryFee = 0;
+let deliveryZoneLabel = "Atención en Estudio (Panorama, El Junquito)";
+let clientGpsUrl = "";
 
 function loadCartFromStorage() {
   try {
-    const saved = localStorage.getItem("kalon_secure_cart");
+    const saved = localStorage.getItem("kalon_nails_cart");
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) cartState = parsed;
@@ -287,10 +316,8 @@ function loadCartFromStorage() {
 
 function saveCartToStorage() {
   try {
-    localStorage.setItem("kalon_secure_cart", JSON.stringify(cartState));
-  } catch (e) {
-    // Fallback silencioso en modo incógnito restringido
-  }
+    localStorage.setItem("kalon_nails_cart", JSON.stringify(cartState));
+  } catch (e) {}
 }
 
 function addToCart(product) {
@@ -301,7 +328,7 @@ function addToCart(product) {
     cartState.push({
       id: product.id,
       title: product.title,
-      price: product.price,
+      price: Number(product.price),
       image: product.image || STORE_CONFIG.lookbook.image,
       qty: 1
     });
@@ -309,7 +336,6 @@ function addToCart(product) {
   saveCartToStorage();
   renderCartUI();
 
-  // Animación elástica del contador con Anime.js
   anime({
     targets: "#cart-count",
     scale: [1, 1.45, 1],
@@ -326,16 +352,18 @@ function removeFromCart(productId) {
 
 function renderCartUI() {
   const totalCount = _.sumBy(cartState, "qty");
-  const totalPrice = _.sumBy(cartState, (item) => item.price * item.qty);
+  const servicesSubtotal = _.sumBy(cartState, (item) => item.price * item.qty);
+  const activeDeliveryFee = deliveryMode === "domicilio" ? Number(deliveryFee) : 0;
+  const grandTotal = servicesSubtotal + activeDeliveryFee;
 
   $("#cart-count").text(totalCount);
-  $("#cart-total-price").text(formatCurrency(totalPrice));
+  $("#cart-total-price").text(formatCurrency(grandTotal));
 
   const $container = $("#cart-items-container");
   $container.empty();
 
   if (cartState.length === 0) {
-    $container.html('<p style="color: var(--text-muted); text-align:center; margin-top: 2rem;">Tu bolsa está vacía.</p>');
+    $container.html('<p style="color: var(--text-muted); text-align:center; margin: 1.2rem 0; font-size:0.82rem;">Aún no has seleccionado servicios de uñas.</p>');
     return;
   }
 
@@ -356,22 +384,60 @@ function renderCartUI() {
 }
 
 /* ============================================================================
-   4. RENDERIZADO DINÁMICO DE SECCIONES (jQuery + Lodash)
+   5. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE (REALTIME DB + FIRESTORE)
    ============================================================================ */
+function syncStoreWithFirebase() {
+  if (!dbRealtime) return;
 
+  const configRef = dbRealtime.ref("store_config");
+  configRef.on("value", (snapshot) => {
+    const cloudData = snapshot.val();
+    if (cloudData) {
+      // Combina los cambios hechos en el Panel Admin con la base
+      STORE_CONFIG = _.merge({}, STORE_CONFIG, cloudData);
+      initStorefrontContent();
+      initD3LookbookHotspots();
+    } else {
+      // Si la base está en null (como en tu captura 4), guarda la configuración inicial
+      configRef.set(STORE_CONFIG).catch(() => {});
+    }
+  });
+
+  // Escucha reseñas en vivo desde Cloud Firestore
+  if (dbFirestore) {
+    dbFirestore
+      .collection("resenas_clientas")
+      .orderBy("createdAt", "desc")
+      .limit(10)
+      .onSnapshot(
+        (snap) => {
+          const cloudReviews = [];
+          snap.forEach((doc) => cloudReviews.push(doc.data()));
+          if (cloudReviews.length > 0) {
+            const combined = [...cloudReviews, ...STORE_CONFIG.testimonials];
+            renderTestimonialsList(combined);
+          }
+        },
+        () => {}
+      );
+  }
+}
+
+/* ============================================================================
+   6. RENDERIZADO COMPLETO DE LA TIENDA Y FICHA TÉCNICA DE UÑAS 3D
+   ============================================================================ */
 function initStorefrontContent() {
-  // Marca y textos generales
   $("#preloader-brand").text(STORE_CONFIG.brandSpaced);
   $("#header-logo").text(STORE_CONFIG.brandName);
   $("#footer-brand-name").text(STORE_CONFIG.brandName.toUpperCase());
 
-  // 1. Barra Marquee Superior
+  // 1. Marquee Superior
   const marqueeItems = [...STORE_CONFIG.marqueeMessages, ...STORE_CONFIG.marqueeMessages]
     .map((msg) => `<span>${sanitizeInput(msg)}</span><span class="dot">•</span>`)
     .join("");
   $("#marquee-track").html(marqueeItems);
 
-  // 2. Menú Lateral Drawer
+  // 2. Navegación Lateral
   const navHtml = STORE_CONFIG.navigation
     .map(
       (item) => `
@@ -394,7 +460,7 @@ function initStorefrontContent() {
   $("#hero-lead").text(STORE_CONFIG.hero.lead);
   $("#hero-cta-btn").text(STORE_CONFIG.hero.ctaText);
 
-  const badgesHtml = STORE_CONFIG.hero.badges
+  const badgesHtml = (STORE_CONFIG.hero.badges || [])
     .map(
       (b) => `
       <div class="trust-badge-item">
@@ -406,25 +472,57 @@ function initStorefrontContent() {
     .join("");
   $("#hero-badges").html(badgesHtml);
 
-  // 4. Configuración del Modelo 3D Interactivo
+  // 4. Visor 3D de las Manos + Ficha Técnica de Materiales (Polygel, Rubber, Esmalte, Top Coat)
   $("#3d-subtitle").text(STORE_CONFIG.model3D.subtitle);
   $("#3d-title").text(STORE_CONFIG.model3D.title);
   $("#3d-desc").text(STORE_CONFIG.model3D.desc);
-  $("#main-3d-model").attr("src", STORE_CONFIG.model3D.glbUrl);
 
-  // 5. Carrusel de Sets / Colecciones
+  const viewerEl = document.getElementById("main-3d-model");
+  if (viewerEl) {
+    viewerEl.setAttribute("src", STORE_CONFIG.model3D.glbUrl);
+    // Si el usuario aún no ha copiado unas-demo.glb a la carpeta, carga un modelo 3D de respaldo sin romper nada
+    viewerEl.addEventListener(
+      "error",
+      function handleFallback() {
+        viewerEl.setAttribute("src", "https://modelviewer.dev/shared-assets/models/MaterialsVariantsShoe.glb");
+      },
+      { once: true }
+    );
+  }
+
+  const specsHtml = (STORE_CONFIG.model3D.techSpecs || [])
+    .map(
+      (spec, idx) => `
+      <div class="spec-item ${idx === 0 ? "is-active" : ""}">
+        <button type="button" class="spec-header-btn">
+          <div>
+            <span class="spec-layer-tag">${sanitizeInput(spec.layer)}</span>
+            <span>${sanitizeInput(spec.name)}</span>
+          </div>
+          <i class="ri-arrow-down-s-line"></i>
+        </button>
+        <div class="spec-body">
+          ${sanitizeInput(spec.detail)}
+        </div>
+      </div>
+    `
+    )
+    .join("");
+  $("#nail-tech-specs").html(specsHtml);
+
+  // 5. Carrusel de Sistemas Destacados
   renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
   renderCarouselDots(STORE_CONFIG.setsProducts.length, "#sets-dots");
 
-  // 6. Bloques de Categorías
-  const catsHtml = STORE_CONFIG.categories
+  // 6. Bloques de Especialidades
+  const catsHtml = (STORE_CONFIG.categories || [])
     .map(
       (cat) => `
       <article class="category-card" data-filter="${cat.filterTarget}">
         <img src="${cat.image}" alt="${sanitizeInput(cat.name)}" loading="lazy">
         <div class="category-overlay">
           <h3 class="category-name">${sanitizeInput(cat.name)}</h3>
-          <span class="category-link">ver más →</span>
+          <span class="category-link">ver servicios →</span>
         </div>
       </article>
     `
@@ -432,8 +530,8 @@ function initStorefrontContent() {
     .join("");
   $("#categories-grid").html(catsHtml);
 
-  // 7. Píldoras de Filtro en "Novedades"
-  const pillsHtml = STORE_CONFIG.arrivalFilters
+  // 7. Filtros de Catálogo por Técnica
+  const pillsHtml = (STORE_CONFIG.arrivalFilters || [])
     .map(
       (filterName, idx) => `
       <button class="filter-pill-btn ${idx === 0 ? "is-active" : ""}" data-category="${filterName}">
@@ -443,17 +541,15 @@ function initStorefrontContent() {
     )
     .join("");
   $("#filter-pills-container").html(pillsHtml);
-
-  // Render inicial de Novedades con la primera categoría activa
   filterArrivalsByCategory(STORE_CONFIG.arrivalFilters[0]);
 
-  // 8. Sección Cuidados y Beneficios
+  // 8. Bioseguridad y Beneficios
   $("#care-kicker").text(STORE_CONFIG.carePromo.kicker);
   $("#care-title").text(STORE_CONFIG.carePromo.title);
   $("#care-desc").text(STORE_CONFIG.carePromo.desc);
   $("#care-img").attr("src", STORE_CONFIG.carePromo.image);
 
-  const benefitsHtml = STORE_CONFIG.carePromo.benefits
+  const benefitsHtml = (STORE_CONFIG.carePromo.benefits || [])
     .map(
       (b) => `
       <div class="benefit-box">
@@ -465,30 +561,17 @@ function initStorefrontContent() {
     .join("");
   $("#benefits-grid").html(benefitsHtml);
 
-  // 9. Testimonios
-  const testimonialsHtml = STORE_CONFIG.testimonials
-    .map(
-      (t) => `
-      <article class="testimonial-card">
-        <img src="${t.image}" alt="${sanitizeInput(t.name)}" loading="lazy">
-        <div class="testimonial-quote">
-          "${sanitizeInput(t.quote)}"
-          <span class="testimonial-author">— ${sanitizeInput(t.name)}</span>
-        </div>
-      </article>
-    `
-    )
-    .join("");
-  $("#testimonials-carousel").html(testimonialsHtml);
+  // 9. Testimonios Iniciales
+  renderTestimonialsList(STORE_CONFIG.testimonials);
 
-  // 10. Ubicación y Cita por WhatsApp
+  // 10. Ubicación en El Junquito (Panorama) y Domicilio
   $("#loc-title").text(STORE_CONFIG.location.title);
   $("#loc-city").text(STORE_CONFIG.location.city);
   $("#loc-details").html(`
     <li>
       <i class="ri-map-pin-line"></i>
       <div>
-        <span class="location-label">DIRECCIÓN</span>
+        <span class="location-label">UBICACIÓN BASE & COBERTURA</span>
         <span>${sanitizeInput(STORE_CONFIG.location.address)}</span>
       </div>
     </li>
@@ -500,19 +583,16 @@ function initStorefrontContent() {
       </div>
     </li>
     <li>
-      <i class="ri-phone-line"></i>
+      <i class="ri-whatsapp-line"></i>
       <div>
-        <span class="location-label">CITAS Y ASESORÍA</span>
+        <span class="location-label">CONTACTO DIRECTO</span>
         <span>${sanitizeInput(STORE_CONFIG.location.phone)}</span>
       </div>
     </li>
   `);
 
-  const citaMsg = encodeURIComponent(`Hola ${STORE_CONFIG.brandName.toUpperCase()}, quiero agendar una cita o recibir asesoría personalizada.`);
-  $("#loc-whatsapp-btn").attr("href", `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${citaMsg}`);
-
-  // 11. Acordeones del Footer
-  const accordionsHtml = STORE_CONFIG.footerAccordions
+  // 11. Acordeones del Pie de Página
+  const accordionsHtml = (STORE_CONFIG.footerAccordions || [])
     .map(
       (acc) => `
       <div class="footer-accordion-item">
@@ -530,7 +610,23 @@ function initStorefrontContent() {
   $("#footer-accordions").html(accordionsHtml);
 }
 
-// Genera tarjetas de producto usando Lodash para calcular porcentajes de descuento
+function renderTestimonialsList(list) {
+  const html = (list || [])
+    .map(
+      (t) => `
+      <article class="testimonial-card">
+        <img src="${t.image || STORE_CONFIG.lookbook.image}" alt="${sanitizeInput(t.name)}" loading="lazy">
+        <div class="testimonial-quote">
+          "${sanitizeInput(t.quote)}"
+          <span class="testimonial-author">— ${sanitizeInput(t.name)} ${t.service ? `(${sanitizeInput(t.service)})` : ""}</span>
+        </div>
+      </article>
+    `
+    )
+    .join("");
+  $("#testimonials-carousel").html(html);
+}
+
 function renderProductCarousel(productsArray, containerSelector, showOfferTag = false) {
   const html = _.map(productsArray, (prod) => {
     const discountPercent =
@@ -542,8 +638,8 @@ function renderProductCarousel(productsArray, containerSelector, showOfferTag = 
       <article class="product-card" data-id="${prod.id}">
         <div class="product-media">
           <div class="badge-stack">
-            ${showOfferTag && prod.isOffer ? '<span class="tag-badge tag-offer">OFERTA</span>' : ""}
-            ${!prod.inStock ? '<span class="tag-badge tag-soldout">AGOTADO</span>' : ""}
+            ${showOfferTag && prod.isOffer ? '<span class="tag-badge tag-offer">PROMO</span>' : ""}
+            ${!prod.inStock ? '<span class="tag-badge tag-soldout">SIN CUPO HOY</span>' : ""}
           </div>
           ${discountPercent > 0 ? `<span class="tag-discount">-${discountPercent}%</span>` : ""}
           <img src="${prod.image}" alt="${sanitizeInput(prod.title)}" loading="lazy">
@@ -559,7 +655,7 @@ function renderProductCarousel(productsArray, containerSelector, showOfferTag = 
             class="btn-card-action add-to-cart-btn" 
             data-id="${prod.id}"
             ${!prod.inStock ? "disabled" : ""}>
-            ${prod.inStock ? "AGREGAR AL CARRITO →" : "AGOTADO — VER DETALLES"}
+            ${prod.inStock ? "SELECCIONAR SERVICIO →" : "CONSULTAR DISPONIBILIDAD"}
           </button>
         </div>
       </article>
@@ -577,7 +673,6 @@ function renderCarouselDots(count, dotsSelector) {
   $(dotsSelector).html(dotsHtml);
 }
 
-// Filtra productos en "Novedades" con Lodash y los anima con Anime.js
 function filterArrivalsByCategory(categoryName) {
   const filtered = _.filter(STORE_CONFIG.arrivalsProducts, { category: categoryName });
   renderProductCarousel(filtered, "#arrivals-carousel", false);
@@ -593,7 +688,7 @@ function filterArrivalsByCategory(categoryName) {
 }
 
 /* ============================================================================
-   5. ESCAPARATE INTERACTIVO CON D3.JS (Segundos 0:22 - 0:24 del video 1)
+   7. ESCAPARATE INTERACTIVO CON D3.JS (Puntos sobre las uñas)
    ============================================================================ */
 function initD3LookbookHotspots() {
   $("#lookbook-img").attr("src", STORE_CONFIG.lookbook.image);
@@ -601,10 +696,9 @@ function initD3LookbookHotspots() {
   const layer = d3.select("#hotspots-layer");
   layer.selectAll("*").remove();
 
-  // D3 vincula las coordenadas X/Y porcentuales con cada joya/producto
   layer
     .selectAll(".hotspot-dot")
-    .data(STORE_CONFIG.lookbook.hotspots)
+    .data(STORE_CONFIG.lookbook.hotspots || [])
     .enter()
     .append("button")
     .attr("type", "button")
@@ -617,17 +711,16 @@ function initD3LookbookHotspots() {
       $popover
         .html(`
           <div>
-            <strong style="display:block; font-size:0.85rem;">${sanitizeInput(d.title)}</strong>
+            <strong style="display:block; font-size:0.84rem;">${sanitizeInput(d.title)}</strong>
             <span style="color:var(--accent-gold); font-size:0.82rem;">${formatCurrency(d.price)}</span>
           </div>
           <button type="button" class="btn-gold hotspot-buy-btn" data-id="${d.id}" style="padding:0.55rem 0.9rem; font-size:0.7rem;">
-            AGREGAR +
+            SUMAR A MI CITA +
           </button>
         `)
         .addClass("is-visible")
         .attr("aria-hidden", "false");
 
-      // Animación suave de aparición con Anime.js
       anime({
         targets: "#hotspot-popover",
         scale: [0.95, 1],
@@ -639,12 +732,10 @@ function initD3LookbookHotspots() {
 }
 
 /* ============================================================================
-   6. ANIMACIÓN DE ENTRADA CON ANIME.JS (Segundos 0:06 - 0:07 del video 1)
+   8. PRELOADER CON ANIME.JS Y CALCULADORA REACT DE DISEÑO DE UÑAS
    ============================================================================ */
 function runPreloaderAnimation() {
-  const tl = anime.timeline({
-    easing: "easeOutExpo"
-  });
+  const tl = anime.timeline({ easing: "easeOutExpo" });
 
   tl.add({
     targets: ".preloader-subtitle",
@@ -673,85 +764,122 @@ function runPreloaderAnimation() {
       targets: "#preloader",
       opacity: [1, 0],
       duration: 650,
-      delay: 350,
+      delay: 300,
       complete: function () {
         $("#preloader").css("display", "none");
       }
     });
 }
 
-/* ============================================================================
-   7. WIDGET INTERACTIVO EN REACT (Armador de Kit con Descuento)
-   ============================================================================ */
 function mountReactCustomKitBuilder() {
   const rootEl = document.getElementById("react-custom-kit-root");
   if (!rootEl || typeof React === "undefined" || typeof ReactDOM === "undefined") return;
 
   const e = React.createElement;
 
-  function CustomKitWidget() {
-    const [selectedCount, setSelectedCount] = React.useState(2);
-    const baseUnitPrice = 55000;
-    const discountRate = selectedCount === 3 ? 0.15 : selectedCount === 4 ? 0.22 : 0.1;
-    const finalPrice = Math.round(selectedCount * baseUnitPrice * (1 - discountRate));
+  function CustomNailCalculator() {
+    const [systemType, setSystemType] = React.useState({ name: "Polygel Esculpido", price: 22 });
+    const [nailLength, setNailLength] = React.useState({ name: "Largo #2 - #3 (Salón)", extra: 0 });
+    const [artLevel, setArtLevel] = React.useState({ name: "Francés / Brillo Espejo", extra: 3 });
 
-    function handleAddKit() {
+    const total = systemType.price + nailLength.extra + artLevel.extra;
+
+    function handleAddCustomSet() {
       addToCart({
-        id: `custom-kit-${selectedCount}`,
-        title: `KIT PERSONALIZADO (${selectedCount} PIEZAS)`,
-        price: finalPrice,
+        id: `custom-nails-${Date.now()}`,
+        title: `${systemType.name} (${nailLength.name} + ${artLevel.name})`,
+        price: total,
         image: STORE_CONFIG.lookbook.image
       });
-      $("#side-cart").addClass("is-open");
+      $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
       $("#drawer-backdrop").addClass("is-active");
     }
 
     return e(
       "div",
       { className: "react-kit-box" },
-      e("span", { className: "section-subtitle" }, "ARMADOR INTERACTIVO (REACT)"),
-      e("h3", { className: "section-title", style: { fontSize: "1.65rem" } }, "Crea tu propio Set"),
-      e(
-        "p",
-        { className: "section-desc", style: { marginBottom: "1rem" } },
-        "Elige cuántas piezas deseas combinar y obtén hasta 22% de descuento automático."
-      ),
+      e("span", { className: "section-subtitle" }, "COTIZADOR INTERACTIVO (REACT)"),
+      e("h3", { className: "section-title", style: { fontSize: "1.65rem" } }, "Personaliza tu Set de Uñas"),
+      e("p", { className: "section-desc", style: { marginBottom: "1rem" } }, "Elige material, largo y decoración para calcular tu cita al instante:"),
       e(
         "div",
-        { style: { display: "flex", justifyContent: "center", gap: "0.6rem", marginBottom: "1.1rem" } },
-        [2, 3, 4].map((num) =>
+        { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "0.85rem" } },
+        [
+          { name: "Polygel Esculpido", price: 22 },
+          { name: "Soft Gel Tips", price: 18 },
+          { name: "Kapping Rubber", price: 15 }
+        ].map((sys) =>
           e(
             "button",
             {
-              key: num,
+              key: sys.name,
               type: "button",
-              className: `filter-pill-btn ${selectedCount === num ? "is-active" : ""}`,
-              onClick: () => setSelectedCount(num)
+              className: `filter-pill-btn ${systemType.name === sys.name ? "is-active" : ""}`,
+              onClick: () => setSystemType(sys)
             },
-            `${num} Piezas (-${num === 2 ? 10 : num === 3 ? 15 : 22}%)`
+            `${sys.name} ($${sys.price})`
+          )
+        )
+      ),
+      e(
+        "div",
+        { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "0.85rem" } },
+        [
+          { name: "Largo Corto/Medio (#1-#3)", extra: 0 },
+          { name: "Largo XL (#4-#6)", extra: 5 }
+        ].map((len) =>
+          e(
+            "button",
+            {
+              key: len.name,
+              type: "button",
+              className: `filter-pill-btn ${nailLength.name === len.name ? "is-active" : ""}`,
+              onClick: () => setNailLength(len)
+            },
+            `${len.name} (+$${len.extra})`
+          )
+        )
+      ),
+      e(
+        "div",
+        { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "1rem" } },
+        [
+          { name: "Tono Liso + Top Cristal", extra: 0 },
+          { name: "Francés / Ojo de Gato", extra: 3 },
+          { name: "Relieve 3D / Encapsulado", extra: 6 }
+        ].map((art) =>
+          e(
+            "button",
+            {
+              key: art.name,
+              type: "button",
+              className: `filter-pill-btn ${artLevel.name === art.name ? "is-active" : ""}`,
+              onClick: () => setArtLevel(art)
+            },
+            `${art.name} (+$${art.extra})`
           )
         )
       ),
       e(
         "div",
         { style: { marginBottom: "1rem", fontSize: "1rem" } },
-        "Total de tu Kit: ",
-        e("strong", { style: { color: "var(--accent-gold)" } }, formatCurrency(finalPrice))
+        "Valor de tu Set Personalizado: ",
+        e("strong", { style: { color: "var(--accent-gold)" } }, formatCurrency(total))
       ),
       e(
         "button",
-        { type: "button", className: "btn-gold btn-full", onClick: handleAddKit },
-        "AGREGAR KIT PERSONALIZADO AL CARRITO"
+        { type: "button", className: "btn-gold btn-full", onClick: handleAddCustomSet },
+        "AGREGAR ESTE SET A MI CITA →"
       )
     );
   }
 
   const root = ReactDOM.createRoot(rootEl);
-  root.render(e(CustomKitWidget));
+  root.render(e(CustomNailCalculator));
 }
 
 /* ============================================================================
-   8. EVENTOS DE INTERFAZ, BUSCADOR EN VIVO Y SEGURIDAD DE COOKIES (jQuery)
+   9. EVENTOS PRINCIPALES, DOMICILIO GPS Y GUARDADO EN CLOUD FIRESTORE
    ============================================================================ */
 $(document).ready(function () {
   loadCartFromStorage();
@@ -760,14 +888,15 @@ $(document).ready(function () {
   renderCartUI();
   runPreloaderAnimation();
   mountReactCustomKitBuilder();
+  syncStoreWithFirebase();
 
-  // Abrir y cerrar menú lateral (Drawer) y Carrito
+  // Abrir y cerrar menú lateral y carrito/agenda
   $("#open-menu-btn").on("click", function () {
     $("#side-drawer").addClass("is-open").attr("aria-hidden", "false");
     $("#drawer-backdrop").addClass("is-active");
   });
 
-  $("#open-cart-btn").on("click", function () {
+  $("#open-cart-btn, #open-booking-drawer-btn").on("click", function () {
     $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
     $("#drawer-backdrop").addClass("is-active");
   });
@@ -777,11 +906,77 @@ $(document).ready(function () {
     $("#drawer-backdrop").removeClass("is-active");
   });
 
-  // Buscador en vivo con Debounce de Lodash y Sanitización XSS (Regla 5)
-  const allCatalog = [...STORE_CONFIG.setsProducts, ...STORE_CONFIG.arrivalsProducts];
+  // Acordeón interactivo de la Ficha Técnica de Materiales al lado del 3D
+  $(document).on("click", ".spec-header-btn", function () {
+    const $parent = $(this).closest(".spec-item");
+    $(".spec-item").removeClass("is-active");
+    $parent.addClass("is-active");
+  });
+
+  // Botón para pedir el look exacto del modelo 3D de las manos
+  $("#book-3d-look-btn").on("click", function () {
+    addToCart({
+      id: "sistema-3d-cobalto",
+      title: STORE_CONFIG.model3D.systemTitle,
+      price: STORE_CONFIG.model3D.systemPrice,
+      image: STORE_CONFIG.hero.bgImage
+    });
+    $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
+    $("#drawer-backdrop").addClass("is-active");
+  });
+
+  // Selector de Modalidad: En Estudio (Panorama) vs. A Domicilio
+  $(".mode-btn").on("click", function () {
+    $(".mode-btn").removeClass("is-active");
+    $(this).addClass("is-active");
+    deliveryMode = $(this).data("mode");
+
+    if (deliveryMode === "domicilio") {
+      $("#domicilio-fields").slideDown(220);
+      deliveryFee = Number($("#booking-zone-select").val() || 0);
+    } else {
+      $("#domicilio-fields").slideUp(220);
+      deliveryFee = 0;
+      deliveryZoneLabel = "Atención en Estudio (Panorama, El Junquito)";
+    }
+    renderCartUI();
+  });
+
+  // Cambio de zona de domicilio en El Junquito / Caracas
+  $("#booking-zone-select").on("change", function () {
+    deliveryFee = Number($(this).val() || 0);
+    deliveryZoneLabel = $(this).find("option:selected").text();
+    renderCartUI();
+  });
+
+  // Botón de Captura de Ubicación GPS Exacta (Regla 5 - Bajo permiso del cliente)
+  $("#get-gps-btn").on("click", function () {
+    const $status = $("#gps-status-msg");
+    if (!("geolocation" in navigator)) {
+      $status.text("Tu navegador no soporta GPS. Escribe tu dirección arriba.");
+      return;
+    }
+
+    $status.text("Obteniendo coordenadas GPS de tu ubicación...");
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        clientGpsUrl = `https://maps.google.com/?q=${lat},${lng}`;
+        $status.html(`<i class="ri-checkbox-circle-fill"></i> Ubicación GPS adjuntada con éxito.`);
+      },
+      function () {
+        $status.text("Permiso de GPS denegado. Puedes escribir tu punto de referencia manualmente.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+
+  // Buscador en vivo con Debounce de Lodash
   $("#live-search-input").on(
     "input",
     _.debounce(function () {
+      const allCatalog = [...STORE_CONFIG.setsProducts, ...STORE_CONFIG.arrivalsProducts];
       const cleanQuery = sanitizeInput($(this).val()).toLowerCase();
       const $resultsBox = $("#search-results-box");
       $resultsBox.empty();
@@ -790,7 +985,7 @@ $(document).ready(function () {
 
       const matches = _.filter(allCatalog, (item) => item.title.toLowerCase().includes(cleanQuery));
       if (matches.length === 0) {
-        $resultsBox.html('<div class="search-result-item">Sin resultados encontrados.</div>');
+        $resultsBox.html('<div class="search-result-item">Sin servicios encontrados.</div>');
         return;
       }
 
@@ -805,7 +1000,7 @@ $(document).ready(function () {
     }, 220)
   );
 
-  // Control de pausa/giro del Objeto 3D
+  // Control de giro del modelo 3D
   $("#toggle-3d-rotate").on("click", function () {
     const viewer = document.getElementById("main-3d-model");
     if (!viewer) return;
@@ -818,15 +1013,13 @@ $(document).ready(function () {
     }
   });
 
-  // Cambio de filtro en Novedades
+  // Filtro de píldoras en catálogo
   $(document).on("click", "#filter-pills-container .filter-pill-btn", function () {
     $("#filter-pills-container .filter-pill-btn").removeClass("is-active");
     $(this).addClass("is-active");
-    const category = $(this).data("category");
-    filterArrivalsByCategory(category);
+    filterArrivalsByCategory($(this).data("category"));
   });
 
-  // Clic en tarjeta de Categoría lleva directo al filtro correspondiente
   $(document).on("click", ".category-card", function () {
     const targetFilter = $(this).data("filter");
     if (targetFilter) {
@@ -835,20 +1028,21 @@ $(document).ready(function () {
     }
   });
 
-  // Agregar al carrito desde tarjetas de productos
+  // Agregar servicio al carrito
   $(document).on("click", ".add-to-cart-btn", function () {
+    const allCatalog = [...STORE_CONFIG.setsProducts, ...STORE_CONFIG.arrivalsProducts];
     const prodId = $(this).data("id");
     const found = _.find(allCatalog, { id: prodId });
     if (found && found.inStock) {
       addToCart(found);
       const $btn = $(this);
       const originalText = $btn.text();
-      $btn.text("✓ AGREGADO A TU BOLSA");
+      $btn.text("✓ SERVICIO AGREGADO");
       setTimeout(() => $btn.text(originalText), 1200);
     }
   });
 
-  // Agregar al carrito desde un punto dorado D3.js
+  // Agregar servicio desde un punto D3.js
   $(document).on("click", ".hotspot-buy-btn", function () {
     const hsId = $(this).data("id");
     const hsItem = _.find(STORE_CONFIG.lookbook.hotspots, { id: hsId });
@@ -862,48 +1056,133 @@ $(document).ready(function () {
     }
   });
 
-  // Eliminar ítem del carrito
+  // Eliminar servicio del carrito
   $(document).on("click", ".remove-cart-item", function () {
-    const id = $(this).data("id");
-    removeFromCart(id);
+    removeFromCart($(this).data("id"));
   });
 
-  // Enviar pedido completo por WhatsApp de forma segura
-  $("#checkout-whatsapp-btn").on("click", function () {
-    if (cartState.length === 0) return;
-    const lines = cartState.map((i) => `• ${i.qty}x ${i.title} (${formatCurrency(i.price * i.qty)})`).join("\n");
-    const total = _.sumBy(cartState, (i) => i.price * i.qty);
-    const message = encodeURIComponent(
-      `Hola ${STORE_CONFIG.brandName.toUpperCase()}, quiero realizar el siguiente pedido:\n\n${lines}\n\n*Total: ${formatCurrency(total)}*`
-    );
-    window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${message}`, "_blank", "noopener,noreferrer");
-  });
-
-  // Acordeones del Footer (Segundos 0:29 - 0:31 del video 1)
-  $(document).on("click", ".footer-accordion-trigger", function () {
-    const $content = $(this).next(".footer-accordion-content");
-    $content.slideToggle(220);
-  });
-
-  // Suscripción de Newsletter con validación y sanitización
-  $("#newsletter-form").on("submit", function (e) {
-    e.preventDefault();
-    const rawEmail = $("#newsletter-email").val();
-    const cleanEmail = sanitizeInput(rawEmail);
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(cleanEmail)) {
-      $("#newsletter-feedback").text("Por favor ingresa un correo electrónico válido.");
+  // CONFIRMAR CITA: Guarda en Cloud Firestore y envía el resumen + GPS a WhatsApp
+  $("#checkout-whatsapp-btn").on("click", async function () {
+    if (cartState.length === 0) {
+      alert("Por favor selecciona al menos un servicio de uñas antes de agendar.");
       return;
     }
-    $("#newsletter-feedback").text("¡Gracias por suscribirte! Recibirás nuestras novedades.");
+
+    const clientName = sanitizeInput($("#booking-client-name").val()) || "Clienta Web";
+    const clientPhone = sanitizeInput($("#booking-client-phone").val()) || "No indicado";
+    const bookingDate = sanitizeInput($("#booking-date").val()) || "Por coordinar";
+    const bookingTime = sanitizeInput($("#booking-time").val()) || "Por coordinar";
+    const addressRef = sanitizeInput($("#booking-address-ref").val()) || "Sin referencia adicional";
+
+    const servicesSubtotal = _.sumBy(cartState, (i) => i.price * i.qty);
+    const activeFee = deliveryMode === "domicilio" ? Number(deliveryFee) : 0;
+    const totalAmount = servicesSubtotal + activeFee;
+
+    const bookingRecord = {
+      clientName,
+      clientPhone,
+      bookingDate,
+      bookingTime,
+      modality: deliveryMode === "domicilio" ? "Servicio a Domicilio" : "Estudio en Panorama (El Junquito)",
+      zone: deliveryMode === "domicilio" ? deliveryZoneLabel : "El Junquito - Sector Panorama",
+      addressReference: addressRef,
+      gpsMapLink: clientGpsUrl || "No adjuntado",
+      items: cartState.map((i) => ({ title: i.title, qty: i.qty, price: i.price })),
+      deliveryFee: activeFee,
+      totalAmount,
+      status: "Pendiente",
+      createdAt: new Date().toISOString()
+    };
+
+    // 1. Guarda la cita en tu Cloud Firestore (mipaginawed-519fd)
+    if (dbFirestore) {
+      try {
+        await dbFirestore.collection("citas_agendadas").add(bookingRecord);
+      } catch (e) {
+        console.warn("Cita enviada directo a WhatsApp:", e);
+      }
+    }
+
+    // 2. Construye el mensaje detallado para WhatsApp
+    const itemsLines = cartState.map((i) => `• ${i.qty}x ${i.title} (${formatCurrency(i.price * i.qty)})`).join("\n");
+    const locationLines =
+      deliveryMode === "domicilio"
+        ? `🛵 *Modalidad:* Servicio a Domicilio\n📍 *Zona:* ${deliveryZoneLabel}\n🏠 *Referencia:* ${addressRef}\n🗺️ *Ubicación GPS:* ${clientGpsUrl || "Se enviará por chat"}`
+        : `🏪 *Modalidad:* En Estudio (El Junquito - Sector Panorama)`;
+
+    const whatsappMsg = encodeURIComponent(
+      `✨ *NUEVA CITA DE UÑAS — ${STORE_CONFIG.brandName.toUpperCase()}* ✨\n\n` +
+        `👤 *Clienta:* ${clientName}\n` +
+        `📱 *Teléfono:* ${clientPhone}\n` +
+        `📅 *Fecha y Hora:* ${bookingDate} a las ${bookingTime}\n\n` +
+        `${locationLines}\n\n` +
+        `💅 *Servicios Solicitados:*\n${itemsLines}\n\n` +
+        `*Total Estimado: ${formatCurrency(totalAmount)}*`
+    );
+
+    window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${whatsappMsg}`, "_blank", "noopener,noreferrer");
+  });
+
+  // Formulario de Reseñas de Clientas conectado a Cloud Firestore
+  $("#client-review-form").on("submit", async function (e) {
+    e.preventDefault();
+    const name = sanitizeInput($("#review-name").val());
+    const service = sanitizeInput($("#review-service").val());
+    const quote = sanitizeInput($("#review-comment").val());
+
+    if (name.length < 2 || quote.length < 5) {
+      $("#review-feedback").text("Por favor completa tu nombre y comentario.");
+      return;
+    }
+
+    const newReview = {
+      name,
+      service,
+      quote,
+      image: STORE_CONFIG.lookbook.image,
+      createdAt: new Date().toISOString()
+    };
+
+    if (dbFirestore) {
+      try {
+        await dbFirestore.collection("resenas_clientas").add(newReview);
+        $("#review-feedback").text("¡Gracias! Tu reseña ya está publicada en vivo.");
+        $("#client-review-form")[0].reset();
+      } catch (err) {
+        $("#review-feedback").text("Reseña recibida localmente.");
+      }
+    }
+  });
+
+  // Acordeones del Footer
+  $(document).on("click", ".footer-accordion-trigger", function () {
+    $(this).next(".footer-accordion-content").slideToggle(220);
+  });
+
+  // Newsletter
+  $("#newsletter-form").on("submit", async function (e) {
+    e.preventDefault();
+    const cleanEmail = sanitizeInput($("#newsletter-email").val());
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      $("#newsletter-feedback").text("Ingresa un correo electrónico válido.");
+      return;
+    }
+    if (dbFirestore) {
+      try {
+        await dbFirestore.collection("club_vip_correos").add({
+          email: cleanEmail,
+          createdAt: new Date().toISOString()
+        });
+      } catch (err) {}
+    }
+    $("#newsletter-feedback").text("¡Bienvenida al Club VIP! Recibirás promos exclusivas.");
     $("#newsletter-email").val("");
   });
 
-  // Sistema Legal de Cookies (Segundos 0:08 - 0:43 del video 1 - Regla 5)
+  // Banner Legal de Cookies
   try {
-    const cookieConsent = localStorage.getItem("kalon_cookie_consent");
-    if (cookieConsent) {
+    if (localStorage.getItem("kalon_cookie_consent")) {
       $("#cookie-banner").addClass("is-hidden");
     }
   } catch (e) {}
@@ -916,7 +1195,6 @@ $(document).ready(function () {
     $("#cookie-banner").fadeOut(250);
   });
 
-  // Abrir y cerrar Modal de Política de Cookies y Habeas Data
   $("#cookie-policy-link, #open-legal-modal").on("click", function () {
     $("#legal-modal").addClass("is-open").attr("aria-hidden", "false");
   });
@@ -927,7 +1205,8 @@ $(document).ready(function () {
     }
   });
 });
-// Registro seguro del Service Worker para GitHub Pages (HTTPS)
+
+// Registro seguro del Service Worker para GitHub Pages
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
