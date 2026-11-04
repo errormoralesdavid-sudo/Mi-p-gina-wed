@@ -1,0 +1,52 @@
+{
+  "name": "KALON | Tienda Oficial & Experiencia 3D",
+  "short_name": "KALON",
+  "description": "Catálogo interactivo de lujo con visor 3D en 360 grados, escaparate inteligente y pedidos directos.",
+  "lang": "es-CO",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "categories": [
+    "shopping",
+    "lifestyle",
+    "fashion"
+  ],
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/679/679922.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/679/679922.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Explorar en 3D",
+      "short_name": "Visor 3D",
+      "description": "Mira nuestros productos en 360 grados",
+      "url": "./index.html#showcase-3d"
+    },
+    {
+      "name": "Sets en Oferta",
+      "short_name": "Ofertas",
+      "description": "Ver colecciones con descuento",
+      "url": "./index.html#colecciones"
+    },
+    {
+      "name": "Recién Llegado",
+      "short_name": "Novedades",
+      "description": "Explorar los últimos lanzamientos",
+      "url": "./index.html#novedades"
+    }
+  ]
+}
