@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  
+  <!-- REGLA 5: Seguridad CSP (Content Security Policy) para prevenir ataques XSS -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- SEO y Metadatos Escalables (Como en los segundos 0:00 - 0:05 del video 1) -->
+  <title id="meta-title">KALON | Tienda Oficial & Experiencia 3D</title>
+  <meta name="description" id="meta-desc" content="Diseños de lujo, productos premium resistentes y experiencia interactiva 3D.">
+  <meta name="theme-color" content="#0a0a0a">
+
+  <!-- Conexión con Manifest para GitHub Pages / PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tipografías Elegantes (Serif para títulos de lujo, Sans-Serif para lectura limpia y Cursiva para detalles) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+
+  <!-- Íconos Vectoriales Ligeros (RemixIcon) -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- Enlace a nuestra hoja de estilos (Archivo 2) -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Motor 3D Interactivo (Google Model Viewer para objetos .GLB / .GLTF giratorios) -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+</head>
+<body>
+
+  <!-- 1. PANTALLA DE CARGA / PRELOADER (Segundos 0:06 - 0:07 del video 1 - Animado con Anime.js) -->
+  <div id="preloader" class="preloader" aria-live="polite">
+    <div class="preloader-inner">
+      <span class="preloader-subtitle" id="preloader-sub">BIENVENIDO A</span>
+      <h1 class="preloader-title" id="preloader-brand">K A L O N</h1>
+      <div class="preloader-line"></div>
+    </div>
+  </div>
+
+  <!-- 2. BARRA SUPERIOR DE ANUNCIOS EN MOVIMIENTO / MARQUEE (Segundo 0:08 del video 1) -->
+  <div class="topbar">
+    <div class="marquee-wrapper">
+      <div class="marquee-track" id="marquee-track">
+        <!-- Se llena dinámicamente desde app.js para cualquier rubro -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CABECERA FIJA / HEADER (Segundo 0:08 del video 1) -->
+  <header class="site-header" id="site-header">
+    <button class="icon-btn" id="open-menu-btn" aria-label="Abrir menú de navegación">
+      <i class="ri-menu-line"></i>
+    </button>
+
+    <a href="#" class="brand-logo" id="header-logo">kalon</a>
+
+    <div class="header-actions">
+      <button class="icon-btn cart-trigger" id="open-cart-btn" aria-label="Ver carrito de compras">
+        <i class="ri-shopping-bag-line"></i>
+        <span class="cart-badge" id="cart-count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 4. MENÚ LATERAL DESPLEGABLE / DRAWER (Segundos 0:34 - 0:35 del video 1) -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="side-drawer" id="side-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <button class="icon-btn" id="close-menu-btn" aria-label="Cerrar menú">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Buscador en vivo con sanitización contra XSS -->
+      <div class="search-box">
+        <i class="ri-search-line"></i>
+        <input type="search" id="live-search-input" placeholder="Buscar productos ..." autocomplete="off" maxlength="60">
+      </div>
+      <!-- Resultados rápidos del buscador -->
+      <div id="search-results-box" class="search-results-box"></div>
+
+      <!-- Lista de navegación dinámica -->
+      <nav class="drawer-nav" id="drawer-nav-list">
+        <!-- Se genera desde app.js -->
+      </nav>
+    </div>
+  </aside>
+
+  <!-- 5. CARRITO DE COMPRAS LATERAL (Para cerrar pedidos por WhatsApp de forma escalable) -->
+  <aside class="side-cart" id="side-cart" aria-hidden="true">
+    <div class="cart-header">
+      <h3>Tu Bolsa de Compras</h3>
+      <button class="icon-btn" id="close-cart-btn" aria-label="Cerrar carrito">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+    <div class="cart-items-container" id="cart-items-container">
+      <!-- Productos agregados -->
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Subtotal:</span>
+        <strong id="cart-total-price">$ 0</strong>
+      </div>
+      <button class="btn-primary btn-full" id="checkout-whatsapp-btn">
+        <i class="ri-whatsapp-line"></i> PEDIR POR WHATSAPP
+      </button>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL ESCALABLE -->
+  <main id="main-content">
+
+    <!-- 6. SECCIÓN HERO / PORTADA PRINCIPAL (Segundos 0:08 - 0:09 del video 1) -->
+    <section class="hero-section" id="hero-section">
+      <div class="hero-bg-media" id="hero-bg-media"></div>
+      <div class="hero-content">
+        <p class="hero-kicker" id="hero-kicker">DISEÑOS DE LUJO PARA</p>
+        <h2 class="hero-headline">
+          <span id="hero-title-main">REFLEJAR TU ESENCIA EN CADA</span>
+          <em class="hero-script" id="hero-title-accent">detalle</em>
+        </h2>
+        <p class="hero-lead" id="hero-lead">
+          La unión perfecta entre arte corporal, comodidad y autenticidad.
+        </p>
+        <a href="#colecciones" class="btn-dark" id="hero-cta-btn">COMPRAR AHORA</a>
+
+        <div class="hero-trust-badges" id="hero-badges">
+          <!-- Sellos inferiores como "Hipoalergénicos" / "Resistentes al agua" -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra divisoria suave -->
+    <div class="section-divider-banner">
+      <span>✦ <span id="divider-text">NOVEDADES & EXPERIENCIA 3D</span></span>
+    </div>
+
+    <!-- 7. NUEVO MÓDULO: ESCAPARATE 3D INTERACTIVO GIRATORIO (Tu mejora solicitada) -->
+    <section class="showcase-3d-section" id="showcase-3d">
+      <div class="section-header">
+        <span class="section-subtitle" id="3d-subtitle">INTERACCIÓN 360°</span>
+        <h2 class="section-title" id="3d-title">Explora en 3D</h2>
+        <p class="section-desc" id="3d-desc">Gira, acerca y examina cada ángulo de nuestro producto estrella con tu dedo o cursor.</p>
+      </div>
+
+      <div class="viewer-3d-card">
+        <div class="viewer-badge">360° INTERACTIVO</div>
+        <!-- Visor 3D manipulable. En app.js podrás cambiar el archivo .glb por joyas, máquinas de barbería, gorras, zapatos, etc. -->
+        <model-viewer 
+          id="main-3d-model"
+          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+          alt="Modelo 3D Interactivo del Producto"
+          auto-rotate
+          camera-controls
+          shadow-intensity="1"
+          exposure="1"
+          touch-action="pan-y">
+        </model-viewer>
+
+        <div class="viewer-controls">
+          <button class="btn-outline-gold" id="toggle-3d-rotate">
+            <i class="ri-refresh-line"></i> Pausar / Girar
+          </button>
+          <span class="viewer-hint"><i class="ri-hand-coin-line"></i> Desliza para rotar</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. CARRUSEL DE COLECCIONES / SETS EN OFERTA (Segundos 0:10 - 0:16 del video 1) -->
+    <section class="collections-section" id="colecciones">
+      <div class="section-header">
+        <span class="section-subtitle" id="sets-subtitle">COLECCIONES</span>
+        <h2 class="section-title" id="sets-title">Sets Destacados</h2>
+        <p class="section-desc" id="sets-desc">Combinaciones seleccionadas para un look equilibrado, seguro y con estilo.</p>
+      </div>
+
+      <div class="carousel-container" id="sets-carousel">
+        <!-- Tarjetas de productos generadas con Lodash desde app.js -->
+      </div>
+      <div class="carousel-dots" id="sets-dots"></div>
+    </section>
+
+    <!-- 9. BLOQUES DE CATEGORÍAS VISUALES (Segundos 0:17 - 0:20 del video 1) -->
+    <section class="categories-section" id="categorias">
+      <div class="section-header">
+        <h2 class="section-title" id="cat-main-title">Categorías Principales</h2>
+        <p class="section-desc" id="cat-main-desc">Explora nuestras categorías cuidadosamente seleccionadas.</p>
+      </div>
+
+      <div class="categories-grid" id="categories-grid">
+        <!-- Tarjetas verticales con imagen y "ver más →" -->
+      </div>
+    </section>
+
+    <!-- 10. FILTRO DINÁMICO DE NOVEDADES (Segundos 0:21 - 0:22 del video 1) -->
+    <section class="arrivals-section" id="novedades">
+      <div class="section-header">
+        <span class="section-subtitle">RECIÉN LLEGADO</span>
+        <h2 class="section-title">Novedades</h2>
+      </div>
+
+      <!-- Botones tipo píldora para filtrar en tiempo real sin recargar -->
+      <div class="filter-pills" id="filter-pills-container">
+        <!-- Se inyectan desde app.js -->
+      </div>
+
+      <div class="carousel-container" id="arrivals-carousel">
+        <!-- Productos filtrados con Lodash y animados con Anime.js -->
+      </div>
+    </section>
+
+    <!-- 11. ESCAPARATE INTERACTIVO "TOCA CADA PUNTO" CON D3.JS (Segundos 0:22 - 0:24 del video 1) -->
+    <section class="lookbook-section" id="lookbook">
+      <div class="lookbook-card">
+        <div class="lookbook-image-wrapper" id="lookbook-wrapper">
+          <img id="lookbook-img" src="" alt="Escaparate Interactivo" loading="lazy">
+          <!-- D3.js dibujará aquí los puntos dorados pulsantes -->
+          <div id="hotspots-layer" class="hotspots-layer"></div>
+        </div>
+
+        <!-- Tarjeta flotante que aparece al tocar un punto dorado -->
+        <div id="hotspot-popover" class="hotspot-popover" aria-hidden="true"></div>
+      </div>
+
+      <div class="section-header lookbook-text">
+        <span class="section-subtitle" id="lookbook-subtitle">ÚLTIMA COLECCIÓN</span>
+        <h2 class="section-title">Arte en <em>cada</em> detalle</h2>
+        <p class="section-desc" id="lookbook-desc">Cada pieza es elaborada en materiales premium. Diseños exclusivos inspirados en elegancia y precisión.</p>
+        <p class="lookbook-instruction">✦ TOCA CADA PUNTO Y DESCUBRE EL PRODUCTO</p>
+      </div>
+    </section>
+
+    <!-- 12. BANNER PROMOCIONAL / CUIDADOS Y BENEFICIOS (Segundos 0:24 - 0:26 del video 1) -->
+    <section class="promo-care-section" id="cuidados">
+      <div class="promo-care-banner" id="promo-care-banner">
+        <div class="promo-care-content">
+          <span class="promo-kicker" id="care-kicker">CALIDAD PROFESIONAL</span>
+          <h2 class="promo-title" id="care-title">Tus productos también merecen cuidados.</h2>
+          <p class="promo-desc" id="care-desc">Todo lo necesario para un mantenimiento seguro, limpio y profesional todos los días.</p>
+          <a href="#novedades" class="btn-dark" id="care-btn">VER PRODUCTOS →</a>
+        </div>
+        <div class="promo-care-img-box">
+          <img id="care-img" src="" alt="Producto de cuidado" loading="lazy">
+        </div>
+      </div>
+
+      <div class="benefits-grid" id="benefits-grid">
+        <!-- 4 cajas de garantías (Higiene, Materiales certificados, etc.) -->
+      </div>
+    </section>
+
+    <!-- 13. TESTIMONIOS / CLIENTES REALES (Segundo 0:27 del video 1) -->
+    <section class="testimonials-section" id="testimonios">
+      <div class="section-header">
+        <h2 class="section-title">Testimonios</h2>
+      </div>
+      <div class="carousel-container" id="testimonials-carousel">
+        <!-- Fotos y reseñas de clientes -->
+      </div>
+    </section>
+
+    <!-- 14. UBICACIÓN Y CITA POR WHATSAPP (Segundo 0:28 del video 1) -->
+    <section class="location-section" id="ubicacion">
+      <div class="location-card">
+        <span class="section-subtitle">NUESTRO ESPACIO</span>
+        <h2 class="section-title" id="loc-title">Visítanos</h2>
+        <p class="location-city" id="loc-city">SEDE PRINCIPAL</p>
+
+        <ul class="location-details" id="loc-details">
+          <!-- Dirección, Horario y Teléfono inyectados desde app.js -->
+        </ul>
+
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn-outline-gold btn-full" id="loc-whatsapp-btn">
+          AGENDAR CITA POR WHATSAPP
+        </a>
+      </div>
+    </section>
+
+    <!-- 15. COMPONENTE EXTRA CON REACT (Simulador Rápido de Presupuesto / Kit Personalizado) -->
+    <section class="react-widget-section">
+      <div id="react-custom-kit-root"></div>
+    </section>
+
+  </main>
+
+  <!-- 16. PIE DE PÁGINA / FOOTER CON ACORDEONES (Segundos 0:29 - 0:31 del video 1) -->
+  <footer class="site-footer">
+    <div class="footer-accordions" id="footer-accordions">
+      <!-- Acordeones de SOPORTE, CATEGORÍAS y CONTÁCTANOS -->
+    </div>
+
+    <div class="footer-socials" id="footer-socials">
+      <a href="#" aria-label="Facebook" rel="noopener noreferrer"><i class="ri-facebook-circle-fill"></i></a>
+      <a href="#" aria-label="Instagram" rel="noopener noreferrer"><i class="ri-instagram-line"></i></a>
+      <a href="#" aria-label="TikTok" rel="noopener noreferrer"><i class="ri-tiktok-fill"></i></a>
+    </div>
+
+    <div class="footer-newsletter">
+      <p class="newsletter-title">SUSCRÍBETE</p>
+      <form id="newsletter-form" class="newsletter-form" novalidate>
+        <input type="email" id="newsletter-email" placeholder="Correo electrónico" required maxlength="80">
+        <button type="submit" class="btn-gold btn-full">SUSCRIBIRME</button>
+        <p id="newsletter-feedback" class="newsletter-feedback" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="footer-legal-links">
+      <button type="button" class="text-link" id="open-legal-modal">Ver la política de cookies y privacidad</button>
+      <p class="copyright">© <span id="current-year">2026</span> <span id="footer-brand-name">KALON</span>. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- 17. BANNER DE COOKIES FIJO INFERIOR (Segundos 0:08 - 0:52 del video 1 - Regla 5 Seguridad Legal) -->
+  <aside class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Aviso de privacidad y cookies">
+    <p class="cookie-text">
+      Usamos cookies propias para que la tienda funcione y, si nos das permiso, de terceros para entender cómo se navega y mejorar la experiencia. 
+      <button type="button" class="cookie-policy-trigger" id="cookie-policy-link">Ver la política de cookies.</button>
+    </p>
+    <div class="cookie-actions">
+      <button type="button" class="btn-cookie-outline" id="cookie-essential-btn">SOLO LO ESENCIAL</button>
+      <button type="button" class="btn-cookie-fill" id="cookie-accept-btn">ACEPTAR</button>
+    </div>
+  </aside>
+
+  <!-- 18. MODAL DE POLÍTICA DE COOKIES Y HABEAS DATA (Segundos 0:39 - 0:43 del video 1) -->
+  <div class="legal-modal" id="legal-modal" aria-hidden="true" role="dialog">
+    <div class="legal-modal-content">
+      <div class="legal-modal-header">
+        <h2>Política de cookies y Tratamiento de Datos</h2>
+        <button class="icon-btn" id="close-legal-modal" aria-label="Cerrar política legal">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="legal-modal-body">
+        <p>Esta página explica qué son las cookies, cuáles usamos en nuestra plataforma y cómo puedes decidir sobre ellas en cualquier momento.</p>
+        
+        <h3>Qué son</h3>
+        <p>Una cookie es un archivo pequeño que una web guarda en tu navegador. Algunas son imprescindibles para que la tienda funcione —recordar tu carrito, mantener tu sesión mientras compras— y otras sirven para entender cómo se navega el sitio.</p>
+        
+        <h3>Cuáles usamos</h3>
+        <p><strong>Necesarias — siempre activas:</strong> Sin ellas la tienda no funciona, así que no requieren tu permiso. Guardan tu selección de carrito y tu preferencia de privacidad.</p>
+        
+        <h3>Cuánto duran</h3>
+        <p>La cookie que guarda tu decisión dura <strong>6 meses</strong>. Las de la tienda duran lo que dure tu visita o tu sesión de compra.</p>
+        
+        <h3>Base legal y Protección de Datos</h3>
+        <p>Tratamos tus datos conforme a las normativas vigentes de protección de datos personales y comercio electrónico (Habeas Data). Ningún dato bancario ni personal sensible se almacena sin cifrado en este servidor.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ECOSISTEMA DE LIBRERÍAS SOLICITADAS (CDN Oficiales Seguros)
+       ========================================================================= -->
+  <!-- 1. jQuery (Manipulación rápida del DOM y eventos de interfaz) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  
+  <!-- 2. Lodash (Filtrado de catálogo, cálculo de descuentos y manejo de datos) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  
+  <!-- 3. Anime.js (Animaciones fluidas para el preloader, tarjetas y transiciones) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  
+  <!-- 4. D3.js (Coordenadas dinámicas del escaparate interactivo "Shop the Look") -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+
+  <!-- 5. React & ReactDOM (Para el módulo interactivo de armado de kits) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+
+  <!-- Nuestro motor principal escalable (Archivo 3) -->
+  <script src="app.js"></script>
+</body>
+</html>
