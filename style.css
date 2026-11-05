@@ -1,8 +1,7 @@
 /* ==========================================================================
-   1. VARIABLES ESCALABLES (:root) - CAMBIA CUALQUIER RUBRO AQUÍ (REGLA 6)
+   1. VARIABLES ESCALABLES (:root) - CONTROLADAS TAMBIÉN DESDE EL ADMIN (REGLA 6)
    ========================================================================== */
 :root {
-  /* Paleta de Colores (Lujo Oscuro, Dorado Champán y Acento Cobalto 3D) */
   --bg-dark: #0a0a0a;
   --bg-card: #141414;
   --bg-elevated: #1c1c1c;
@@ -18,7 +17,7 @@
   --accent-gold-soft: rgba(201, 168, 106, 0.18);
 
   --danger-bg: #3a3a3a;
-  --border-subtle: rgba(201, 168, 106, 0.22);
+  --border-subtle: rgba(201, 168, 106, 0.25);
   --border-dark: rgba(18, 18, 18, 0.15);
 
   /* Tipografías */
@@ -32,7 +31,7 @@
   --radius-lg: 18px;
   --header-height: 64px;
   --topbar-height: 34px;
-  --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.48);
 }
 
 /* ==========================================================================
@@ -61,7 +60,7 @@ body {
   padding-bottom: 135px;
 }
 
-img {
+img, video {
   max-width: 100%;
   display: block;
   object-fit: cover;
@@ -130,7 +129,7 @@ ul {
 }
 
 /* ==========================================================================
-   4. BARRA SUPERIOR MARQUEE Y CABECERA FIJA
+   4. BARRA SUPERIOR MARQUEE, TASA MULTI-MONEDA Y CABECERA FIJA
    ========================================================================== */
 .topbar {
   height: var(--topbar-height);
@@ -183,39 +182,56 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem;
+  padding: 0 0.85rem;
   position: sticky;
   top: var(--topbar-height);
   z-index: 99;
 }
 
-.brand-logo {
-  font-family: var(--font-serif);
-  font-size: 1.95rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--text-light);
-}
-
+.header-left,
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
+}
+
+.exchange-pill {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent-gold);
+  background-color: var(--accent-gold-soft);
+  border: 1px solid var(--border-subtle);
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.brand-logo {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-light);
+  text-align: center;
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   color: var(--text-light);
   border-radius: var(--radius-sm);
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .icon-btn:hover {
+  color: var(--accent-gold);
+}
+
+.vip-trigger i {
   color: var(--accent-gold);
 }
 
@@ -225,11 +241,11 @@ ul {
 
 .cart-badge {
   position: absolute;
-  top: 5px;
-  right: 3px;
+  top: 4px;
+  right: 2px;
   background-color: var(--accent-gold);
   color: var(--bg-dark);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   width: 17px;
   height: 17px;
@@ -240,12 +256,12 @@ ul {
 }
 
 /* ==========================================================================
-   5. MENÚ LATERAL, CARRITO Y AGENDAMIENTO DOMICILIO / GPS
+   5. MENÚ LATERAL, REDES DINÁMICAS, CARRITO, REFERIDOS Y PASARELA DE PAGOS
    ========================================================================== */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.74);
+  background-color: rgba(0, 0, 0, 0.76);
   z-index: 200;
   opacity: 0;
   pointer-events: none;
@@ -262,8 +278,8 @@ ul {
   position: fixed;
   top: 0;
   bottom: 0;
-  width: 90%;
-  max-width: 390px;
+  width: 92%;
+  max-width: 400px;
   background-color: #080808;
   z-index: 201;
   display: flex;
@@ -295,12 +311,15 @@ ul {
   padding: 0.9rem 1.15rem;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.cart-header {
-  justify-content: space-between;
+.drawer-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--accent-gold);
+  font-weight: 600;
 }
 
 .cart-header h3 {
@@ -310,9 +329,11 @@ ul {
 }
 
 .drawer-body {
-  padding: 1.2rem;
+  padding: 1.15rem;
   overflow-y: auto;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .search-box {
@@ -341,20 +362,25 @@ ul {
 }
 
 .search-results-box {
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
 }
 
 .search-result-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 0.5rem;
+  padding: 0.55rem 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 0.8rem;
+  cursor: pointer;
 }
 
 .search-result-item strong {
   color: var(--accent-gold);
+}
+
+.drawer-nav {
+  flex: 1;
 }
 
 .drawer-nav-item {
@@ -366,8 +392,8 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.95rem 0.2rem;
-  font-size: 0.78rem;
+  padding: 0.9rem 0.2rem;
+  font-size: 0.76rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-light);
@@ -379,28 +405,39 @@ ul {
   font-size: 1.1rem;
 }
 
-/* Carrito y Formulario de Cita / Domicilio */
+.drawer-socials {
+  display: flex;
+  justify-content: center;
+  gap: 1.1rem;
+  padding-top: 1.2rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 1.35rem;
+  color: var(--accent-gold);
+}
+
+/* Carrito, Referidos, Domicilio GPS y Métodos de Pago */
 .cart-items-container {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem 1.15rem;
-  max-height: 36vh;
+  padding: 0.85rem 1.15rem;
+  max-height: 28vh;
 }
 
 .cart-item {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.7rem;
   align-items: center;
   background-color: var(--bg-card);
-  padding: 0.65rem;
+  padding: 0.6rem;
   border-radius: var(--radius-sm);
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.55rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .cart-item img {
-  width: 50px;
-  height: 50px;
+  width: 46px;
+  height: 46px;
   border-radius: 4px;
 }
 
@@ -409,32 +446,31 @@ ul {
 }
 
 .cart-item-title {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .cart-item-price {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--accent-gold);
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
 }
 
-/* Módulo de Cita en Panorama vs Domicilio con GPS */
 .cart-booking-box {
-  padding: 0.95rem 1.15rem;
+  padding: 0.9rem 1.15rem;
   background-color: #101010;
   border-top: 1px solid var(--border-subtle);
   overflow-y: auto;
-  max-height: 44vh;
+  max-height: 48vh;
 }
 
 .booking-box-title {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent-gold);
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.6rem;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -445,11 +481,11 @@ ul {
   background-color: #181818;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.75rem;
+  padding: 0.58rem 0.75rem;
   color: var(--text-light);
   font-family: inherit;
-  font-size: 0.8rem;
-  margin-bottom: 0.55rem;
+  font-size: 0.78rem;
+  margin-bottom: 0.5rem;
   outline: none;
 }
 
@@ -463,30 +499,45 @@ ul {
   gap: 0.5rem;
 }
 
+.referral-apply-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.referral-apply-row .btn-outline-gold {
+  padding: 0.58rem 0.85rem;
+  font-size: 0.68rem;
+}
+
 .booking-label {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-  margin: 0.25rem 0 0.4rem;
+  margin: 0.35rem 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .delivery-mode-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.55rem;
 }
 
 .mode-btn {
-  padding: 0.6rem 0.4rem;
+  padding: 0.55rem 0.4rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-sm);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   transition: all 0.2s;
 }
 
@@ -499,24 +550,34 @@ ul {
 
 .domicilio-fields {
   padding-top: 0.35rem;
+  margin-bottom: 0.4rem;
   border-top: 1px dashed rgba(201, 168, 106, 0.3);
 }
 
 .gps-btn {
-  padding: 0.6rem;
-  font-size: 0.7rem;
-  margin-top: 0.2rem;
+  padding: 0.55rem;
+  font-size: 0.68rem;
 }
 
 .gps-status-msg {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #6ee7b7;
-  margin-top: 0.4rem;
+  margin: 0.25rem 0;
   text-align: center;
 }
 
+.payment-instructions-box {
+  background-color: #161616;
+  border-left: 3px solid var(--accent-gold);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-radius: 4px;
+  margin-top: 0.2rem;
+}
+
 .cart-footer {
-  padding: 0.95rem 1.15rem;
+  padding: 0.85rem 1.15rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   background-color: #060606;
 }
@@ -525,22 +586,31 @@ ul {
   display: flex;
   justify-content: space-between;
   font-size: 0.95rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+
+.cart-total-bs-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  color: var(--accent-gold);
+  margin-bottom: 0.65rem;
 }
 
 /* ==========================================================================
    6. BOTONES Y ENCABEZADOS REUTILIZABLES
    ========================================================================== */
 .btn-dark,
+.btn-outline-dark,
 .btn-primary,
 .btn-gold,
 .btn-outline-gold {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.85rem 1.4rem;
-  font-size: 0.74rem;
+  gap: 0.45rem;
+  padding: 0.8rem 1.3rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -551,6 +621,12 @@ ul {
 .btn-dark {
   background-color: var(--bg-dark);
   color: var(--text-light);
+}
+
+.btn-outline-dark {
+  border: 1px solid var(--bg-dark);
+  color: var(--bg-dark);
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .btn-gold,
@@ -581,7 +657,7 @@ ul {
 .section-header {
   text-align: center;
   padding: 0 1.25rem;
-  margin-bottom: 1.6rem;
+  margin-bottom: 1.5rem;
 }
 
 .section-subtitle {
@@ -590,16 +666,16 @@ ul {
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--accent-gold);
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.4rem;
 }
 
 .section-title {
   font-family: var(--font-serif);
-  font-size: 2.2rem;
+  font-size: 2.15rem;
   font-weight: 600;
   line-height: 1.12;
   color: var(--text-light);
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.5rem;
 }
 
 .section-title em {
@@ -642,14 +718,14 @@ ul {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(244,241,234,0.96) 0%, rgba(244,241,234,0.85) 56%, rgba(244,241,234,0.18) 100%);
+  background: linear-gradient(90deg, rgba(244,241,234,0.96) 0%, rgba(244,241,234,0.86) 58%, rgba(244,241,234,0.18) 100%);
   z-index: 2;
 }
 
 .hero-content {
   position: relative;
   z-index: 3;
-  max-width: 72%;
+  max-width: 78%;
 }
 
 .hero-kicker {
@@ -661,18 +737,18 @@ ul {
 }
 
 .hero-headline {
-  font-size: 1.7rem;
+  font-size: 1.68rem;
   font-weight: 700;
   line-height: 1.08;
   color: var(--text-dark);
   text-transform: uppercase;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.85rem;
 }
 
 .hero-script {
   display: block;
   font-family: var(--font-script);
-  font-size: 2.45rem;
+  font-size: 2.4rem;
   font-weight: 400;
   text-transform: lowercase;
   color: var(--accent-gold);
@@ -684,21 +760,27 @@ ul {
   color: #333;
   border-left: 2px solid var(--accent-gold);
   padding-left: 0.65rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
+}
+
+.hero-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
 .hero-trust-badges {
-  margin-top: 1.35rem;
+  margin-top: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.4rem;
 }
 
 .trust-badge-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: #222;
   font-weight: 500;
 }
@@ -719,7 +801,7 @@ ul {
 }
 
 /* ==========================================================================
-   8. VISOR 3D DE LAS MANOS + FICHA TÉCNICA DE MATERIALES DE UÑAS
+   8. VISOR 3D + FICHA TÉCNICA DE MATERIALES
    ========================================================================== */
 .showcase-3d-section {
   padding: 2.8rem 1.2rem 1.5rem;
@@ -779,7 +861,6 @@ model-viewer {
   gap: 0.35rem;
 }
 
-/* Tarjeta de Ficha Técnica de Uñas (Polygel, Esmalte, Brillo) */
 .nail-specs-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -792,21 +873,21 @@ model-viewer {
 
 .specs-title {
   font-family: var(--font-serif);
-  font-size: 1.75rem;
+  font-size: 1.7rem;
   margin-bottom: 0.35rem;
 }
 
 .specs-intro {
   font-size: 0.8rem;
   color: var(--text-muted);
-  margin-bottom: 1.1rem;
+  margin-bottom: 1rem;
 }
 
 .specs-accordion-list {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  margin-bottom: 1.25rem;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
 }
 
 .spec-item {
@@ -823,18 +904,18 @@ model-viewer {
 
 .spec-header-btn {
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.8rem 0.95rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   text-align: left;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
 .spec-layer-tag {
   color: var(--accent-gold);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   display: block;
@@ -842,11 +923,10 @@ model-viewer {
 
 .spec-body {
   display: none;
-  padding: 0 1rem 0.9rem;
-  font-size: 0.78rem;
+  padding: 0.6rem 0.95rem 0.85rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 0.65rem;
 }
 
 .spec-item.is-active .spec-body {
@@ -854,12 +934,94 @@ model-viewer {
 }
 
 /* ==========================================================================
-   9. CARRUSEL DE SERVICIOS Y PROMOCIONES
+   9. NUEVA SECCIÓN: VIDEOS CORTOS PUBLICITARIOS / SHOPPABLE REELS (PUNTO 4)
+   ========================================================================== */
+.reels-section {
+  padding: 2.2rem 0 1.2rem;
+}
+
+.reels-carousel {
+  gap: 0.9rem;
+}
+
+.reel-card {
+  flex: 0 0 235px;
+  height: 400px;
+  scroll-snap-align: center;
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: #111;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+}
+
+.reel-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reel-badge-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  color: var(--accent-gold);
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  z-index: 3;
+}
+
+.reel-sound-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  z-index: 3;
+}
+
+.reel-overlay-bottom {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 2.5rem 0.95rem 0.95rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.45) 60%, transparent 100%);
+  z-index: 2;
+}
+
+.reel-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.reel-price {
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  font-weight: 600;
+  margin-bottom: 0.55rem;
+}
+
+/* ==========================================================================
+   10. CARRUSEL DE SERVICIOS / PRODUCTOS Y CATEGORÍAS
    ========================================================================== */
 .collections-section,
 .arrivals-section,
 .testimonials-section {
-  padding: 2.6rem 0 1.5rem;
+  padding: 2.5rem 0 1.4rem;
 }
 
 .carousel-container {
@@ -877,7 +1039,7 @@ model-viewer {
 
 .product-card {
   flex: 0 0 82%;
-  max-width: 310px;
+  max-width: 305px;
   scroll-snap-align: center;
   background-color: var(--bg-card);
   border-radius: var(--radius-md);
@@ -890,7 +1052,7 @@ model-viewer {
 
 .product-media {
   position: relative;
-  height: 320px;
+  height: 315px;
   overflow: hidden;
   background-color: #1c1c1c;
 }
@@ -909,7 +1071,7 @@ model-viewer {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(14, 14, 14, 0.95) 0%, rgba(14, 14, 14, 0.2) 45%, transparent 100%);
+  background: linear-gradient(to top, rgba(14, 14, 14, 0.96) 0%, rgba(14, 14, 14, 0.2) 48%, transparent 100%);
 }
 
 .badge-stack {
@@ -924,8 +1086,8 @@ model-viewer {
 
 .tag-badge {
   display: inline-block;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.68rem;
+  padding: 0.32rem 0.8rem;
+  font-size: 0.66rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -958,30 +1120,31 @@ model-viewer {
 .product-info {
   position: relative;
   z-index: 3;
-  margin-top: -75px;
-  padding: 0 1.1rem 1.2rem;
+  margin-top: -78px;
+  padding: 0 1.1rem 1.15rem;
 }
 
 .product-title {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 
 .product-pricing {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.9rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
   font-size: 0.9rem;
 }
 
 .price-old {
   text-decoration: line-through;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .price-current {
@@ -989,12 +1152,17 @@ model-viewer {
   font-weight: 700;
 }
 
+.price-bs-ref {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
 .btn-card-action {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.72rem;
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--radius-sm);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-light);
@@ -1012,7 +1180,7 @@ model-viewer {
   display: flex;
   justify-content: center;
   gap: 0.45rem;
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
 }
 
 .dot-indicator {
@@ -1027,22 +1195,19 @@ model-viewer {
   transform: scale(1.25);
 }
 
-/* ==========================================================================
-   10. ESPECIALIDADES VISUALES Y FILTROS
-   ========================================================================== */
 .categories-section {
-  padding: 2.5rem 1.25rem;
+  padding: 2.4rem 1.25rem;
 }
 
 .categories-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.15rem;
+  gap: 1.1rem;
 }
 
 .category-card {
   position: relative;
-  height: 320px;
+  height: 310px;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1066,17 +1231,17 @@ model-viewer {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 1.35rem;
+  padding: 1.3rem;
 }
 
 .category-name {
   font-family: var(--font-serif);
-  font-size: 1.75rem;
+  font-size: 1.7rem;
   font-weight: 600;
 }
 
 .category-link {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--accent-gold);
 }
 
@@ -1084,15 +1249,15 @@ model-viewer {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.55rem;
-  padding: 0 1.2rem 1.4rem;
+  gap: 0.5rem;
+  padding: 0 1.2rem 1.3rem;
 }
 
 .filter-pill-btn {
-  padding: 0.55rem 1.05rem;
+  padding: 0.52rem 1rem;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-light);
@@ -1110,13 +1275,13 @@ model-viewer {
    11. ESCAPARATE INTERACTIVO CON D3.JS
    ========================================================================== */
 .lookbook-section {
-  padding: 2.5rem 1.25rem;
+  padding: 2.4rem 1.25rem;
 }
 
 .lookbook-card {
   position: relative;
   max-width: 480px;
-  margin: 0 auto 1.8rem;
+  margin: 0 auto 1.6rem;
 }
 
 .lookbook-image-wrapper {
@@ -1172,20 +1337,20 @@ model-viewer {
 }
 
 .lookbook-instruction {
-  margin-top: 1rem;
-  font-size: 0.72rem;
+  margin-top: 0.9rem;
+  font-size: 0.7rem;
   letter-spacing: 0.16em;
   color: var(--accent-gold);
   text-transform: uppercase;
 }
 
 /* ==========================================================================
-   12. BIOSEGURIDAD, TESTIMONIOS FIRESTORE Y UBICACIÓN EN EL JUNQUITO
+   12. BIOSEGURIDAD, RESEÑAS FIRESTORE, UBICACIÓN Y REACT
    ========================================================================== */
 .promo-care-section {
   background-color: var(--bg-light);
   color: var(--text-dark);
-  padding: 2.8rem 1.25rem;
+  padding: 2.6rem 1.25rem;
 }
 
 .promo-care-banner {
@@ -1193,7 +1358,7 @@ model-viewer {
   grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.8rem;
 }
 
 .promo-kicker {
@@ -1202,55 +1367,54 @@ model-viewer {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #555;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
 .promo-title {
   font-family: var(--font-serif);
-  font-size: 1.95rem;
+  font-size: 1.9rem;
   line-height: 1.08;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.7rem;
 }
 
 .promo-desc {
   font-size: 0.8rem;
   color: #444;
-  margin-bottom: 1.1rem;
+  margin-bottom: 1rem;
 }
 
 .promo-care-img-box img {
   border-radius: var(--radius-md);
-  max-height: 250px;
+  max-height: 240px;
   margin: 0 auto;
 }
 
 .benefits-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.7rem;
 }
 
 .benefit-box {
   background-color: #fbf9f5;
   border: 1px solid var(--border-dark);
   border-radius: var(--radius-sm);
-  padding: 0.85rem;
+  padding: 0.8rem;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.75rem;
+  gap: 0.55rem;
+  font-size: 0.74rem;
   font-weight: 500;
 }
 
 .benefit-box i {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: var(--accent-gold);
 }
 
-/* Testimonios + Formulario Firestore */
 .testimonial-card {
   flex: 0 0 80%;
-  max-width: 300px;
+  max-width: 295px;
   scroll-snap-align: center;
   background-color: var(--bg-card);
   border-radius: var(--radius-md);
@@ -1260,7 +1424,7 @@ model-viewer {
 
 .testimonial-card img {
   width: 100%;
-  height: 260px;
+  height: 240px;
 }
 
 .testimonial-quote {
@@ -1278,8 +1442,8 @@ model-viewer {
 
 .review-form-card {
   max-width: 480px;
-  margin: 1.5rem auto 0;
-  padding: 1.4rem;
+  margin: 1.4rem auto 0;
+  padding: 1.35rem;
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -1287,8 +1451,8 @@ model-viewer {
 
 .review-form-title {
   font-family: var(--font-serif);
-  font-size: 1.4rem;
-  margin-bottom: 0.9rem;
+  font-size: 1.35rem;
+  margin-bottom: 0.85rem;
   text-align: center;
 }
 
@@ -1299,23 +1463,23 @@ model-viewer {
   background-color: #1c1c1c;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-sm);
-  padding: 0.65rem 0.8rem;
+  padding: 0.62rem 0.75rem;
   color: var(--text-light);
   font-family: inherit;
-  font-size: 0.82rem;
-  margin-bottom: 0.7rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.65rem;
   outline: none;
 }
 
 .location-section {
-  padding: 2.5rem 1.25rem;
+  padding: 2.4rem 1.25rem;
 }
 
 .location-card {
   background: linear-gradient(180deg, rgba(24, 24, 24, 0.92), rgba(10, 10, 10, 0.98));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 2.2rem 1.4rem;
+  padding: 2.1rem 1.4rem;
   text-align: center;
   max-width: 520px;
   margin: 0 auto;
@@ -1325,15 +1489,15 @@ model-viewer {
   font-size: 0.72rem;
   letter-spacing: 0.2em;
   color: var(--text-muted);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.4rem;
 }
 
 .location-details {
   text-align: left;
-  margin-bottom: 1.8rem;
+  margin-bottom: 1.6rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.95rem;
 }
 
 .location-details li {
@@ -1357,11 +1521,8 @@ model-viewer {
   text-transform: uppercase;
 }
 
-/* ==========================================================================
-   13. WIDGET REACT, FOOTER Y BANNER LEGAL DE COOKIES
-   ========================================================================== */
 .react-widget-section {
-  padding: 1.5rem 1.25rem 2.5rem;
+  padding: 1.4rem 1.25rem 2.4rem;
 }
 
 .react-kit-box {
@@ -1374,6 +1535,74 @@ model-viewer {
   text-align: center;
 }
 
+/* ==========================================================================
+   13. CLUB VIP & SISTEMA DE REFERIDOS (PUNTO 2)
+   ========================================================================== */
+.vip-modal-dark {
+  background: linear-gradient(160deg, #161512 0%, #0b0b0b 100%) !important;
+  color: var(--text-light) !important;
+  border: 1px solid var(--accent-gold);
+}
+
+.vip-modal-dark .legal-modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.vip-modal-dark .legal-modal-header .icon-btn {
+  color: var(--text-light);
+}
+
+.vip-lead {
+  font-size: 0.82rem;
+  color: var(--text-muted) !important;
+  margin-bottom: 1rem;
+}
+
+.vip-card-box {
+  background: radial-gradient(circle at top right, rgba(201, 168, 106, 0.2), #121212 70%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.vip-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 0.8rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vip-stat-val {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+.vip-stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.vip-code-display {
+  background-color: #080808;
+  border: 1px dashed var(--accent-gold);
+  padding: 0.65rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--accent-gold);
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   14. FOOTER, REDES DINÁMICAS, COOKIES Y MODAL LEGAL
+   ========================================================================== */
 .site-footer {
   background-color: #050505;
   padding: 2rem 1.25rem 2.5rem;
@@ -1386,11 +1615,11 @@ model-viewer {
 
 .footer-accordion-trigger {
   width: 100%;
-  padding: 1.1rem 0;
+  padding: 1.05rem 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
@@ -1398,23 +1627,25 @@ model-viewer {
 .footer-accordion-content {
   display: none;
   padding-bottom: 1rem;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
 .footer-socials {
   display: flex;
   justify-content: center;
-  gap: 1.2rem;
-  margin: 2rem 0;
-  font-size: 1.4rem;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 1.8rem 0;
+  font-size: 1.45rem;
+  color: var(--accent-gold);
 }
 
 .newsletter-title {
   text-align: center;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   letter-spacing: 0.2em;
-  margin-bottom: 1rem;
+  margin-bottom: 0.9rem;
 }
 
 .newsletter-form {
@@ -1427,31 +1658,31 @@ model-viewer {
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--accent-gold);
-  padding: 0.75rem 0.2rem;
+  padding: 0.7rem 0.2rem;
   color: var(--text-light);
-  font-size: 0.88rem;
-  margin-bottom: 1.2rem;
+  font-size: 0.86rem;
+  margin-bottom: 1.1rem;
   outline: none;
 }
 
 .newsletter-feedback {
-  margin-top: 0.6rem;
-  font-size: 0.78rem;
+  margin-top: 0.55rem;
+  font-size: 0.76rem;
   text-align: center;
   color: var(--accent-gold);
 }
 
 .footer-legal-links {
   text-align: center;
-  margin-top: 2rem;
-  font-size: 0.75rem;
+  margin-top: 1.8rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
 }
 
 .text-link {
   text-decoration: underline;
   color: var(--accent-gold);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
   display: inline-block;
 }
 
@@ -1462,7 +1693,7 @@ model-viewer {
   right: 0;
   background-color: #080808;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 1rem 1.15rem;
+  padding: 0.95rem 1.15rem;
   z-index: 150;
   box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.7);
 }
@@ -1472,9 +1703,9 @@ model-viewer {
 }
 
 .cookie-text {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: var(--text-light);
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.8rem;
   line-height: 1.45;
 }
 
@@ -1487,13 +1718,13 @@ model-viewer {
 .cookie-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.7rem;
 }
 
 .btn-cookie-outline,
 .btn-cookie-fill {
-  padding: 0.72rem 0.5rem;
-  font-size: 0.72rem;
+  padding: 0.7rem 0.5rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1518,7 +1749,7 @@ model-viewer {
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 1.2rem;
+  padding: 1.1rem;
 }
 
 .legal-modal.is-open {
@@ -1528,12 +1759,12 @@ model-viewer {
 .legal-modal-content {
   background-color: var(--bg-light);
   color: var(--text-dark);
-  max-width: 540px;
+  max-width: 520px;
   width: 100%;
-  max-height: 85vh;
+  max-height: 86vh;
   border-radius: var(--radius-md);
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 1.4rem;
 }
 
 .legal-modal-header {
@@ -1541,13 +1772,13 @@ model-viewer {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-dark);
-  padding-bottom: 0.9rem;
-  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  margin-bottom: 0.95rem;
 }
 
 .legal-modal-header h2 {
   font-family: var(--font-serif);
-  font-size: 1.55rem;
+  font-size: 1.5rem;
 }
 
 .legal-modal-header .icon-btn {
@@ -1556,26 +1787,26 @@ model-viewer {
 
 .legal-modal-body h3 {
   font-family: var(--font-serif);
-  font-size: 1.25rem;
-  margin: 1rem 0 0.35rem;
+  font-size: 1.2rem;
+  margin: 0.95rem 0 0.3rem;
 }
 
 .legal-modal-body p {
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: #333;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.55rem;
 }
 
 /* ==========================================================================
-   14. ADAPTACIÓN A PANTALLAS GRANDES (COMPUTADORAS / TABLETS)
+   15. ADAPTACIÓN A COMPUTADORAS Y PANTALLAS GRANDES
    ========================================================================== */
 @media (min-width: 768px) {
   .hero-section {
-    min-height: 560px;
+    min-height: 550px;
     padding: 4rem 8%;
   }
   .hero-headline {
-    font-size: 2.55rem;
+    font-size: 2.5rem;
   }
   .showcase-3d-grid {
     grid-template-columns: 1.1fr 0.9fr;
@@ -1592,6 +1823,12 @@ model-viewer {
   .carousel-container {
     justify-content: center;
     flex-wrap: wrap;
+  }
+  .reels-carousel {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    max-width: 1100px;
+    margin: 0 auto;
   }
   .product-card {
     flex: 0 0 280px;
