@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- REGLA 5: Seguridad CSP estricta para proteger el Panel de Administrador -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*;">
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>El Baile de Control | Panel Administrador — Kalon Nails</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #090909;
+      --bg-panel: #141414;
+      --bg-input: #1d1d1d;
+      --accent-gold: #c9a86a;
+      --accent-gold-hover: #e0be7e;
+      --text-light: #f5f3ef;
+      --text-muted: #9e9a90;
+      --danger: #ef4444;
+      --success: #10b981;
+      --border-gold: rgba(201, 168, 106, 0.28);
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* PANTALLA DE LOGIN SEGURO */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: radial-gradient(circle at top, #1f1b12 0%, #090909 70%);
+    }
+
+    .login-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      padding: 2.2rem 1.8rem;
+      width: 100%;
+      max-width: 410px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+
+    .login-card h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      color: var(--accent-gold);
+      margin-bottom: 0.3rem;
+    }
+
+    .login-card p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .admin-input, .admin-textarea, .admin-select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 6px;
+      padding: 0.7rem 0.85rem;
+      color: var(--text-light);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .admin-input:focus, .admin-textarea:focus {
+      border-color: var(--accent-gold);
+    }
+
+    .btn-gold {
+      background: var(--accent-gold);
+      color: #090909;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.85rem 1.3rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      transition: background 0.2s;
+    }
+
+    .btn-gold:hover { background: var(--accent-gold-hover); }
+    .btn-full { width: 100%; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-gold);
+      color: var(--text-light);
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid var(--danger);
+      color: #fca5a5;
+      padding: 0.45rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+
+    .btn-success {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid var(--success);
+      color: #6ee7b7;
+      padding: 0.45rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+
+    /* PANEL DASHBOARD INTERNO */
+    .dashboard-wrap {
+      display: none;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 1.2rem;
+    }
+
+    .admin-topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      padding: 1rem 1.4rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .admin-brand h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.65rem;
+      color: var(--accent-gold);
+    }
+
+    .admin-brand span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .admin-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .tab-btn {
+      background: var(--bg-panel);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-light);
+      padding: 0.7rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tab-btn.is-active {
+      background: var(--accent-gold);
+      color: #090909;
+      border-color: var(--accent-gold);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.is-active { display: block; }
+
+    .panel-card {
+      background: var(--bg-panel);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .panel-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.45rem;
+      color: var(--accent-gold);
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding-bottom: 0.5rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* TARJETAS DE CITAS Y SERVICIOS */
+    .booking-item, .service-edit-item {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .booking-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .status-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .status-pendiente { background: rgba(201, 168, 106, 0.22); color: var(--accent-gold); }
+    .status-atendida { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; }
+
+    .toast-bar {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent-gold);
+      color: #090909;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.9rem 1.3rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      display: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. PANTALLA DE LOGIN CON FIREBASE AUTHENTICATION -->
+  <section class="login-screen" id="login-screen">
+    <div class="login-card">
+      <h1>El Baile de Control</h1>
+      <p>Ingresa con el usuario administrador que creaste en Firebase Authentication</p>
+
+      <form id="admin-login-form">
+        <div class="form-group">
+          <label>Correo Administrador</label>
+          <input type="email" id="admin-email" class="admin-input" placeholder="tucorreo@gmail.com" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="admin-pass" class="admin-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-gold btn-full">
+          <i class="ri-lock-unlock-line"></i> ENTRAR AL PANEL
+        </button>
+        <p id="login-error-msg" style="color: var(--danger); margin-top: 0.8rem; font-size: 0.78rem;"></p>
+      </form>
+
+      <div style="margin-top: 1.2rem;">
+        <a href="index.html" style="color: var(--text-muted); font-size: 0.75rem; text-decoration: underline;">← Volver a la tienda pública</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. DASHBOARD PRINCIPAL DE ADMINISTRACIÓN -->
+  <main class="dashboard-wrap" id="dashboard-wrap">
+    
+    <header class="admin-topbar">
+      <div class="admin-brand">
+        <h2>El Baile de Control • Admin</h2>
+        <span id="admin-user-label">Conectado en tiempo real a mipaginawed-519fd</span>
+      </div>
+      <div style="display: flex; gap: 0.6rem;">
+        <a href="index.html" target="_blank" class="btn-outline">
+          <i class="ri-external-link-line"></i> Ver Tienda
+        </a>
+        <button type="button" class="btn-gold" id="save-all-cloud-btn">
+          <i class="ri-upload-cloud-2-line"></i> PUBLICAR CAMBIOS EN VIVO
+        </button>
+        <button type="button" class="btn-danger" id="logout-btn">Salir</button>
+      </div>
+    </header>
+
+    <!-- NAVEGACIÓN POR PESTAÑAS DEL PANEL -->
+    <nav class="admin-tabs">
+      <button type="button" class="tab-btn is-active" data-tab="tab-citas">
+        <i class="ri-calendar-check-line"></i> Citas & Domicilios GPS
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-marca">
+        <i class="ri-store-2-line"></i> Marca, Panorama & Portada
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-3d">
+        <i class="ri-cube-line"></i> Modelo 3D & Materiales de Uñas
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-servicios">
+        <i class="ri-price-tag-3-line"></i> Precios & Servicios
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-resenas">
+        <i class="ri-chat-heart-line"></i> Reseñas de Clientas
+      </button>
+    </nav>
+
+    <!-- PESTAÑA 1: CITAS Y DOMICILIOS CON GPS (CLOUD FIRESTORE) -->
+    <section class="tab-panel is-active" id="tab-citas">
+      <div class="panel-card">
+        <h3>Agenda de Clientas & Ubicaciones GPS en Tiempo Real</h3>
+        <div id="bookings-list-container">
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Cargando citas desde Cloud Firestore...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 2: MARCA, WHATSAPP, PANORAMA Y PORTADA -->
+    <section class="tab-panel" id="tab-marca">
+      <div class="panel-card">
+        <h3>Datos Principales & Contacto en El Junquito (Panorama)</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Nombre de la Marca (Cabecera)</label>
+            <input type="text" id="cfg-brand-name" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp para Recibir Citas (Con código 58)</label>
+            <input type="text" id="cfg-whatsapp" class="admin-input" placeholder="584120000000">
+          </div>
+          <div class="form-group">
+            <label>Título de Ubicación / Estudio</label>
+            <input type="text" id="cfg-loc-title" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Dirección y Cobertura de Domicilio</label>
+            <input type="text" id="cfg-loc-address" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Horario de Atención</label>
+            <input type="text" id="cfg-loc-hours" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Teléfono Visible en la Web</label>
+            <input type="text" id="cfg-loc-phone" class="admin-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Portada Principal (Hero)</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Subtítulo Superior</label>
+            <input type="text" id="cfg-hero-kicker" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Título Principal</label>
+            <input type="text" id="cfg-hero-main" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Palabra en Cursiva Dorada</label>
+            <input type="text" id="cfg-hero-accent" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>URL de Imagen de Portada</label>
+            <input type="url" id="cfg-hero-img" class="admin-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descripción de Portada</label>
+          <textarea id="cfg-hero-lead" rows="2" class="admin-textarea"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 3: MODELO 3D Y FICHA TÉCNICA DE MATERIALES DE UÑAS -->
+    <section class="tab-panel" id="tab-3d">
+      <div class="panel-card">
+        <h3>Configuración del Visor 3D (.GLB)</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Ruta o Enlace del Archivo .GLB (Ej: ./unas-demo.glb)</label>
+            <input type="text" id="cfg-3d-url" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Precio del Sistema Mostrado en 3D ($)</label>
+            <input type="number" id="cfg-3d-price" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Nombre del Sistema 3D al Agendar</label>
+            <input type="text" id="cfg-3d-sys-title" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Título de la Sección 3D</label>
+            <input type="text" id="cfg-3d-title" class="admin-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Ficha Técnica de Materiales Usados en las Uñas (Polygel, Base, Esmalte, Brillo)</h3>
+        <div id="tech-specs-editor-list"></div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 4: CATÁLOGO DE SERVICIOS Y PRECIOS -->
+    <section class="tab-panel" id="tab-servicios">
+      <div class="panel-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="margin:0; border:none;">Sistemas Destacados (Carrusel Principal)</h3>
+          <button type="button" class="btn-outline" id="add-new-set-btn">+ Agregar Servicio Promo</button>
+        </div>
+        <div id="sets-editor-container"></div>
+      </div>
+
+      <div class="panel-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="margin:0; border:none;">Servicios por Técnica (Polygel, Soft Gel, Manicura Rusa)</h3>
+          <button type="button" class="btn-outline" id="add-new-arrival-btn">+ Agregar Servicio al Catálogo</button>
+        </div>
+        <div id="arrivals-editor-container"></div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 5: RESEÑAS DE CLIENTAS (FIRESTORE) -->
+    <section class="tab-panel" id="tab-resenas">
+      <div class="panel-card">
+        <h3>Reseñas Publicadas por Clientas</h3>
+        <div id="reviews-admin-list">
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Cargando reseñas...</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast-bar" id="toast-bar">✓ Cambios publicados en tiempo real</div>
+
+  <!-- LIBRERÍAS Y FIREBASE SDK -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <script>
+    "use strict";
+
+    // Conexión a tu proyecto Firebase mipaginawed-519fd
+    const firebaseConfig = {
+      apiKey: "AIzaSyBJ_cmnwIqaE_2WW5tJVOGgebsquSLKBxs",
+      authDomain: "mipaginawed-519fd.firebaseapp.com",
+      databaseURL: "https://mipaginawed-519fd-default-rtdb.firebaseio.com",
+      projectId: "mipaginawed-519fd",
+      storageBucket: "mipaginawed-519fd.firebasestorage.app",
+      messagingSenderId: "1024677348695",
+      appId: "1:1024677348695:web:51d9c155ad9389c6ae2a12"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+    const dbRealtime = firebase.database();
+    const dbFirestore = firebase.firestore();
+
+    let currentConfig = null;
+
+    function sanitize(str) {
+      if (typeof str !== "string") return "";
+      return _.escape(str.trim());
+    }
+
+    function showToast(msg) {
+      const $t = $("#toast-bar");
+      $t.text(msg).fadeIn(200);
+      setTimeout(() => $t.fadeOut(300), 2600);
+    }
+
+    // 1. CONTROL DE SESIÓN SEGURA (Firebase Auth)
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        $("#login-screen").hide();
+        $("#dashboard-wrap").fadeIn(250);
+        $("#admin-user-label").text(`Sesión activa: ${user.email}`);
+        loadStoreConfigForAdmin();
+        listenBookingsRealtime();
+        listenReviewsRealtime();
+      } else {
+        $("#dashboard-wrap").hide();
+        $("#login-screen").fadeIn(200);
+      }
+    });
+
+    $("#admin-login-form").on("submit", function (e) {
+      e.preventDefault();
+      const email = $("#admin-email").val().trim();
+      const pass = $("#admin-pass").val();
+      $("#login-error-msg").text("Verificando credenciales...");
+
+      auth.signInWithEmailAndPassword(email, pass).catch((err) => {
+        $("#login-error-msg").text("Correo o contraseña incorrectos. Verifica que agregaste tu usuario en la pestaña 'Usuarios' de Firebase Authentication.");
+      });
+    });
+
+    $("#logout-btn").on("click", () => auth.signOut());
+
+    // Cambio de pestañas
+    $(".tab-btn").on("click", function () {
+      $(".tab-btn").removeClass("is-active");
+      $(this).addClass("is-active");
+      $(".tab-panel").removeClass("is-active");
+      $(`#${$(this).data("tab")}`).addClass("is-active");
+    });
+
+    // 2. ESCUCHAR CITAS Y UBICACIONES GPS EN TIEMPO REAL (FIRESTORE)
+    function listenBookingsRealtime() {
+      dbFirestore.collection("citas_agendadas").orderBy("createdAt", "desc").onSnapshot((snap) => {
+        const $box = $("#bookings-list-container");
+        $box.empty();
+
+        if (snap.empty) {
+          $box.html('<p style="color:var(--text-muted); font-size:0.85rem;">Aún no hay citas registradas.</p>');
+          return;
+        }
+
+        snap.forEach((doc) => {
+          const b = doc.data();
+          const id = doc.id;
+          const itemsText = (b.items || []).map((i) => `${i.qty}x ${sanitize(i.title)} ($${i.price})`).join(" • ");
+          const hasGps = b.gpsMapLink && b.gpsMapLink.startsWith("https://maps.google.com");
+
+          $box.append(`
+            <div class="booking-item">
+              <div class="booking-header">
+                <div>
+                  <strong style="font-size:0.95rem; color:var(--accent-gold);">${sanitize(b.clientName)}</strong>
+                  <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">📱 ${sanitize(b.clientPhone)}</span>
+                </div>
+                <span class="status-pill ${b.status === "Atendida" ? "status-atendida" : "status-pendiente"}">${sanitize(b.status || "Pendiente")}</span>
+              </div>
+              <p style="font-size:0.82rem; margin-bottom:0.35rem;">
+                <strong>📅 Fecha/Hora:</strong> ${sanitize(b.bookingDate)} a las ${sanitize(b.bookingTime)} |
+                <strong>🛵 Modalidad:</strong> ${sanitize(b.modality)}
+              </p>
+              <p style="font-size:0.82rem; margin-bottom:0.35rem;">
+                <strong>📍 Zona / Dirección:</strong> ${sanitize(b.zone)} — ${sanitize(b.addressReference)}
+              </p>
+              <p style="font-size:0.82rem; margin-bottom:0.65rem; color:#d1d5db;">
+                <strong>💅 Servicios:</strong> ${itemsText} | <strong style="color:var(--accent-gold);">Total: $${b.totalAmount}</strong>
+              </p>
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                ${hasGps ? `<a href="${b.gpsMapLink}" target="_blank" class="btn-outline" style="border-color:#10b981; color:#6ee7b7;"><i class="ri-map-pin-2-fill"></i> Abrir GPS en Google Maps</a>` : ""}
+                <button type="button" class="btn-success mark-booking-btn" data-id="${id}">✓ Marcar Atendida</button>
+                <button type="button" class="btn-danger delete-booking-btn" data-id="${id}">Eliminar Cita</button>
+              </div>
+            </div>
+          `);
+        });
+      });
+    }
+
+    $(document).on("click", ".mark-booking-btn", function () {
+      const id = $(this).data("id");
+      dbFirestore.collection("citas_agendadas").doc(id).update({ status: "Atendida" });
+      showToast("✓ Cita marcada como Atendida");
+    });
+
+    $(document).on("click", ".delete-booking-btn", function () {
+      const id = $(this).data("id");
+      if (confirm("¿Seguro que deseas eliminar esta cita del historial?")) {
+        dbFirestore.collection("citas_agendadas").doc(id).delete();
+      }
+    });
+
+    // 3. CARGAR Y EDITAR CONFIGURACIÓN DE LA TIENDA (REALTIME DATABASE)
+    function loadStoreConfigForAdmin() {
+      dbRealtime.ref("store_config").once("value", (snap) => {
+        currentConfig = snap.val() || {};
+        populateAdminFields();
+      });
+    }
+
+    function populateAdminFields() {
+      if (!currentConfig) return;
+
+      $("#cfg-brand-name").val(currentConfig.brandName || "kalon nails");
+      $("#cfg-whatsapp").val(currentConfig.whatsappNumber || "584120000000");
+
+      if (currentConfig.location) {
+        $("#cfg-loc-title").val(currentConfig.location.title || "");
+        $("#cfg-loc-address").val(currentConfig.location.address || "");
+        $("#cfg-loc-hours").val(currentConfig.location.hours || "");
+        $("#cfg-loc-phone").val(currentConfig.location.phone || "");
+      }
+
+      if (currentConfig.hero) {
+        $("#cfg-hero-kicker").val(currentConfig.hero.kicker || "");
+        $("#cfg-hero-main").val(currentConfig.hero.titleMain || "");
+        $("#cfg-hero-accent").val(currentConfig.hero.titleAccent || "");
+        $("#cfg-hero-img").val(currentConfig.hero.bgImage || "");
+        $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
+      }
+
+      if (currentConfig.model3D) {
+        $("#cfg-3d-url").val(currentConfig.model3D.glbUrl || "./unas-demo.glb");
+        $("#cfg-3d-price").val(currentConfig.model3D.systemPrice || 25);
+        $("#cfg-3d-sys-title").val(currentConfig.model3D.systemTitle || "");
+        $("#cfg-3d-title").val(currentConfig.model3D.title || "");
+
+        const $specsBox = $("#tech-specs-editor-list");
+        $specsBox.empty();
+        (currentConfig.model3D.techSpecs || []).forEach((sp, i) => {
+          $specsBox.append(`
+            <div class="service-edit-item spec-edit-row">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>Etapa / Capa #${i + 1}</label>
+                  <input type="text" class="admin-input spec-layer" value="${sanitize(sp.layer)}">
+                </div>
+                <div class="form-group">
+                  <label>Material / Polímero / Marca</label>
+                  <input type="text" class="admin-input spec-name" value="${sanitize(sp.name)}">
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Explicación Técnica para la Clienta</label>
+                <input type="text" class="admin-input spec-detail" value="${sanitize(sp.detail)}">
+              </div>
+            </div>
+          `);
+        });
+      }
+
+      renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
+      renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
+    }
+
+    function renderServicesEditor(selector, list, includeCategory) {
+      const $box = $(selector);
+      $box.empty();
+      list.forEach((item, idx) => {
+        $box.append(`
+          <div class="service-edit-item" data-idx="${idx}">
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Nombre del Servicio</label>
+                <input type="text" class="admin-input srv-title" value="${sanitize(item.title)}">
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                <div>
+                  <label>Precio Actual ($)</label>
+                  <input type="number" class="admin-input srv-price" value="${item.price}">
+                </div>
+                <div>
+                  <label>Precio Anterior ($)</label>
+                  <input type="number" class="admin-input srv-oldprice" value="${item.oldPrice || 0}">
+                </div>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>URL de Foto del Trabajo</label>
+                <input type="text" class="admin-input srv-img" value="${sanitize(item.image)}">
+              </div>
+              ${includeCategory ? `
+              <div class="form-group">
+                <label>Categoría (POLYGEL, SOFT GEL, MANICURA RUSA, ADICIONALES)</label>
+                <input type="text" class="admin-input srv-cat" value="${sanitize(item.category || "POLYGEL")}">
+              </div>` : ""}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label style="font-size:0.78rem; color:var(--text-light);">
+                <input type="checkbox" class="srv-stock" ${item.inStock !== false ? "checked" : ""}> Cupo Disponible
+              </label>
+              <button type="button" class="btn-danger remove-srv-row">Quitar Servicio</button>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    $(document).on("click", ".remove-srv-row", function () {
+      $(this).closest(".service-edit-item").remove();
+    });
+
+    $("#add-new-set-btn").on("click", function () {
+      $("#sets-editor-container").prepend(`
+        <div class="service-edit-item">
+          <div class="grid-2">
+            <div class="form-group"><label>Nombre del Servicio</label><input type="text" class="admin-input srv-title" value="NUEVO SISTEMA DE UÑAS"></div>
+            <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <div><label>Precio Actual ($)</label><input type="number" class="admin-input srv-price" value="20"></div>
+              <div><label>Precio Anterior ($)</label><input type="number" class="admin-input srv-oldprice" value="25"></div>
+            </div>
+          </div>
+          <div class="form-group"><label>URL de Foto</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Cupo Disponible</label>
+            <button type="button" class="btn-danger remove-srv-row">Quitar Servicio</button>
+          </div>
+        </div>
+      `);
+    });
+
+    $("#add-new-arrival-btn").on("click", function () {
+      $("#arrivals-editor-container").prepend(`
+        <div class="service-edit-item">
+          <div class="grid-2">
+            <div class="form-group"><label>Nombre del Servicio</label><input type="text" class="admin-input srv-title" value="NUEVA TÉCNICA"></div>
+            <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <div><label>Precio Actual ($)</label><input type="number" class="admin-input srv-price" value="18"></div>
+              <div><label>Precio Anterior ($)</label><input type="number" class="admin-input srv-oldprice" value="22"></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group"><label>URL de Foto</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"></div>
+            <div class="form-group"><label>Categoría</label><input type="text" class="admin-input srv-cat" value="POLYGEL"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Cupo Disponible</label>
+            <button type="button" class="btn-danger remove-srv-row">Quitar Servicio</button>
+          </div>
+        </div>
+      `);
+    });
+
+    // 4. PUBLICAR TODOS LOS CAMBIOS EN VIVO EN REALTIME DATABASE
+    $("#save-all-cloud-btn").on("click", function () {
+      if (!currentConfig) currentConfig = {};
+
+      currentConfig.brandName = $("#cfg-brand-name").val().trim();
+      currentConfig.whatsappNumber = $("#cfg-whatsapp").val().trim();
+
+      currentConfig.location = {
+        title: $("#cfg-loc-title").val().trim(),
+        city: "ATENCIÓN EN ESTUDIO PRIVADO Y A DOMICILIO",
+        address: $("#cfg-loc-address").val().trim(),
+        hours: $("#cfg-loc-hours").val().trim(),
+        phone: $("#cfg-loc-phone").val().trim()
+      };
+
+      currentConfig.hero = Object.assign({}, currentConfig.hero, {
+        kicker: $("#cfg-hero-kicker").val().trim(),
+        titleMain: $("#cfg-hero-main").val().trim(),
+        titleAccent: $("#cfg-hero-accent").val().trim(),
+        bgImage: $("#cfg-hero-img").val().trim(),
+        lead: $("#cfg-hero-lead").val().trim()
+      });
+
+      const updatedSpecs = [];
+      $("#tech-specs-editor-list .spec-edit-row").each(function () {
+        updatedSpecs.push({
+          layer: $(this).find(".spec-layer").val().trim(),
+          name: $(this).find(".spec-name").val().trim(),
+          detail: $(this).find(".spec-detail").val().trim()
+        });
+      });
+
+      currentConfig.model3D = Object.assign({}, currentConfig.model3D, {
+        glbUrl: $("#cfg-3d-url").val().trim(),
+        systemPrice: Number($("#cfg-3d-price").val() || 25),
+        systemTitle: $("#cfg-3d-sys-title").val().trim(),
+        title: $("#cfg-3d-title").val().trim(),
+        techSpecs: updatedSpecs
+      });
+
+      const updatedSets = [];
+      $("#sets-editor-container .service-edit-item").each(function (i) {
+        updatedSets.push({
+          id: `set-item-${i}-${Date.now()}`,
+          title: $(this).find(".srv-title").val().trim(),
+          price: Number($(this).find(".srv-price").val() || 0),
+          oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
+          image: $(this).find(".srv-img").val().trim(),
+          inStock: $(this).find(".srv-stock").is(":checked"),
+          isOffer: true
+        });
+      });
+      currentConfig.setsProducts = updatedSets;
+
+      const updatedArrivals = [];
+      $("#arrivals-editor-container .service-edit-item").each(function (i) {
+        updatedArrivals.push({
+          id: `arr-item-${i}-${Date.now()}`,
+          title: $(this).find(".srv-title").val().trim(),
+          price: Number($(this).find(".srv-price").val() || 0),
+          oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
+          image: $(this).find(".srv-img").val().trim(),
+          category: ($(this).find(".srv-cat").val() || "POLYGEL").trim().toUpperCase(),
+          inStock: $(this).find(".srv-stock").is(":checked")
+        });
+      });
+      currentConfig.arrivalsProducts = updatedArrivals;
+
+      dbRealtime.ref("store_config").set(currentConfig).then(() => {
+        showToast("✓ ¡Tienda actualizada en vivo para todas las clientas!");
+      });
+    });
+
+    // 5. MODERAR RESEÑAS DE CLIENTAS (FIRESTORE)
+    function listenReviewsRealtime() {
+      dbFirestore.collection("resenas_clientas").orderBy("createdAt", "desc").onSnapshot((snap) => {
+        const $list = $("#reviews-admin-list");
+        $list.empty();
+        if (snap.empty) {
+          $list.html('<p style="color:var(--text-muted); font-size:0.85rem;">No hay reseñas enviadas desde el formulario aún.</p>');
+          return;
+        }
+        snap.forEach((doc) => {
+          const r = doc.data();
+          $list.append(`
+            <div class="booking-item" style="display:flex; justify-content:space-between; align-items:center; gap:1rem;">
+              <div>
+                <strong style="color:var(--accent-gold);">${sanitize(r.name)}</strong> <span style="font-size:0.75rem; color:var(--text-muted);">(${sanitize(r.service)})</span>
+                <p style="font-size:0.82rem; margin-top:0.25rem;">"${sanitize(r.quote)}"</p>
+              </div>
+              <button type="button" class="btn-danger delete-review-btn" data-id="${doc.id}">Borrar</button>
+            </div>
+          `);
+        });
+      });
+    }
+
+    $(document).on("click", ".delete-review-btn", function () {
+      const id = $(this).data("id");
+      dbFirestore.collection("resenas_clientas").doc(id).delete();
+    });
+  </script>
+</body>
+</html>
