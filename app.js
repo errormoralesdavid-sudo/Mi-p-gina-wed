@@ -1,7 +1,8 @@
 /**
  * ============================================================================
- * ARCHIVO 3: app.js - MOTOR DEMO DE UÑAS (EL JUNQUITO - PANORAMA) + FIREBASE
- * Conectado a: Realtime Database, Cloud Firestore, Anime.js, D3.js, Lodash, React
+ * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (SAAS) + FIREBASE EN TIEMPO REAL
+ * Incluye: Redes Dinámicas, Club VIP & Referidos, Puntos D3.js Editables,
+ * Videos Cortos (Reels), Visor 3D + Materiales, Domicilio GPS y Multi-Moneda
  * ============================================================================
  */
 
@@ -23,6 +24,7 @@ const firebaseConfig = {
 
 let dbRealtime = null;
 let dbFirestore = null;
+let authFirebase = null;
 
 try {
   if (!firebase.apps.length) {
@@ -30,37 +32,73 @@ try {
   }
   dbRealtime = firebase.database();
   dbFirestore = firebase.firestore();
+  authFirebase = firebase.auth();
 } catch (err) {
-  console.warn("Modo local activo si Firebase aún no responde:", err);
+  console.warn("Cargando configuración local de respaldo:", err);
 }
 
 /* ============================================================================
-   2. CONFIGURACIÓN MAESTRA DEL RUBRO DE UÑAS (REGLA 6 - ESCALABLE)
-   Si modificas algo desde admin.html, Firebase sobrescribe este objeto en vivo
+   2. CONFIGURACIÓN MAESTRA ESCALABLE (REGLA 6)
+   Todo este bloque se sincroniza y modifica desde tu panel admin.html
    ============================================================================ */
 let STORE_CONFIG = {
+  // Configuración General y Modo de Negocio ("services" para Citas/Uñas/Barbería o "products" para Ropa/Comida/Tienda)
+  businessMode: "services",
   brandName: "kalon nails",
   brandSpaced: "K A L O N",
   currencySymbol: "$",
-  whatsappNumber: "584120000000", // Cambia desde el Panel Admin por el número en Venezuela
+  exchangeRateBs: 45.50, // Tasa referencial editable desde el Admin
+  referralDiscountPercent: 10, // % de descuento al usar un código de referido
+  whatsappNumber: "584120000000",
+
+  // Tema Visual Editable desde el Admin
+  theme: {
+    accentColor: "#c9a86a",
+    bgDark: "#0a0a0a"
+  },
+
+  // 1. Redes Sociales Dinámicas (Punto 1)
+  socials: {
+    instagram: "https://instagram.com/",
+    tiktok: "https://tiktok.com/",
+    facebook: "",
+    youtube: "",
+    whatsapp: "https://wa.me/584120000000"
+  },
+
+  // Métodos de Pago Configurables desde el Admin (Punto 5)
+  paymentMethodsInfo: {
+    "Pago Móvil": "Banco: Mercantil (0105) • Tel: 0412-0000000 • CI: V-00.000.000 (Enviar captura por WhatsApp)",
+    "Efectivo Divisas": "Pago en efectivo directamente al momento de tu atención en Panorama o a domicilio.",
+    "Zelle / Binance": "Correo Zelle / Binance Pay: pagos@kalonnails.com (Titular: Kalon Studio)",
+    "Transferencia / Punto": "Coordinamos los datos de transferencia directamente al abrir tu chat de WhatsApp."
+  },
+
+  // Zonas de Domicilio Editables
+  deliveryZones: [
+    { label: "El Junquito - Sector Panorama / Km 11-13", fee: 3 },
+    { label: "El Junquito - Pueblo / Km 14 al Km 23", fee: 5 },
+    { label: "El Junquito - Km 4 al Km 10 / La Yaguara", fee: 5 },
+    { label: "Caracas - Zonas Céntricas / Oeste / Este", fee: 8 }
+  ],
 
   marqueeMessages: [
     "ESTUDIO EN EL JUNQUITO (SECTOR PANORAMA) Y SERVICIO VIP A DOMICILIO",
+    "ÚNETE AL CLUB VIP Y GANA 10% DE DESCUENTO INVITANDO AMIGAS",
     "ESPECIALISTAS EN POLYGEL, SOFT GEL, KAPPING Y MANICURA RUSA",
-    "MATERIALES HIPOALERGÉNICOS LIBRES DE MMA • DURACIÓN +21 DÍAS",
-    "AGENDA TU CITA ONLINE Y ADJUNTA TU UBICACIÓN GPS EN 1 CLIC"
+    "INSPECCIONA NUESTROS TRABAJOS EN 3D Y VIDEOS EN TIEMPO REAL"
   ],
 
   navigation: [
     { label: "INICIO", href: "#main-content", hasSubmenu: false },
-    { label: "MANOS 3D & MATERIALES", href: "#showcase-3d", hasSubmenu: false },
-    { label: "SISTEMAS EN PROMO", href: "#colecciones", hasSubmenu: true },
+    { label: "MODELO 3D & MATERIALES", href: "#showcase-3d", hasSubmenu: false },
+    { label: "VIDEOS & REELS", href: "#reels-section", hasSubmenu: false },
+    { label: "DESTACADOS & PROMOS", href: "#colecciones", hasSubmenu: true },
     { label: "ESPECIALIDADES", href: "#categorias", hasSubmenu: true },
-    { label: "CATÁLOGO DE SERVICIOS", href: "#novedades", hasSubmenu: true },
-    { label: "DETALLE TÉCNICO (LOOKBOOK)", href: "#lookbook", hasSubmenu: false },
-    { label: "BIOSEGURIDAD", href: "#cuidados", hasSubmenu: false },
-    { label: "RESEÑAS DE CLIENTAS", href: "#testimonios", hasSubmenu: false },
-    { label: "PANORAMA & DOMICILIO", href: "#ubicacion", hasSubmenu: false }
+    { label: "CATÁLOGO COMPLETO", href: "#novedades", hasSubmenu: true },
+    { label: "MAPA INTERACTIVO (PUNTOS)", href: "#lookbook", hasSubmenu: false },
+    { label: "RESEÑAS DE CLIENTES", href: "#testimonios", hasSubmenu: false },
+    { label: "UBICACIÓN & DOMICILIO", href: "#ubicacion", hasSubmenu: false }
   ],
 
   hero: {
@@ -68,7 +106,7 @@ let STORE_CONFIG = {
     titleMain: "DISEÑOS EXCLUSIVOS EN CADA",
     titleAccent: "detalle",
     lead: "Estructuras en Polygel, Soft Gel y Manicura Rusa de alta durabilidad. Atención en El Junquito (Panorama) o vamos hasta la comodidad de tu casa.",
-    ctaText: "EXPLORAR MANOS 3D & PRECIOS",
+    ctaText: "EXPLORAR EN 3D",
     bgImage: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80",
     badges: [
       { icon: "ri-shield-check-line", text: "Herramientas 100% Esterilizadas" },
@@ -76,12 +114,11 @@ let STORE_CONFIG = {
     ]
   },
 
-  // Configuración del Visor 3D + Ficha Técnica de Materiales de Uñas
+  // 3. Visor 3D + Materiales Editables desde el Admin (Punto 3)
   model3D: {
     subtitle: "INTERACCIÓN 360° • MODELO REAL",
     title: "Escultura & Materiales en 3D",
     desc: "Gira las manos con tu dedo para inspeccionar el relieve 3D, el sellado de cutícula y conoce qué productos exactos usamos.",
-    // Carga tu archivo unas-demo.glb descargado; si no está en la carpeta aún, usa un respaldo seguro
     glbUrl: "./unas-demo.glb",
     systemPrice: 25,
     systemTitle: "SISTEMA ESCULPIDO AZUL COBALTO 3D (POLYGEL)",
@@ -89,27 +126,54 @@ let STORE_CONFIG = {
       {
         layer: "1. PREPARACIÓN & CUTÍCULA",
         name: "Manicura Rusa Combinada + Deshidratador pH",
-        detail: "Limpieza profunda del bolsillo de la cutícula con brocas diamantadas de grano suave y nivelación de pH con Nail Prep sin ácido para evitar desprendimientos."
+        detail: "Limpieza profunda del bolsillo de la cutícula con brocas diamantadas suaves y nivelación de pH libre de ácido."
       },
       {
         layer: "2. BASE ADHERENTE & PROTECCIÓN",
         name: "Rubber Base Gel Flexible (Capa Amortiguadora)",
-        detail: "Base elástica vitaminada que protege la uña natural, corrige estrías y absorbe impactos cotidianos sin quebrar la estructura."
+        detail: "Base elástica vitaminada que protege la uña natural y absorbe impactos sin quebrar la estructura."
       },
       {
         layer: "3. ESTRUCTURA & ESCULPIDO",
         name: "Polygel Acrigel de Alta Densidad (Grado Salón)",
-        detail: "Combina la fuerza del acrílico con la ligereza y flexibilidad del gel. Cero olor a monómero fuerte, curvatura C estilizada y duración de 21 a 30 días."
+        detail: "Combina la fuerza del acrílico con la ligereza del gel. Curvatura C estilizada y duración de 21 a 30 días."
       },
       {
         layer: "4. COLOR, RELIEVE & BRILLO ESPEJO",
-        name: "Gel Semipermanente Azul Cobalto + Top Coat Cristal UV",
-        detail: "Pigmento mineral de alta cobertura curado en lámpara LED/UV, texturizado artístico en relieve 3D y sellado con Top Coat Diamond anti-rayaduras."
+        name: "Esmalte Gel Azul Cobalto + Top Coat Cristal UV",
+        detail: "Pigmento mineral de alta cobertura curado en lámpara LED/UV y sellado con Top Coat Diamond anti-rayaduras."
       }
     ]
   },
 
-  // Carrusel de Sistemas Destacados / Promociones
+  // 4. Videos Cortos Publicitarios / Shoppable Reels (Punto 4)
+  promoReels: [
+    {
+      id: "reel-1",
+      tag: "POLYGEL EN VIVO",
+      title: "Acabado Espejo & Relieve",
+      price: 22,
+      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-woman-showing-her-manicured-nails-42622-large.mp4",
+      poster: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=500&q=80"
+    },
+    {
+      id: "reel-2",
+      tag: "MANICURA RUSA",
+      title: "Preparación & Brillo Gel",
+      price: 15,
+      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-manicurist-painting-nails-with-pink-polish-41614-large.mp4",
+      poster: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=500&q=80"
+    },
+    {
+      id: "reel-3",
+      tag: "SOFT GEL VIP",
+      title: "Diseño Francés & Cuidado",
+      price: 18,
+      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-nail-technician-filing-a-clients-nails-41611-large.mp4",
+      poster: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=500&q=80"
+    }
+  ],
+
   setsProducts: [
     {
       id: "set-polygel-esculpido",
@@ -149,7 +213,6 @@ let STORE_CONFIG = {
     }
   ],
 
-  // Bloques de Especialidades
   categories: [
     {
       id: "cat-polygel",
@@ -171,7 +234,6 @@ let STORE_CONFIG = {
     }
   ],
 
-  // Filtros y Catálogo por Técnica
   arrivalFilters: ["POLYGEL", "SOFT GEL", "MANICURA RUSA", "ADICIONALES"],
   arrivalsProducts: [
     {
@@ -221,7 +283,7 @@ let STORE_CONFIG = {
     }
   ],
 
-  // Escaparate Interactivo D3.js ("Toca cada punto de la uña")
+  // 3. Puntos Interactivos D3.js Editables desde el Admin (Punto 3)
   lookbook: {
     image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
     hotspots: [
@@ -268,21 +330,21 @@ let STORE_CONFIG = {
   footerAccordions: [
     {
       title: "¿CÓMO FUNCIONA EL SERVICIO A DOMICILIO?",
-      content: "Seleccionas tus servicios en la web, eliges 'A Domicilio', adjuntas tu ubicación GPS y llevamos mesa portátil, lámpara UV/LED, extractor y todos los materiales hasta tu hogar."
+      content: "Seleccionas tus opciones en la web, eliges 'A Domicilio', adjuntas tu ubicación GPS y vamos directo hasta tu hogar."
     },
     {
-      title: "DIFERENCIA ENTRE POLYGEL, SOFT GEL Y KAPPING",
-      content: "El Polygel es ideal para esculpir largo con máxima resistencia; Soft Gel usa tips de gel completos de rápida aplicación; Kapping recubre el largo de tu propia uña natural para que no se parta."
+      title: "¿CÓMO GANAR DESCUENTOS CON EL CLUB VIP?",
+      content: "Toca el ícono de la corona arriba, crea tu cuenta gratis y comparte tu enlace de referido por WhatsApp. Tus amigas reciben 10% de descuento y tú sumas puntos canjeables."
     },
     {
-      title: "GARANTÍA Y RECOMENDACIONES",
-      content: "Todos nuestros sistemas cuentan con garantía de aplicación de 5 días. Recomendamos aplicar aceite de cutícula diariamente y usar guantes al manipular químicos fuertes."
+      title: "GARANTÍA Y BIOSEGURIDAD",
+      content: "Todos nuestros trabajos cuentan con garantía de aplicación de 5 días y materiales hipoalergénicos certificados."
     }
   ]
 };
 
 /* ============================================================================
-   3. SEGURIDAD XSS (REGLA 5) Y FORMATEO DE PRECIOS
+   3. SEGURIDAD XSS (REGLA 5), MULTI-MONEDA Y TEMA DINÁMICO
    ============================================================================ */
 function sanitizeInput(str) {
   if (typeof str !== "string") return "";
@@ -290,24 +352,52 @@ function sanitizeInput(str) {
 }
 
 function formatCurrency(amount) {
-  return `${STORE_CONFIG.currencySymbol} ${Number(amount).toLocaleString("es-VE")}`;
+  return `${STORE_CONFIG.currencySymbol} ${Number(amount).toLocaleString("es-VE", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
+
+function formatBs(usdAmount) {
+  const rate = Number(STORE_CONFIG.exchangeRateBs || 0);
+  if (!rate || rate <= 0) return "";
+  const bs = Number(usdAmount) * rate;
+  return `Bs. ${bs.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function applyDynamicTheme() {
+  if (!STORE_CONFIG.theme) return;
+  const root = document.documentElement;
+  if (STORE_CONFIG.theme.accentColor) {
+    root.style.setProperty("--accent-gold", STORE_CONFIG.theme.accentColor);
+  }
+  if (STORE_CONFIG.theme.bgDark) {
+    root.style.setProperty("--bg-dark", STORE_CONFIG.theme.bgDark);
+  }
 }
 
 /* ============================================================================
-   4. ESTADO DEL CARRITO, MODALIDAD DOMICILIO Y UBICACIÓN GPS
+   4. ESTADO DEL CARRITO, REFERIDOS VIP, DOMICILIO Y GPS
    ============================================================================ */
 let cartState = [];
-let deliveryMode = "estudio"; // "estudio" o "domicilio"
+let deliveryMode = "estudio";
 let deliveryFee = 0;
-let deliveryZoneLabel = "Atención en Estudio (Panorama, El Junquito)";
+let deliveryZoneLabel = "En Sede (Panorama, El Junquito)";
 let clientGpsUrl = "";
+let appliedReferralCode = "";
+let activeDiscountPercent = 0;
+let currentVipProfile = null;
 
 function loadCartFromStorage() {
   try {
-    const saved = localStorage.getItem("kalon_nails_cart");
+    const saved = localStorage.getItem("kalon_master_cart");
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) cartState = parsed;
+    }
+    const savedRef = localStorage.getItem("kalon_referral_code");
+    if (savedRef) {
+      appliedReferralCode = sanitizeInput(savedRef);
+      activeDiscountPercent = Number(STORE_CONFIG.referralDiscountPercent || 10);
+      $("#cart-referral-code").val(appliedReferralCode);
+      $("#referral-feedback-msg").text(`✓ Código ${appliedReferralCode} activo (-${activeDiscountPercent}%)`);
     }
   } catch (e) {
     cartState = [];
@@ -316,7 +406,7 @@ function loadCartFromStorage() {
 
 function saveCartToStorage() {
   try {
-    localStorage.setItem("kalon_nails_cart", JSON.stringify(cartState));
+    localStorage.setItem("kalon_master_cart", JSON.stringify(cartState));
   } catch (e) {}
 }
 
@@ -350,20 +440,31 @@ function removeFromCart(productId) {
   renderCartUI();
 }
 
+function calculateCartTotals() {
+  const rawSubtotal = _.sumBy(cartState, (item) => item.price * item.qty);
+  const discountAmount = activeDiscountPercent > 0 ? (rawSubtotal * activeDiscountPercent) / 100 : 0;
+  const discountedSubtotal = Math.max(0, rawSubtotal - discountAmount);
+  const activeFee = deliveryMode === "domicilio" ? Number(deliveryFee) : 0;
+  const grandTotal = discountedSubtotal + activeFee;
+
+  return { rawSubtotal, discountAmount, activeFee, grandTotal };
+}
+
 function renderCartUI() {
   const totalCount = _.sumBy(cartState, "qty");
-  const servicesSubtotal = _.sumBy(cartState, (item) => item.price * item.qty);
-  const activeDeliveryFee = deliveryMode === "domicilio" ? Number(deliveryFee) : 0;
-  const grandTotal = servicesSubtotal + activeDeliveryFee;
+  const { discountAmount, grandTotal } = calculateCartTotals();
 
   $("#cart-count").text(totalCount);
-  $("#cart-total-price").text(formatCurrency(grandTotal));
+  $("#cart-total-price").text(
+    discountAmount > 0 ? `${formatCurrency(grandTotal)} (-${activeDiscountPercent}% VIP)` : formatCurrency(grandTotal)
+  );
+  $("#cart-total-bs").text(formatBs(grandTotal));
 
   const $container = $("#cart-items-container");
   $container.empty();
 
   if (cartState.length === 0) {
-    $container.html('<p style="color: var(--text-muted); text-align:center; margin: 1.2rem 0; font-size:0.82rem;">Aún no has seleccionado servicios de uñas.</p>');
+    $container.html('<p style="color: var(--text-muted); text-align:center; margin: 1.2rem 0; font-size:0.8rem;">Tu bolsa está vacía.</p>');
     return;
   }
 
@@ -373,7 +474,7 @@ function renderCartUI() {
         <img src="${item.image}" alt="${sanitizeInput(item.title)}">
         <div class="cart-item-info">
           <div class="cart-item-title">${sanitizeInput(item.title)}</div>
-          <div class="cart-item-price">${item.qty} x ${formatCurrency(item.price)}</div>
+          <div class="cart-item-price">${item.qty} x ${formatCurrency(item.price)} <span style="color:var(--text-muted); font-size:0.68rem;">(${formatBs(item.price)})</span></div>
         </div>
         <button class="icon-btn remove-cart-item" data-id="${item.id}" aria-label="Eliminar">
           <i class="ri-delete-bin-line"></i>
@@ -384,7 +485,79 @@ function renderCartUI() {
 }
 
 /* ============================================================================
-   5. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE (REALTIME DB + FIRESTORE)
+   5. DETECCIÓN DE ENLACES DE REFERIDOS (?ref=CODIGO) Y CLUB VIP (PUNTO 2)
+   ============================================================================ */
+function checkUrlReferralParam() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const refParam = params.get("ref");
+    if (refParam) {
+      const cleanRef = sanitizeInput(refParam).toUpperCase();
+      if (cleanRef.length >= 3) {
+        appliedReferralCode = cleanRef;
+        activeDiscountPercent = Number(STORE_CONFIG.referralDiscountPercent || 10);
+        localStorage.setItem("kalon_referral_code", cleanRef);
+        $("#cart-referral-code").val(cleanRef);
+        $("#vip-invited-by").val(cleanRef);
+        $("#referral-feedback-msg").text(`🎉 Invitación ${cleanRef} activada: Tienes ${activeDiscountPercent}% de descuento.`);
+        renderCartUI();
+      }
+    }
+  } catch (e) {}
+}
+
+function initVipAuthListener() {
+  if (!authFirebase || !dbFirestore) return;
+
+  authFirebase.onAuthStateChanged(async (user) => {
+    if (user) {
+      $("#vip-auth-view").hide();
+      $("#vip-profile-view").fadeIn(200);
+
+      const docRef = dbFirestore.collection("usuarios_vip").doc(user.uid);
+      const snap = await docRef.get().catch(() => null);
+
+      if (snap && snap.exists) {
+        currentVipProfile = snap.data();
+      } else {
+        const prefix = (user.email || "VIP").split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 5);
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        currentVipProfile = {
+          uid: user.uid,
+          name: sanitizeInput($("#vip-user-name").val()) || prefix,
+          email: user.email,
+          referralCode: `${prefix}-${randomNum}`,
+          points: 100,
+          referralsCount: 0,
+          discountPercent: 10,
+          createdAt: new Date().toISOString()
+        };
+        await docRef.set(currentVipProfile).catch(() => {});
+      }
+
+      // Renderiza datos en la tarjeta VIP
+      $("#vip-member-name").text(currentVipProfile.name || user.email);
+      $("#vip-points-val").text(currentVipProfile.points || 100);
+      $("#vip-referrals-val").text(currentVipProfile.referralsCount || 0);
+      $("#vip-discount-val").text(`${currentVipProfile.discountPercent || 10}%`);
+      $("#vip-my-code").text(currentVipProfile.referralCode);
+
+      // Rellena automáticamente el nombre en el carrito y aplica su descuento VIP
+      if (!$("#booking-client-name").val()) {
+        $("#booking-client-name").val(currentVipProfile.name);
+      }
+      activeDiscountPercent = Number(currentVipProfile.discountPercent || 10);
+      renderCartUI();
+    } else {
+      currentVipProfile = null;
+      $("#vip-profile-view").hide();
+      $("#vip-auth-view").fadeIn(200);
+    }
+  });
+}
+
+/* ============================================================================
+   6. SINCRONIZACIÓN EN VIVO CON FIREBASE
    ============================================================================ */
 function syncStoreWithFirebase() {
   if (!dbRealtime) return;
@@ -393,17 +566,27 @@ function syncStoreWithFirebase() {
   configRef.on("value", (snapshot) => {
     const cloudData = snapshot.val();
     if (cloudData) {
-      // Combina los cambios hechos en el Panel Admin con la base
       STORE_CONFIG = _.merge({}, STORE_CONFIG, cloudData);
+      // Si en el Admin se borraron o actualizaron arreglos completos, respetamos la lista de la nube
+      if (cloudData.setsProducts) STORE_CONFIG.setsProducts = cloudData.setsProducts;
+      if (cloudData.arrivalsProducts) STORE_CONFIG.arrivalsProducts = cloudData.arrivalsProducts;
+      if (cloudData.promoReels) STORE_CONFIG.promoReels = cloudData.promoReels;
+      if (cloudData.lookbook && cloudData.lookbook.hotspots) {
+        STORE_CONFIG.lookbook.hotspots = cloudData.lookbook.hotspots;
+      }
+      if (cloudData.model3D && cloudData.model3D.techSpecs) {
+        STORE_CONFIG.model3D.techSpecs = cloudData.model3D.techSpecs;
+      }
+
+      applyDynamicTheme();
       initStorefrontContent();
       initD3LookbookHotspots();
+      renderCartUI();
     } else {
-      // Si la base está en null (como en tu captura 4), guarda la configuración inicial
       configRef.set(STORE_CONFIG).catch(() => {});
     }
   });
 
-  // Escucha reseñas en vivo desde Cloud Firestore
   if (dbFirestore) {
     dbFirestore
       .collection("resenas_clientas")
@@ -414,8 +597,7 @@ function syncStoreWithFirebase() {
           const cloudReviews = [];
           snap.forEach((doc) => cloudReviews.push(doc.data()));
           if (cloudReviews.length > 0) {
-            const combined = [...cloudReviews, ...STORE_CONFIG.testimonials];
-            renderTestimonialsList(combined);
+            renderTestimonialsList([...cloudReviews, ...STORE_CONFIG.testimonials]);
           }
         },
         () => {}
@@ -424,9 +606,33 @@ function syncStoreWithFirebase() {
 }
 
 /* ============================================================================
-   6. RENDERIZADO COMPLETO DE LA TIENDA Y FICHA TÉCNICA DE UÑAS 3D
+   7. RENDERIZADO DE CONTENIDO, REDES, VIDEOS REELS Y MODO DE NEGOCIO
    ============================================================================ */
 function initStorefrontContent() {
+  applyDynamicTheme();
+
+  const isProductStore = STORE_CONFIG.businessMode === "products";
+
+  // Adapta textos según el rubro elegido en el Admin (Modo Citas vs Modo Tienda de Productos)
+  $("#cart-drawer-title").text(isProductStore ? "Tu Carrito de Compras" : "Tu Cita & Servicios");
+  $("#booking-form-heading").html(
+    isProductStore
+      ? '<i class="ri-truck-line"></i> Datos de Envío & Facturación'
+      : '<i class="ri-calendar-check-line"></i> Datos de tu Cita & Atención'
+  );
+  if (isProductStore) {
+    $("#booking-datetime-row").hide();
+    $("#label-mode-local").text("Retiro en Tienda");
+    $("#label-mode-delivery").text("Delivery / Envío");
+  } else {
+    $("#booking-datetime-row").show();
+    $("#label-mode-local").text("En Estudio (Panorama)");
+    $("#label-mode-delivery").text("A Domicilio");
+  }
+
+  // Tasa del Día en Cabecera
+  $("#header-rate-pill").text(`Tasa: Bs. ${Number(STORE_CONFIG.exchangeRateBs || 0).toFixed(2)}`);
+
   $("#preloader-brand").text(STORE_CONFIG.brandSpaced);
   $("#header-logo").text(STORE_CONFIG.brandName);
   $("#footer-brand-name").text(STORE_CONFIG.brandName.toUpperCase());
@@ -437,8 +643,8 @@ function initStorefrontContent() {
     .join("");
   $("#marquee-track").html(marqueeItems);
 
-  // 2. Navegación Lateral
-  const navHtml = STORE_CONFIG.navigation
+  // 2. Navegación y Redes Sociales Dinámicas (Punto 1)
+  const navHtml = (STORE_CONFIG.navigation || [])
     .map(
       (item) => `
       <div class="drawer-nav-item">
@@ -452,7 +658,19 @@ function initStorefrontContent() {
     .join("");
   $("#drawer-nav-list").html(navHtml);
 
-  // 3. Portada Hero
+  renderDynamicSocialLinks();
+
+  // 3. Zonas de Domicilio e Instrucciones de Pago
+  const zonesHtml = [
+    '<option value="0">Selecciona tu zona de domicilio...</option>',
+    ...(STORE_CONFIG.deliveryZones || []).map(
+      (z) => `<option value="${Number(z.fee)}">${sanitizeInput(z.label)} (+ $${z.fee})</option>`
+    )
+  ].join("");
+  $("#booking-zone-select").html(zonesHtml);
+  updatePaymentInstructionsUI();
+
+  // 4. Portada Hero
   $("#hero-bg-media").css("background-image", `url('${STORE_CONFIG.hero.bgImage}')`);
   $("#hero-kicker").text(STORE_CONFIG.hero.kicker);
   $("#hero-title-main").text(STORE_CONFIG.hero.titleMain);
@@ -472,7 +690,7 @@ function initStorefrontContent() {
     .join("");
   $("#hero-badges").html(badgesHtml);
 
-  // 4. Visor 3D de las Manos + Ficha Técnica de Materiales (Polygel, Rubber, Esmalte, Top Coat)
+  // 5. Visor 3D + Ficha Técnica de Materiales
   $("#3d-subtitle").text(STORE_CONFIG.model3D.subtitle);
   $("#3d-title").text(STORE_CONFIG.model3D.title);
   $("#3d-desc").text(STORE_CONFIG.model3D.desc);
@@ -480,7 +698,6 @@ function initStorefrontContent() {
   const viewerEl = document.getElementById("main-3d-model");
   if (viewerEl) {
     viewerEl.setAttribute("src", STORE_CONFIG.model3D.glbUrl);
-    // Si el usuario aún no ha copiado unas-demo.glb a la carpeta, carga un modelo 3D de respaldo sin romper nada
     viewerEl.addEventListener(
       "error",
       function handleFallback() {
@@ -510,11 +727,13 @@ function initStorefrontContent() {
     .join("");
   $("#nail-tech-specs").html(specsHtml);
 
-  // 5. Carrusel de Sistemas Destacados
-  renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
-  renderCarouselDots(STORE_CONFIG.setsProducts.length, "#sets-dots");
+  // 6. Videos Cortos Publicitarios / Shoppable Reels (Punto 4)
+  renderPromoReels();
 
-  // 6. Bloques de Especialidades
+  // 7. Carrusel Principal y Especialidades
+  renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
+  renderCarouselDots((STORE_CONFIG.setsProducts || []).length, "#sets-dots");
+
   const catsHtml = (STORE_CONFIG.categories || [])
     .map(
       (cat) => `
@@ -522,7 +741,7 @@ function initStorefrontContent() {
         <img src="${cat.image}" alt="${sanitizeInput(cat.name)}" loading="lazy">
         <div class="category-overlay">
           <h3 class="category-name">${sanitizeInput(cat.name)}</h3>
-          <span class="category-link">ver servicios →</span>
+          <span class="category-link">explorar →</span>
         </div>
       </article>
     `
@@ -530,7 +749,7 @@ function initStorefrontContent() {
     .join("");
   $("#categories-grid").html(catsHtml);
 
-  // 7. Filtros de Catálogo por Técnica
+  // 8. Filtros de Catálogo
   const pillsHtml = (STORE_CONFIG.arrivalFilters || [])
     .map(
       (filterName, idx) => `
@@ -541,9 +760,11 @@ function initStorefrontContent() {
     )
     .join("");
   $("#filter-pills-container").html(pillsHtml);
-  filterArrivalsByCategory(STORE_CONFIG.arrivalFilters[0]);
+  if (STORE_CONFIG.arrivalFilters && STORE_CONFIG.arrivalFilters.length > 0) {
+    filterArrivalsByCategory(STORE_CONFIG.arrivalFilters[0]);
+  }
 
-  // 8. Bioseguridad y Beneficios
+  // 9. Garantías, Testimonios, Ubicación y Footer
   $("#care-kicker").text(STORE_CONFIG.carePromo.kicker);
   $("#care-title").text(STORE_CONFIG.carePromo.title);
   $("#care-desc").text(STORE_CONFIG.carePromo.desc);
@@ -561,17 +782,15 @@ function initStorefrontContent() {
     .join("");
   $("#benefits-grid").html(benefitsHtml);
 
-  // 9. Testimonios Iniciales
   renderTestimonialsList(STORE_CONFIG.testimonials);
 
-  // 10. Ubicación en El Junquito (Panorama) y Domicilio
   $("#loc-title").text(STORE_CONFIG.location.title);
   $("#loc-city").text(STORE_CONFIG.location.city);
   $("#loc-details").html(`
     <li>
       <i class="ri-map-pin-line"></i>
       <div>
-        <span class="location-label">UBICACIÓN BASE & COBERTURA</span>
+        <span class="location-label">SEDE & COBERTURA A DOMICILIO</span>
         <span>${sanitizeInput(STORE_CONFIG.location.address)}</span>
       </div>
     </li>
@@ -585,13 +804,12 @@ function initStorefrontContent() {
     <li>
       <i class="ri-whatsapp-line"></i>
       <div>
-        <span class="location-label">CONTACTO DIRECTO</span>
+        <span class="location-label">WHATSAPP DIRECTO</span>
         <span>${sanitizeInput(STORE_CONFIG.location.phone)}</span>
       </div>
     </li>
   `);
 
-  // 11. Acordeones del Pie de Página
   const accordionsHtml = (STORE_CONFIG.footerAccordions || [])
     .map(
       (acc) => `
@@ -608,6 +826,91 @@ function initStorefrontContent() {
     )
     .join("");
   $("#footer-accordions").html(accordionsHtml);
+}
+
+// Dibuja los íconos de Redes Sociales solo si tienen un enlace configurado en el Admin
+function renderDynamicSocialLinks() {
+  const s = STORE_CONFIG.socials || {};
+  const iconMap = [
+    { key: "instagram", icon: "ri-instagram-line", label: "Instagram" },
+    { key: "tiktok", icon: "ri-tiktok-fill", label: "TikTok" },
+    { key: "facebook", icon: "ri-facebook-circle-fill", label: "Facebook" },
+    { key: "youtube", icon: "ri-youtube-fill", label: "YouTube" },
+    { key: "whatsapp", icon: "ri-whatsapp-line", label: "WhatsApp" }
+  ];
+
+  const html = iconMap
+    .filter((item) => s[item.key] && s[item.key].trim().length > 5)
+    .map(
+      (item) => `
+      <a href="${s[item.key].trim()}" target="_blank" rel="noopener noreferrer" aria-label="${item.label}">
+        <i class="${item.icon}"></i>
+      </a>
+    `
+    )
+    .join("");
+
+  $("#footer-socials, #drawer-socials").html(html);
+}
+
+// Renderiza los Videos Cortos Publicitarios (Reels) con reproducción inteligente al estar visibles
+function renderPromoReels() {
+  const reels = STORE_CONFIG.promoReels || [];
+  if (reels.length === 0) {
+    $("#reels-section").hide();
+    return;
+  }
+  $("#reels-section").show();
+
+  const html = reels
+    .map(
+      (r) => `
+      <article class="reel-card">
+        <span class="reel-badge-top">✦ ${sanitizeInput(r.tag || "REEL")}</span>
+        <button type="button" class="reel-sound-btn" aria-label="Activar o silenciar audio">
+          <i class="ri-volume-mute-line"></i>
+        </button>
+        <video 
+          class="smart-reel-video"
+          src="${r.videoUrl}" 
+          poster="${r.poster || STORE_CONFIG.hero.bgImage}"
+          muted 
+          loop 
+          playsinline 
+          preload="metadata">
+        </video>
+        <div class="reel-overlay-bottom">
+          <h3 class="reel-title">${sanitizeInput(r.title)}</h3>
+          <div class="reel-price">${formatCurrency(r.price)} <span style="font-size:0.68rem; color:#ccc;">(${formatBs(r.price)})</span></div>
+          <button type="button" class="btn-gold btn-full reel-buy-btn" data-id="${r.id}" style="padding:0.5rem; font-size:0.68rem;">
+            LO QUIERO →
+          </button>
+        </div>
+      </article>
+    `
+    )
+    .join("");
+
+  $("#reels-carousel").html(html);
+
+  // Observador inteligente: solo reproduce el video cuando está en pantalla para ahorrar batería y datos
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const vid = entry.target;
+          if (entry.isIntersecting) {
+            vid.play().catch(() => {});
+          } else {
+            vid.pause();
+          }
+        });
+      },
+      { threshold: 0.55 }
+    );
+
+    document.querySelectorAll(".smart-reel-video").forEach((v) => observer.observe(v));
+  }
 }
 
 function renderTestimonialsList(list) {
@@ -628,6 +931,10 @@ function renderTestimonialsList(list) {
 }
 
 function renderProductCarousel(productsArray, containerSelector, showOfferTag = false) {
+  const isProductStore = STORE_CONFIG.businessMode === "products";
+  const btnLabelAvailable = isProductStore ? "AGREGAR AL CARRITO →" : "SELECCIONAR SERVICIO →";
+  const btnLabelOut = isProductStore ? "AGOTADO" : "SIN CUPO HOY";
+
   const html = _.map(productsArray, (prod) => {
     const discountPercent =
       prod.oldPrice && prod.oldPrice > prod.price
@@ -639,7 +946,7 @@ function renderProductCarousel(productsArray, containerSelector, showOfferTag = 
         <div class="product-media">
           <div class="badge-stack">
             ${showOfferTag && prod.isOffer ? '<span class="tag-badge tag-offer">PROMO</span>' : ""}
-            ${!prod.inStock ? '<span class="tag-badge tag-soldout">SIN CUPO HOY</span>' : ""}
+            ${!prod.inStock ? `<span class="tag-badge tag-soldout">${btnLabelOut}</span>` : ""}
           </div>
           ${discountPercent > 0 ? `<span class="tag-discount">-${discountPercent}%</span>` : ""}
           <img src="${prod.image}" alt="${sanitizeInput(prod.title)}" loading="lazy">
@@ -649,13 +956,14 @@ function renderProductCarousel(productsArray, containerSelector, showOfferTag = 
           <div class="product-pricing">
             ${prod.oldPrice ? `<span class="price-old">${formatCurrency(prod.oldPrice)}</span>` : ""}
             <span class="price-current">${formatCurrency(prod.price)}</span>
+            <span class="price-bs-ref">(${formatBs(prod.price)})</span>
           </div>
           <button 
             type="button" 
             class="btn-card-action add-to-cart-btn" 
             data-id="${prod.id}"
             ${!prod.inStock ? "disabled" : ""}>
-            ${prod.inStock ? "SELECCIONAR SERVICIO →" : "CONSULTAR DISPONIBILIDAD"}
+            ${prod.inStock ? btnLabelAvailable : btnLabelOut}
           </button>
         </div>
       </article>
@@ -687,8 +995,15 @@ function filterArrivalsByCategory(categoryName) {
   });
 }
 
+function updatePaymentInstructionsUI() {
+  const method = $("#booking-payment-method").val();
+  const infoMap = STORE_CONFIG.paymentMethodsInfo || {};
+  const text = infoMap[method] || "Coordinamos los datos de pago por WhatsApp.";
+  $("#payment-instructions-box").text(text);
+}
+
 /* ============================================================================
-   7. ESCAPARATE INTERACTIVO CON D3.JS (Puntos sobre las uñas)
+   8. ESCAPARATE INTERACTIVO CON D3.JS (PUNTOS MODIFICABLES DESDE EL ADMIN)
    ============================================================================ */
 function initD3LookbookHotspots() {
   $("#lookbook-img").attr("src", STORE_CONFIG.lookbook.image);
@@ -712,10 +1027,10 @@ function initD3LookbookHotspots() {
         .html(`
           <div>
             <strong style="display:block; font-size:0.84rem;">${sanitizeInput(d.title)}</strong>
-            <span style="color:var(--accent-gold); font-size:0.82rem;">${formatCurrency(d.price)}</span>
+            <span style="color:var(--accent-gold); font-size:0.82rem;">${formatCurrency(d.price)} (${formatBs(d.price)})</span>
           </div>
           <button type="button" class="btn-gold hotspot-buy-btn" data-id="${d.id}" style="padding:0.55rem 0.9rem; font-size:0.7rem;">
-            SUMAR A MI CITA +
+            AGREGAR +
           </button>
         `)
         .addClass("is-visible")
@@ -732,7 +1047,7 @@ function initD3LookbookHotspots() {
 }
 
 /* ============================================================================
-   8. PRELOADER CON ANIME.JS Y CALCULADORA REACT DE DISEÑO DE UÑAS
+   9. PRELOADER CON ANIME.JS Y COTIZADOR REACT
    ============================================================================ */
 function runPreloaderAnimation() {
   const tl = anime.timeline({ easing: "easeOutExpo" });
@@ -764,7 +1079,7 @@ function runPreloaderAnimation() {
       targets: "#preloader",
       opacity: [1, 0],
       duration: 650,
-      delay: 300,
+      delay: 280,
       complete: function () {
         $("#preloader").css("display", "none");
       }
@@ -777,17 +1092,17 @@ function mountReactCustomKitBuilder() {
 
   const e = React.createElement;
 
-  function CustomNailCalculator() {
-    const [systemType, setSystemType] = React.useState({ name: "Polygel Esculpido", price: 22 });
-    const [nailLength, setNailLength] = React.useState({ name: "Largo #2 - #3 (Salón)", extra: 0 });
-    const [artLevel, setArtLevel] = React.useState({ name: "Francés / Brillo Espejo", extra: 3 });
+  function CustomKitCalculator() {
+    const [baseOpt, setBaseOpt] = React.useState({ name: "Polygel Esculpido", price: 22 });
+    const [sizeOpt, setSizeOpt] = React.useState({ name: "Largo Medio (#1-#3)", extra: 0 });
+    const [finishOpt, setFinishOpt] = React.useState({ name: "Francés / Efecto Espejo", extra: 3 });
 
-    const total = systemType.price + nailLength.extra + artLevel.extra;
+    const total = baseOpt.price + sizeOpt.extra + finishOpt.extra;
 
-    function handleAddCustomSet() {
+    function handleAddCustom() {
       addToCart({
-        id: `custom-nails-${Date.now()}`,
-        title: `${systemType.name} (${nailLength.name} + ${artLevel.name})`,
+        id: `custom-pack-${Date.now()}`,
+        title: `${baseOpt.name} (${sizeOpt.name} + ${finishOpt.name})`,
         price: total,
         image: STORE_CONFIG.lookbook.image
       });
@@ -799,11 +1114,11 @@ function mountReactCustomKitBuilder() {
       "div",
       { className: "react-kit-box" },
       e("span", { className: "section-subtitle" }, "COTIZADOR INTERACTIVO (REACT)"),
-      e("h3", { className: "section-title", style: { fontSize: "1.65rem" } }, "Personaliza tu Set de Uñas"),
-      e("p", { className: "section-desc", style: { marginBottom: "1rem" } }, "Elige material, largo y decoración para calcular tu cita al instante:"),
+      e("h3", { className: "section-title", style: { fontSize: "1.65rem" } }, "Personaliza a tu Medida"),
+      e("p", { className: "section-desc", style: { marginBottom: "1rem" } }, "Combina opciones y calcula tu presupuesto al instante:"),
       e(
         "div",
-        { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "0.85rem" } },
+        { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "0.8rem" } },
         [
           { name: "Polygel Esculpido", price: 22 },
           { name: "Soft Gel Tips", price: 18 },
@@ -814,8 +1129,8 @@ function mountReactCustomKitBuilder() {
             {
               key: sys.name,
               type: "button",
-              className: `filter-pill-btn ${systemType.name === sys.name ? "is-active" : ""}`,
-              onClick: () => setSystemType(sys)
+              className: `filter-pill-btn ${baseOpt.name === sys.name ? "is-active" : ""}`,
+              onClick: () => setBaseOpt(sys)
             },
             `${sys.name} ($${sys.price})`
           )
@@ -823,9 +1138,9 @@ function mountReactCustomKitBuilder() {
       ),
       e(
         "div",
-        { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "0.85rem" } },
+        { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "0.8rem" } },
         [
-          { name: "Largo Corto/Medio (#1-#3)", extra: 0 },
+          { name: "Largo Medio (#1-#3)", extra: 0 },
           { name: "Largo XL (#4-#6)", extra: 5 }
         ].map((len) =>
           e(
@@ -833,8 +1148,8 @@ function mountReactCustomKitBuilder() {
             {
               key: len.name,
               type: "button",
-              className: `filter-pill-btn ${nailLength.name === len.name ? "is-active" : ""}`,
-              onClick: () => setNailLength(len)
+              className: `filter-pill-btn ${sizeOpt.name === len.name ? "is-active" : ""}`,
+              onClick: () => setSizeOpt(len)
             },
             `${len.name} (+$${len.extra})`
           )
@@ -845,7 +1160,7 @@ function mountReactCustomKitBuilder() {
         { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.45rem", marginBottom: "1rem" } },
         [
           { name: "Tono Liso + Top Cristal", extra: 0 },
-          { name: "Francés / Ojo de Gato", extra: 3 },
+          { name: "Francés / Efecto Espejo", extra: 3 },
           { name: "Relieve 3D / Encapsulado", extra: 6 }
         ].map((art) =>
           e(
@@ -853,8 +1168,8 @@ function mountReactCustomKitBuilder() {
             {
               key: art.name,
               type: "button",
-              className: `filter-pill-btn ${artLevel.name === art.name ? "is-active" : ""}`,
-              onClick: () => setArtLevel(art)
+              className: `filter-pill-btn ${finishOpt.name === art.name ? "is-active" : ""}`,
+              onClick: () => setFinishOpt(art)
             },
             `${art.name} (+$${art.extra})`
           )
@@ -862,35 +1177,37 @@ function mountReactCustomKitBuilder() {
       ),
       e(
         "div",
-        { style: { marginBottom: "1rem", fontSize: "1rem" } },
-        "Valor de tu Set Personalizado: ",
-        e("strong", { style: { color: "var(--accent-gold)" } }, formatCurrency(total))
+        { style: { marginBottom: "1rem", fontSize: "0.95rem" } },
+        "Total Personalizado: ",
+        e("strong", { style: { color: "var(--accent-gold)" } }, `${formatCurrency(total)} (${formatBs(total)})`)
       ),
       e(
         "button",
-        { type: "button", className: "btn-gold btn-full", onClick: handleAddCustomSet },
-        "AGREGAR ESTE SET A MI CITA →"
+        { type: "button", className: "btn-gold btn-full", onClick: handleAddCustom },
+        "AGREGAR COMBINACIÓN →"
       )
     );
   }
 
   const root = ReactDOM.createRoot(rootEl);
-  root.render(e(CustomNailCalculator));
+  root.render(e(CustomKitCalculator));
 }
 
 /* ============================================================================
-   9. EVENTOS PRINCIPALES, DOMICILIO GPS Y GUARDADO EN CLOUD FIRESTORE
+   10. EVENTOS DE INTERFAZ, VIP, VIDEOS REELS, GPS Y CHECKOUT
    ============================================================================ */
 $(document).ready(function () {
   loadCartFromStorage();
   initStorefrontContent();
   initD3LookbookHotspots();
+  checkUrlReferralParam();
   renderCartUI();
   runPreloaderAnimation();
   mountReactCustomKitBuilder();
+  initVipAuthListener();
   syncStoreWithFirebase();
 
-  // Abrir y cerrar menú lateral y carrito/agenda
+  // Abrir/Cerrar Menú Lateral y Carrito
   $("#open-menu-btn").on("click", function () {
     $("#side-drawer").addClass("is-open").attr("aria-hidden", "false");
     $("#drawer-backdrop").addClass("is-active");
@@ -906,17 +1223,151 @@ $(document).ready(function () {
     $("#drawer-backdrop").removeClass("is-active");
   });
 
-  // Acordeón interactivo de la Ficha Técnica de Materiales al lado del 3D
+  // Abrir y Cerrar Modal Club VIP & Referidos (Punto 2)
+  $("#open-vip-btn, #hero-vip-btn").on("click", function () {
+    $("#vip-modal").addClass("is-open").attr("aria-hidden", "false");
+  });
+
+  $("#close-vip-modal, #vip-modal").on("click", function (e) {
+    if (e.target === this || $(e.target).closest("#close-vip-modal").length) {
+      $("#vip-modal").removeClass("is-open").attr("aria-hidden", "true");
+    }
+  });
+
+  // Registro de Nueva Cuenta VIP + Suma de Puntos al Referidor
+  $("#vip-auth-form").on("submit", async function (e) {
+    e.preventDefault();
+    if (!authFirebase) return;
+
+    const name = sanitizeInput($("#vip-user-name").val()) || "Miembro VIP";
+    const email = $("#vip-user-email").val().trim();
+    const pass = $("#vip-user-pass").val();
+    const invitedBy = sanitizeInput($("#vip-invited-by").val()).toUpperCase();
+
+    $("#vip-auth-feedback").text("Creando tu tarjeta VIP y activando beneficio...");
+
+    try {
+      const cred = await authFirebase.createUserWithEmailAndPassword(email, pass);
+      const prefix = name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 5) || "VIP";
+      const myCode = `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
+
+      const newProfile = {
+        uid: cred.user.uid,
+        name,
+        email,
+        referralCode: myCode,
+        invitedBy: invitedBy || "",
+        points: 150,
+        referralsCount: 0,
+        discountPercent: 10,
+        createdAt: new Date().toISOString()
+      };
+
+      if (dbFirestore) {
+        await dbFirestore.collection("usuarios_vip").doc(cred.user.uid).set(newProfile);
+
+        // Si puso el código de una amiga, le sumamos +1 referido y +100 puntos a su amiga
+        if (invitedBy.length >= 3) {
+          const refSnap = await dbFirestore
+            .collection("usuarios_vip")
+            .where("referralCode", "==", invitedBy)
+            .limit(1)
+            .get();
+          refSnap.forEach((doc) => {
+            const d = doc.data();
+            doc.ref.update({
+              referralsCount: Number(d.referralsCount || 0) + 1,
+              points: Number(d.points || 100) + 100
+            });
+          });
+        }
+      }
+      $("#vip-auth-feedback").text("¡Cuenta VIP creada con éxito!");
+    } catch (err) {
+      $("#vip-auth-feedback").text("Si ya tienes cuenta con ese correo, toca 'YA TENGO CUENTA'.");
+    }
+  });
+
+  // Iniciar Sesión en Cuenta VIP existente
+  $("#vip-login-btn").on("click", async function () {
+    if (!authFirebase) return;
+    const email = $("#vip-user-email").val().trim();
+    const pass = $("#vip-user-pass").val();
+    if (!email || !pass) {
+      $("#vip-auth-feedback").text("Ingresa tu correo y contraseña arriba.");
+      return;
+    }
+    $("#vip-auth-feedback").text("Iniciando sesión VIP...");
+    try {
+      await authFirebase.signInWithEmailAndPassword(email, pass);
+      $("#vip-auth-feedback").text("");
+    } catch (err) {
+      $("#vip-auth-feedback").text("Correo o contraseña incorrectos.");
+    }
+  });
+
+  $("#vip-logout-btn").on("click", function () {
+    if (authFirebase) authFirebase.signOut();
+  });
+
+  // Compartir Enlace de Referido por WhatsApp
+  $("#share-referral-wa-btn").on("click", function () {
+    const code = $("#vip-my-code").text().trim();
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareLink = `${baseUrl}?ref=${encodeURIComponent(code)}`;
+    const msg = encodeURIComponent(
+      `✨ ¡Hola! Te regalo un *${STORE_CONFIG.referralDiscountPercent || 10}% de descuento* en *${STORE_CONFIG.brandName.toUpperCase()}* usando mi código VIP *${code}* o entrando directo a este enlace:\n\n👉 ${shareLink}`
+    );
+    window.open(`https://wa.me/?text=${msg}`, "_blank", "noopener,noreferrer");
+  });
+
+  // Aplicar código de referido manualmente en el carrito
+  $("#apply-referral-btn").on("click", function () {
+    const code = sanitizeInput($("#cart-referral-code").val()).toUpperCase();
+    if (code.length < 3) {
+      $("#referral-feedback-msg").text("Ingresa un código válido.");
+      return;
+    }
+    appliedReferralCode = code;
+    activeDiscountPercent = Number(STORE_CONFIG.referralDiscountPercent || 10);
+    localStorage.setItem("kalon_referral_code", code);
+    $("#referral-feedback-msg").text(`✓ Código ${code} aplicado (-${activeDiscountPercent}% de descuento)`);
+    renderCartUI();
+  });
+
+  // Sonido y Compra desde Videos Cortos (Reels - Punto 4)
+  $(document).on("click", ".reel-sound-btn", function () {
+    const videoEl = $(this).siblings("video")[0];
+    if (!videoEl) return;
+    videoEl.muted = !videoEl.muted;
+    $(this).html(videoEl.muted ? '<i class="ri-volume-mute-line"></i>' : '<i class="ri-volume-up-line"></i>');
+  });
+
+  $(document).on("click", ".reel-buy-btn", function () {
+    const reelId = $(this).data("id");
+    const foundReel = _.find(STORE_CONFIG.promoReels, { id: reelId });
+    if (foundReel) {
+      addToCart({
+        id: foundReel.id,
+        title: foundReel.title,
+        price: foundReel.price,
+        image: foundReel.poster || STORE_CONFIG.hero.bgImage
+      });
+      $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
+      $("#drawer-backdrop").addClass("is-active");
+    }
+  });
+
+  // Ficha Técnica de Materiales al lado del 3D
   $(document).on("click", ".spec-header-btn", function () {
     const $parent = $(this).closest(".spec-item");
     $(".spec-item").removeClass("is-active");
     $parent.addClass("is-active");
   });
 
-  // Botón para pedir el look exacto del modelo 3D de las manos
   $("#book-3d-look-btn").on("click", function () {
     addToCart({
-      id: "sistema-3d-cobalto",
+      id: "sistema-3d-estrella",
       title: STORE_CONFIG.model3D.systemTitle,
       price: STORE_CONFIG.model3D.systemPrice,
       image: STORE_CONFIG.hero.bgImage
@@ -925,7 +1376,7 @@ $(document).ready(function () {
     $("#drawer-backdrop").addClass("is-active");
   });
 
-  // Selector de Modalidad: En Estudio (Panorama) vs. A Domicilio
+  // Modalidad Estudio vs Domicilio + GPS
   $(".mode-btn").on("click", function () {
     $(".mode-btn").removeClass("is-active");
     $(this).addClass("is-active");
@@ -937,46 +1388,45 @@ $(document).ready(function () {
     } else {
       $("#domicilio-fields").slideUp(220);
       deliveryFee = 0;
-      deliveryZoneLabel = "Atención en Estudio (Panorama, El Junquito)";
+      deliveryZoneLabel = "En Sede (Panorama, El Junquito)";
     }
     renderCartUI();
   });
 
-  // Cambio de zona de domicilio en El Junquito / Caracas
   $("#booking-zone-select").on("change", function () {
     deliveryFee = Number($(this).val() || 0);
     deliveryZoneLabel = $(this).find("option:selected").text();
     renderCartUI();
   });
 
-  // Botón de Captura de Ubicación GPS Exacta (Regla 5 - Bajo permiso del cliente)
+  $("#booking-payment-method").on("change", updatePaymentInstructionsUI);
+
   $("#get-gps-btn").on("click", function () {
     const $status = $("#gps-status-msg");
     if (!("geolocation" in navigator)) {
       $status.text("Tu navegador no soporta GPS. Escribe tu dirección arriba.");
       return;
     }
-
-    $status.text("Obteniendo coordenadas GPS de tu ubicación...");
+    $status.text("Obteniendo coordenadas GPS...");
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         const lat = pos.coords.latitude.toFixed(6);
         const lng = pos.coords.longitude.toFixed(6);
         clientGpsUrl = `https://maps.google.com/?q=${lat},${lng}`;
-        $status.html(`<i class="ri-checkbox-circle-fill"></i> Ubicación GPS adjuntada con éxito.`);
+        $status.html('<i class="ri-checkbox-circle-fill"></i> Ubicación GPS exacta adjuntada.');
       },
       function () {
-        $status.text("Permiso de GPS denegado. Puedes escribir tu punto de referencia manualmente.");
+        $status.text("Permiso GPS denegado. Escribe tu punto de referencia arriba.");
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   });
 
-  // Buscador en vivo con Debounce de Lodash
+  // Buscador en vivo
   $("#live-search-input").on(
     "input",
     _.debounce(function () {
-      const allCatalog = [...STORE_CONFIG.setsProducts, ...STORE_CONFIG.arrivalsProducts];
+      const allCatalog = [...(STORE_CONFIG.setsProducts || []), ...(STORE_CONFIG.arrivalsProducts || [])];
       const cleanQuery = sanitizeInput($(this).val()).toLowerCase();
       const $resultsBox = $("#search-results-box");
       $resultsBox.empty();
@@ -985,13 +1435,13 @@ $(document).ready(function () {
 
       const matches = _.filter(allCatalog, (item) => item.title.toLowerCase().includes(cleanQuery));
       if (matches.length === 0) {
-        $resultsBox.html('<div class="search-result-item">Sin servicios encontrados.</div>');
+        $resultsBox.html('<div class="search-result-item">Sin coincidencias.</div>');
         return;
       }
 
       matches.forEach((m) => {
         $resultsBox.append(`
-          <div class="search-result-item">
+          <div class="search-result-item add-to-cart-btn" data-id="${m.id}">
             <span>${sanitizeInput(m.title)}</span>
             <strong>${formatCurrency(m.price)}</strong>
           </div>
@@ -1000,20 +1450,18 @@ $(document).ready(function () {
     }, 220)
   );
 
-  // Control de giro del modelo 3D
   $("#toggle-3d-rotate").on("click", function () {
     const viewer = document.getElementById("main-3d-model");
     if (!viewer) return;
     if (viewer.hasAttribute("auto-rotate")) {
       viewer.removeAttribute("auto-rotate");
-      $(this).html('<i class="ri-play-line"></i> Reanudar Giro 3D');
+      $(this).html('<i class="ri-play-line"></i> Girar 3D');
     } else {
       viewer.setAttribute("auto-rotate", "");
-      $(this).html('<i class="ri-pause-line"></i> Pausar Giro 3D');
+      $(this).html('<i class="ri-pause-line"></i> Pausar 3D');
     }
   });
 
-  // Filtro de píldoras en catálogo
   $(document).on("click", "#filter-pills-container .filter-pill-btn", function () {
     $("#filter-pills-container .filter-pill-btn").removeClass("is-active");
     $(this).addClass("is-active");
@@ -1028,21 +1476,21 @@ $(document).ready(function () {
     }
   });
 
-  // Agregar servicio al carrito
   $(document).on("click", ".add-to-cart-btn", function () {
-    const allCatalog = [...STORE_CONFIG.setsProducts, ...STORE_CONFIG.arrivalsProducts];
+    const allCatalog = [...(STORE_CONFIG.setsProducts || []), ...(STORE_CONFIG.arrivalsProducts || [])];
     const prodId = $(this).data("id");
     const found = _.find(allCatalog, { id: prodId });
-    if (found && found.inStock) {
+    if (found && found.inStock !== false) {
       addToCart(found);
       const $btn = $(this);
-      const originalText = $btn.text();
-      $btn.text("✓ SERVICIO AGREGADO");
-      setTimeout(() => $btn.text(originalText), 1200);
+      if ($btn.hasClass("btn-card-action")) {
+        const originalText = $btn.text();
+        $btn.text("✓ AGREGADO");
+        setTimeout(() => $btn.text(originalText), 1100);
+      }
     }
   });
 
-  // Agregar servicio desde un punto D3.js
   $(document).on("click", ".hotspot-buy-btn", function () {
     const hsId = $(this).data("id");
     const hsItem = _.find(STORE_CONFIG.lookbook.hotspots, { id: hsId });
@@ -1056,74 +1504,88 @@ $(document).ready(function () {
     }
   });
 
-  // Eliminar servicio del carrito
   $(document).on("click", ".remove-cart-item", function () {
     removeFromCart($(this).data("id"));
   });
 
-  // CONFIRMAR CITA: Guarda en Cloud Firestore y envía el resumen + GPS a WhatsApp
+  // CONFIRMAR SOLICITUD: Guarda en Firestore, suma puntos VIP y envía a WhatsApp
   $("#checkout-whatsapp-btn").on("click", async function () {
     if (cartState.length === 0) {
-      alert("Por favor selecciona al menos un servicio de uñas antes de agendar.");
+      alert("Selecciona al menos un servicio o producto antes de confirmar.");
       return;
     }
 
-    const clientName = sanitizeInput($("#booking-client-name").val()) || "Clienta Web";
+    const clientName = sanitizeInput($("#booking-client-name").val()) || "Cliente Web";
     const clientPhone = sanitizeInput($("#booking-client-phone").val()) || "No indicado";
     const bookingDate = sanitizeInput($("#booking-date").val()) || "Por coordinar";
     const bookingTime = sanitizeInput($("#booking-time").val()) || "Por coordinar";
     const addressRef = sanitizeInput($("#booking-address-ref").val()) || "Sin referencia adicional";
+    const paymentMethod = sanitizeInput($("#booking-payment-method").val()) || "Por acordar";
 
-    const servicesSubtotal = _.sumBy(cartState, (i) => i.price * i.qty);
-    const activeFee = deliveryMode === "domicilio" ? Number(deliveryFee) : 0;
-    const totalAmount = servicesSubtotal + activeFee;
+    const { discountAmount, activeFee, grandTotal } = calculateCartTotals();
 
     const bookingRecord = {
       clientName,
       clientPhone,
       bookingDate,
       bookingTime,
-      modality: deliveryMode === "domicilio" ? "Servicio a Domicilio" : "Estudio en Panorama (El Junquito)",
+      modality: deliveryMode === "domicilio" ? "A Domicilio" : "En Sede (Panorama)",
       zone: deliveryMode === "domicilio" ? deliveryZoneLabel : "El Junquito - Sector Panorama",
       addressReference: addressRef,
       gpsMapLink: clientGpsUrl || "No adjuntado",
+      paymentMethod,
+      referralCodeUsed: appliedReferralCode || "Ninguno",
+      discountApplied: discountAmount,
       items: cartState.map((i) => ({ title: i.title, qty: i.qty, price: i.price })),
       deliveryFee: activeFee,
-      totalAmount,
+      totalAmount: grandTotal,
+      totalBsRef: formatBs(grandTotal),
       status: "Pendiente",
       createdAt: new Date().toISOString()
     };
 
-    // 1. Guarda la cita en tu Cloud Firestore (mipaginawed-519fd)
     if (dbFirestore) {
       try {
         await dbFirestore.collection("citas_agendadas").add(bookingRecord);
-      } catch (e) {
-        console.warn("Cita enviada directo a WhatsApp:", e);
-      }
+        // Si el cliente tiene sesión VIP activa, le sumamos +50 puntos por su compra
+        if (currentVipProfile && currentVipProfile.uid) {
+          await dbFirestore
+            .collection("usuarios_vip")
+            .doc(currentVipProfile.uid)
+            .update({
+              points: Number(currentVipProfile.points || 100) + 50
+            });
+        }
+      } catch (e) {}
     }
 
-    // 2. Construye el mensaje detallado para WhatsApp
     const itemsLines = cartState.map((i) => `• ${i.qty}x ${i.title} (${formatCurrency(i.price * i.qty)})`).join("\n");
     const locationLines =
       deliveryMode === "domicilio"
-        ? `🛵 *Modalidad:* Servicio a Domicilio\n📍 *Zona:* ${deliveryZoneLabel}\n🏠 *Referencia:* ${addressRef}\n🗺️ *Ubicación GPS:* ${clientGpsUrl || "Se enviará por chat"}`
-        : `🏪 *Modalidad:* En Estudio (El Junquito - Sector Panorama)`;
+        ? `🛵 *Modalidad:* A Domicilio\n📍 *Zona:* ${deliveryZoneLabel}\n🏠 *Referencia:* ${addressRef}\n🗺️ *Mapa GPS:* ${clientGpsUrl || "Se enviará por chat"}`
+        : `🏪 *Modalidad:* En Sede (${STORE_CONFIG.location.title})`;
+
+    const dateLine =
+      STORE_CONFIG.businessMode === "products" ? "" : `📅 *Fecha y Hora:* ${bookingDate} a las ${bookingTime}\n`;
+    const refLine = appliedReferralCode ? `🎁 *Código VIP Aplicado:* ${appliedReferralCode} (-${activeDiscountPercent}%)\n` : "";
 
     const whatsappMsg = encodeURIComponent(
-      `✨ *NUEVA CITA DE UÑAS — ${STORE_CONFIG.brandName.toUpperCase()}* ✨\n\n` +
-        `👤 *Clienta:* ${clientName}\n` +
+      `✨ *NUEVA SOLICITUD — ${STORE_CONFIG.brandName.toUpperCase()}* ✨\n\n` +
+        `👤 *Cliente:* ${clientName}\n` +
         `📱 *Teléfono:* ${clientPhone}\n` +
-        `📅 *Fecha y Hora:* ${bookingDate} a las ${bookingTime}\n\n` +
-        `${locationLines}\n\n` +
-        `💅 *Servicios Solicitados:*\n${itemsLines}\n\n` +
-        `*Total Estimado: ${formatCurrency(totalAmount)}*`
+        dateLine +
+        `💳 *Método de Pago:* ${paymentMethod}\n` +
+        refLine +
+        `\n${locationLines}\n\n` +
+        `🛍️ *Detalle:*\n${itemsLines}\n\n` +
+        `*Total USD: ${formatCurrency(grandTotal)}*\n` +
+        `*Ref. Bs: ${formatBs(grandTotal)}*`
     );
 
     window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${whatsappMsg}`, "_blank", "noopener,noreferrer");
   });
 
-  // Formulario de Reseñas de Clientas conectado a Cloud Firestore
+  // Formulario de Reseñas en Vivo
   $("#client-review-form").on("submit", async function (e) {
     e.preventDefault();
     const name = sanitizeInput($("#review-name").val());
@@ -1149,17 +1611,15 @@ $(document).ready(function () {
         $("#review-feedback").text("¡Gracias! Tu reseña ya está publicada en vivo.");
         $("#client-review-form")[0].reset();
       } catch (err) {
-        $("#review-feedback").text("Reseña recibida localmente.");
+        $("#review-feedback").text("Reseña recibida.");
       }
     }
   });
 
-  // Acordeones del Footer
   $(document).on("click", ".footer-accordion-trigger", function () {
     $(this).next(".footer-accordion-content").slideToggle(220);
   });
 
-  // Newsletter
   $("#newsletter-form").on("submit", async function (e) {
     e.preventDefault();
     const cleanEmail = sanitizeInput($("#newsletter-email").val());
@@ -1176,11 +1636,10 @@ $(document).ready(function () {
         });
       } catch (err) {}
     }
-    $("#newsletter-feedback").text("¡Bienvenida al Club VIP! Recibirás promos exclusivas.");
+    $("#newsletter-feedback").text("¡Suscripción exitosa!");
     $("#newsletter-email").val("");
   });
 
-  // Banner Legal de Cookies
   try {
     if (localStorage.getItem("kalon_cookie_consent")) {
       $("#cookie-banner").addClass("is-hidden");
@@ -1206,7 +1665,6 @@ $(document).ready(function () {
   });
 });
 
-// Registro seguro del Service Worker para GitHub Pages
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
