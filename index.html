@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   
-  <!-- REGLA 5: Seguridad CSP (Permite Firebase, Google Maps GPS, Videos CDN y Visor 3D) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
+  <!-- REGLA 5: Seguridad CSP (Autoriza Firebase, DolarApi Oficial, Google Maps GPS, Videos CDN y Visor 3D) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <!-- SEO y Metadatos Escalables -->
   <title id="meta-title">KALON | Plataforma Interactiva 3D & Tienda Oficial</title>
-  <meta name="description" id="meta-desc" content="Catálogo interactivo 3D, videos en vivo, club de referidos, atención en sede y servicio a domicilio con GPS.">
+  <meta name="description" id="meta-desc" content="Catálogo interactivo 3D con despiece de materiales, videos en vivo, club de referidos, atención en sede y servicio a domicilio con GPS.">
   <meta name="theme-color" content="#0a0a0a" id="meta-theme-color">
 
   <!-- Manifest para GitHub Pages / PWA -->
@@ -32,7 +32,7 @@
 </head>
 <body>
 
-  <!-- 1. PANTALLA DE CARGA / PRELOADER (Animado con Anime.js) -->
+  <!-- 1. PANTALLA DE CARGA / PRELOADER (Duración y textos configurables desde Admin - Punto 2) -->
   <div id="preloader" class="preloader" aria-live="polite">
     <div class="preloader-inner">
       <span class="preloader-subtitle" id="preloader-sub">EXPERIENCIA INTERACTIVA & 3D</span>
@@ -41,34 +41,29 @@
     </div>
   </div>
 
-  <!-- 2. BARRA SUPERIOR DE ANUNCIOS + TASA MULTI-MONEDA -->
+  <!-- 2. BARRA SUPERIOR DE ANUNCIOS EN MOVIMIENTO -->
   <div class="topbar">
     <div class="marquee-wrapper">
       <div class="marquee-track" id="marquee-track"></div>
     </div>
   </div>
 
-  <!-- 3. CABECERA FIJA / HEADER -->
+  <!-- 3. CABECERA FIJA LIMPIA (Sin tasa ni tuerca visible; 3 toques en el nombre abren el Admin - Puntos 3, 6 y 7) -->
   <header class="site-header" id="site-header">
     <div class="header-left">
       <button class="icon-btn" id="open-menu-btn" aria-label="Abrir menú">
         <i class="ri-menu-line"></i>
       </button>
-      <!-- Indicador de Tasa del Día (Multi-moneda configurable en Admin) -->
-      <span class="exchange-pill" id="header-rate-pill" title="Tasa de cambio referencial">Bs. --</span>
     </div>
 
-    <a href="#" class="brand-logo" id="header-logo">kalon</a>
+    <!-- Dale 3 toques rápidos al nombre para abrir el Panel de Administración en secreto -->
+    <a href="javascript:void(0)" class="brand-logo" id="header-logo" title="Inicio">kalon nails</a>
 
     <div class="header-actions">
       <!-- Botón Club VIP / Cuenta de Usuario y Referidos -->
       <button class="icon-btn vip-trigger" id="open-vip-btn" title="Club VIP & Referidos" aria-label="Mi Cuenta y Referidos">
         <i class="ri-vip-crown-line"></i>
       </button>
-      <!-- Acceso al Panel de Administrador ("El Baile de Control") -->
-      <a href="admin.html" class="icon-btn" title="Panel Administrador" aria-label="Panel Administrador">
-        <i class="ri-settings-4-line"></i>
-      </a>
       <!-- Botón Carrito / Agenda -->
       <button class="icon-btn cart-trigger" id="open-cart-btn" aria-label="Ver carrito">
         <i class="ri-shopping-bag-line"></i>
@@ -112,7 +107,6 @@
 
     <div class="cart-items-container" id="cart-items-container"></div>
 
-    <!-- Formulario Escalable (Se adapta a Citas o Pedidos según el Modo de Negocio del Admin) -->
     <div class="cart-booking-box">
       <h4 class="booking-box-title" id="booking-form-heading">
         <i class="ri-calendar-check-line"></i> Datos de Atención & Entrega
@@ -121,7 +115,6 @@
       <input type="text" id="booking-client-name" class="booking-input" placeholder="Tu Nombre y Apellido *" maxlength="50">
       <input type="tel" id="booking-client-phone" class="booking-input" placeholder="Tu WhatsApp (Ej: 0412...)" maxlength="20">
       
-      <!-- Fila de Fecha y Hora (Se oculta sola si en el Admin cambias a Modo Tienda de Productos) -->
       <div class="booking-row-2" id="booking-datetime-row">
         <input type="date" id="booking-date" class="booking-input">
         <input type="time" id="booking-time" class="booking-input">
@@ -146,9 +139,7 @@
 
       <!-- Opciones de Domicilio y GPS -->
       <div id="domicilio-fields" class="domicilio-fields" style="display: none;">
-        <select id="booking-zone-select" class="booking-input">
-          <!-- Zonas inyectadas desde Firebase / app.js -->
-        </select>
+        <select id="booking-zone-select" class="booking-input"></select>
 
         <input type="text" id="booking-address-ref" class="booking-input" placeholder="Dirección exacta y punto de referencia" maxlength="120">
 
@@ -162,7 +153,7 @@
       <label class="booking-label">Método de Pago Preferido:</label>
       <select id="booking-payment-method" class="booking-input">
         <option value="Pago Móvil">Pago Móvil (Bs.)</option>
-        <option value="Efectivo Divisas">Efectivo ($ USD)</option>
+        <option value="Efectivo Divisas">Efectivo ($ / €)</option>
         <option value="Zelle / Binance">Zelle / Binance USDT</option>
         <option value="Transferencia / Punto">Transferencia / Acordar por WhatsApp</option>
       </select>
@@ -171,11 +162,11 @@
 
     <div class="cart-footer">
       <div class="cart-total-row">
-        <span>Total USD:</span>
+        <span id="cart-currency-label">Total Divisa:</span>
         <strong id="cart-total-price">$ 0</strong>
       </div>
       <div class="cart-total-bs-row">
-        <span>Equivalente Ref.:</span>
+        <span>Equivalente BCV en Bs.:</span>
         <span id="cart-total-bs">Bs. 0,00</span>
       </div>
       <button class="btn-primary btn-full" id="checkout-whatsapp-btn">
@@ -211,44 +202,56 @@
     </section>
 
     <div class="section-divider-banner">
-      <span>✦ <span id="divider-text">INSPECCIÓN 3D DE MATERIALES & ACABADOS</span></span>
+      <span>✦ <span id="divider-text">INSPECCIÓN 3D DE MATERIALES & DESPIECE</span></span>
     </div>
 
-    <!-- 7. ESCAPARATE 3D + FICHA TÉCNICA DE MATERIALES MODIFICABLE EN ADMIN -->
+    <!-- 7. ESCAPARATE 3D CON BOTÓN DE DESARMADO / CAPAS Y AUTO-CENTRADO (Punto 8) -->
     <section class="showcase-3d-section" id="showcase-3d">
       <div class="section-header">
         <span class="section-subtitle" id="3d-subtitle">INTERACCIÓN 360° REAL</span>
         <h2 class="section-title" id="3d-title">Escultura & Materiales en 3D</h2>
-        <p class="section-desc" id="3d-desc">Gira el modelo con tu dedo para apreciar el relieve y conoce los materiales exactos empleados.</p>
+        <p class="section-desc" id="3d-desc">Gira el modelo con tu dedo o presiona "Desarmar Capas" para inspeccionar cómo está construido por dentro y vuelve a centrarlo cuando quieras.</p>
       </div>
 
       <div class="showcase-3d-grid">
-        <div class="viewer-3d-card">
+        <div class="viewer-3d-card" id="viewer-3d-card">
           <div class="viewer-badge" id="viewer-3d-badge">MODELO 3D • 360°</div>
           
+          <!-- Visor 3D con soporte de órbitas de cámara, despiece y auto-centrado -->
           <model-viewer 
             id="main-3d-model"
             src="./unas-demo.glb"
             alt="Modelo 3D Interactivo"
             auto-rotate
             camera-controls
+            camera-orbit="0deg 75deg 105%"
+            field-of-view="30deg"
+            interpolation-decay="120"
             shadow-intensity="1.2"
             exposure="1.05"
             touch-action="pan-y">
           </model-viewer>
 
+          <!-- Capa visual de Despiece / Vista Explotada de Materiales (Animada con Anime.js al desarmar) -->
+          <div class="exploded-layers-overlay" id="exploded-layers-overlay" aria-hidden="true"></div>
+
           <div class="viewer-controls">
-            <button class="btn-outline-gold" id="toggle-3d-rotate">
-              <i class="ri-refresh-line"></i> Pausar / Girar
+            <button type="button" class="btn-gold" id="explode-3d-btn" style="padding:0.55rem 0.9rem; font-size:0.68rem;">
+              <i class="ri-stack-line"></i> Desarmar Capas
             </button>
-            <span class="viewer-hint"><i class="ri-hand-coin-line"></i> Desliza en 360°</span>
+            <button type="button" class="btn-outline-gold" id="reset-3d-btn" style="padding:0.55rem 0.85rem; font-size:0.68rem;">
+              <i class="ri-focus-3-line"></i> Centrar
+            </button>
+            <button type="button" class="btn-outline-gold" id="toggle-3d-rotate" style="padding:0.55rem 0.85rem; font-size:0.68rem;">
+              <i class="ri-refresh-line"></i> Giro
+            </button>
           </div>
         </div>
 
         <div class="nail-specs-card" id="nail-specs-card">
           <span class="section-subtitle">FICHA TÉCNICA DE COMPOSICIÓN</span>
           <h3 class="specs-title" id="specs-main-title">¿Qué materiales componen esta pieza?</h3>
-          <p class="specs-intro" id="specs-intro">Toca cada capa para conocer la marca, técnica y durabilidad:</p>
+          <p class="specs-intro" id="specs-intro">Toca cada etapa técnica para enfocar esa capa en el visor 3D:</p>
 
           <div class="specs-accordion-list" id="nail-tech-specs"></div>
 
@@ -261,7 +264,7 @@
       </div>
     </section>
 
-    <!-- 8. NUEVA SECCIÓN: VIDEOS CORTOS PUBLICITARIOS / SHOPPABLE REELS (Punto 4) -->
+    <!-- 8. SECCIÓN DE VIDEOS CORTOS PUBLICITARIOS / SHOPPABLE REELS -->
     <section class="reels-section" id="reels-section">
       <div class="section-header">
         <span class="section-subtitle">RESULTADOS EN MOVIMIENTO</span>
@@ -269,9 +272,7 @@
         <p class="section-desc">Mira el brillo real, el proceso técnico y la calidad de nuestros trabajos en video.</p>
       </div>
 
-      <div class="carousel-container reels-carousel" id="reels-carousel">
-        <!-- Videos cortos optimizados inyectados desde Firebase / app.js -->
-      </div>
+      <div class="carousel-container reels-carousel" id="reels-carousel"></div>
     </section>
 
     <!-- 9. CARRUSEL DE SERVICIOS / PRODUCTOS DESTACADOS -->
@@ -307,12 +308,11 @@
       <div class="carousel-container" id="arrivals-carousel"></div>
     </section>
 
-    <!-- 12. ESCAPARATE INTERACTIVO CON D3.JS (PUNTOS MODIFICABLES DESDE EL ADMIN) -->
+    <!-- 12. ESCAPARATE INTERACTIVO CON D3.JS -->
     <section class="lookbook-section" id="lookbook">
       <div class="lookbook-card">
         <div class="lookbook-image-wrapper" id="lookbook-wrapper">
           <img id="lookbook-img" src="" alt="Escaparate Interactivo" loading="lazy">
-          <!-- D3.js dibuja aquí los puntos dorados configurados en el Admin -->
           <div id="hotspots-layer" class="hotspots-layer"></div>
         </div>
 
@@ -391,7 +391,6 @@
   <footer class="site-footer">
     <div class="footer-accordions" id="footer-accordions"></div>
 
-    <!-- Redes Sociales Controlables desde el Admin (Punto 1) -->
     <div class="footer-socials" id="footer-socials"></div>
 
     <div class="footer-newsletter">
@@ -405,11 +404,12 @@
 
     <div class="footer-legal-links">
       <button type="button" class="text-link" id="open-legal-modal">Política de Privacidad, Cookies y Uso de GPS</button>
-      <p class="copyright">© <span id="current-year">2026</span> <span id="footer-brand-name">KALON</span>. Todos los derechos reservados.</p>
+      <!-- También puedes darle 3 toques al nombre en el pie de página para abrir el Admin -->
+      <p class="copyright" id="footer-secret-trigger">© <span id="current-year">2026</span> <span id="footer-brand-name">KALON</span>. Todos los derechos reservados.</p>
     </div>
   </footer>
 
-  <!-- 18. MODAL CLUB VIP, CUENTA DE CLIENTE Y SISTEMA DE REFERIDOS (Punto 2) -->
+  <!-- 18. MODAL CLUB VIP, CUENTA DE CLIENTE Y SISTEMA DE REFERIDOS -->
   <div class="legal-modal" id="vip-modal" aria-hidden="true" role="dialog">
     <div class="legal-modal-content vip-modal-dark">
       <div class="legal-modal-header">
@@ -419,7 +419,6 @@
         </button>
       </div>
 
-      <!-- Vista cuando el cliente NO ha iniciado sesión -->
       <div id="vip-auth-view">
         <p class="vip-lead">Crea tu cuenta gratis para recibir un <strong>10% de descuento</strong> de bienvenida, acumular puntos por cada cita/compra y ganar premios recomendando amigas.</p>
         
@@ -437,7 +436,6 @@
         </form>
       </div>
 
-      <!-- Vista cuando el cliente SÍ tiene sesión activa -->
       <div id="vip-profile-view" style="display:none;">
         <div class="vip-card-box">
           <span class="section-subtitle">MIEMBRO OFICIAL VIP</span>
@@ -472,7 +470,7 @@
     </div>
   </div>
 
-  <!-- 19. BANNER LEGAL DE COOKIES Y MODAL DE PRIVACIDAD (Regla 5) -->
+  <!-- 19. BANNER LEGAL DE COOKIES Y MODAL DE PRIVACIDAD -->
   <aside class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Aviso de privacidad y cookies">
     <p class="cookie-text">
       Usamos almacenamiento seguro para tu carrito, tu cuenta de puntos VIP y geolocalización GPS bajo tu permiso cuando pides a domicilio. 
