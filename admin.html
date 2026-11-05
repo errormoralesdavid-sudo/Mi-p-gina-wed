@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- REGLA 5: Seguridad CSP estricta para proteger el Panel de Administrador -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
   <meta name="robots" content="noindex, nofollow">
 
-  <title>El Baile de Control | Panel Administrador — Kalon Nails</title>
+  <title>El Baile de Control | Panel Maestro SaaS — Kalon</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,6 +38,7 @@
       color: var(--text-light);
       min-height: 100vh;
       line-height: 1.5;
+      padding-bottom: 4rem;
     }
 
     /* PANTALLA DE LOGIN SEGURO */
@@ -56,14 +57,14 @@
       border-radius: var(--radius);
       padding: 2.2rem 1.8rem;
       width: 100%;
-      max-width: 410px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      max-width: 420px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.65);
       text-align: center;
     }
 
     .login-card h1 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 2rem;
+      font-size: 2.1rem;
       color: var(--accent-gold);
       margin-bottom: 0.3rem;
     }
@@ -71,17 +72,17 @@
     .login-card p {
       font-size: 0.8rem;
       color: var(--text-muted);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.4rem;
     }
 
     .form-group {
       text-align: left;
-      margin-bottom: 1rem;
+      margin-bottom: 0.95rem;
     }
 
     .form-group label {
       display: block;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
       color: var(--accent-gold);
       margin-bottom: 0.35rem;
@@ -94,25 +95,35 @@
       background: var(--bg-input);
       border: 1px solid rgba(255,255,255,0.14);
       border-radius: 6px;
-      padding: 0.7rem 0.85rem;
+      padding: 0.68rem 0.85rem;
       color: var(--text-light);
       font-family: inherit;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       outline: none;
     }
 
-    .admin-input:focus, .admin-textarea:focus {
+    .admin-input:focus, .admin-textarea:focus, .admin-select:focus {
       border-color: var(--accent-gold);
+    }
+
+    input[type="color"].admin-color-picker {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--border-gold);
+      border-radius: 6px;
+      background: var(--bg-input);
+      cursor: pointer;
+      padding: 2px;
     }
 
     .btn-gold {
       background: var(--accent-gold);
       color: #090909;
       font-weight: 700;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      padding: 0.85rem 1.3rem;
+      padding: 0.8rem 1.25rem;
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -130,13 +141,18 @@
       background: transparent;
       border: 1px solid var(--border-gold);
       color: var(--text-light);
-      padding: 0.6rem 1rem;
+      padding: 0.58rem 0.95rem;
       border-radius: 6px;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
+      text-decoration: none;
+    }
+
+    .btn-outline:hover {
+      background: rgba(201, 168, 106, 0.12);
     }
 
     .btn-danger {
@@ -159,10 +175,10 @@
       cursor: pointer;
     }
 
-    /* PANEL DASHBOARD INTERNO */
+    /* DASHBOARD PRINCIPAL */
     .dashboard-wrap {
       display: none;
-      max-width: 1180px;
+      max-width: 1220px;
       margin: 0 auto;
       padding: 1.2rem;
     }
@@ -177,7 +193,11 @@
       border: 1px solid var(--border-gold);
       border-radius: var(--radius);
       padding: 1rem 1.4rem;
-      margin-bottom: 1.4rem;
+      margin-bottom: 1.3rem;
+      position: sticky;
+      top: 10px;
+      z-index: 90;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
 
     .admin-brand h2 {
@@ -187,24 +207,24 @@
     }
 
     .admin-brand span {
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       color: var(--text-muted);
     }
 
     .admin-tabs {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.4rem;
+      gap: 0.45rem;
+      margin-bottom: 1.3rem;
     }
 
     .tab-btn {
       background: var(--bg-panel);
       border: 1px solid rgba(255,255,255,0.1);
       color: var(--text-light);
-      padding: 0.7rem 1.1rem;
+      padding: 0.65rem 1rem;
       border-radius: 6px;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -225,8 +245,8 @@
       background: var(--bg-panel);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: var(--radius);
-      padding: 1.4rem;
-      margin-bottom: 1.25rem;
+      padding: 1.35rem;
+      margin-bottom: 1.2rem;
     }
 
     .panel-card h3 {
@@ -241,14 +261,20 @@
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 1rem;
+      gap: 0.95rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.95rem;
     }
 
     @media (min-width: 768px) {
       .grid-2 { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
     }
 
-    /* TARJETAS DE CITAS Y SERVICIOS */
     .booking-item, .service-edit-item {
       background: #1a1a1a;
       border: 1px solid rgba(255,255,255,0.08);
@@ -277,6 +303,44 @@
     .status-pendiente { background: rgba(201, 168, 106, 0.22); color: var(--accent-gold); }
     .status-atendida { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; }
 
+    /* EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS (PUNTO 3) */
+    .visual-hotspot-picker {
+      position: relative;
+      max-width: 420px;
+      margin: 0 auto 1rem;
+      border: 2px dashed var(--accent-gold);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: crosshair;
+      background: #000;
+    }
+
+    .visual-hotspot-picker img {
+      width: 100%;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .admin-dot-marker {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      margin-left: -12px;
+      margin-top: -12px;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+
     .toast-bar {
       position: fixed;
       bottom: 20px;
@@ -299,19 +363,19 @@
   <section class="login-screen" id="login-screen">
     <div class="login-card">
       <h1>El Baile de Control</h1>
-      <p>Ingresa con el usuario administrador que creaste en Firebase Authentication</p>
+      <p>Panel Maestro Multirubro • Ingresa con tu cuenta de Administrador</p>
 
       <form id="admin-login-form">
         <div class="form-group">
           <label>Correo Administrador</label>
-          <input type="email" id="admin-email" class="admin-input" placeholder="tucorreo@gmail.com" required>
+          <input type="email" id="admin-email" class="admin-input" placeholder="admin@tutienda.com" required>
         </div>
         <div class="form-group">
           <label>Contraseña</label>
           <input type="password" id="admin-pass" class="admin-input" placeholder="••••••••" required>
         </div>
         <button type="submit" class="btn-gold btn-full">
-          <i class="ri-lock-unlock-line"></i> ENTRAR AL PANEL
+          <i class="ri-shield-keyhole-line"></i> ENTRAR AL PANEL MAESTRO
         </button>
         <p id="login-error-msg" style="color: var(--danger); margin-top: 0.8rem; font-size: 0.78rem;"></p>
       </form>
@@ -327,12 +391,12 @@
     
     <header class="admin-topbar">
       <div class="admin-brand">
-        <h2>El Baile de Control • Admin</h2>
-        <span id="admin-user-label">Conectado en tiempo real a mipaginawed-519fd</span>
+        <h2>El Baile de Control • SaaS Admin</h2>
+        <span id="admin-user-label">Sincronizado con Firebase (mipaginawed-519fd)</span>
       </div>
-      <div style="display: flex; gap: 0.6rem;">
+      <div style="display: flex; flex-wrap: wrap; gap: 0.55rem;">
         <a href="index.html" target="_blank" class="btn-outline">
-          <i class="ri-external-link-line"></i> Ver Tienda
+          <i class="ri-external-link-line"></i> Ver Web
         </a>
         <button type="button" class="btn-gold" id="save-all-cloud-btn">
           <i class="ri-upload-cloud-2-line"></i> PUBLICAR CAMBIOS EN VIVO
@@ -344,47 +408,111 @@
     <!-- NAVEGACIÓN POR PESTAÑAS DEL PANEL -->
     <nav class="admin-tabs">
       <button type="button" class="tab-btn is-active" data-tab="tab-citas">
-        <i class="ri-calendar-check-line"></i> Citas & Domicilios GPS
+        <i class="ri-calendar-check-line"></i> 1. Citas & Pedidos GPS
       </button>
-      <button type="button" class="tab-btn" data-tab="tab-marca">
-        <i class="ri-store-2-line"></i> Marca, Panorama & Portada
+      <button type="button" class="tab-btn" data-tab="tab-ajustes">
+        <i class="ri-equalizer-line"></i> 2. Rubro, Moneda, Pagos & Redes
       </button>
-      <button type="button" class="tab-btn" data-tab="tab-3d">
-        <i class="ri-cube-line"></i> Modelo 3D & Materiales de Uñas
+      <button type="button" class="tab-btn" data-tab="tab-puntos-3d">
+        <i class="ri-focus-3-line"></i> 3. Puntos D3.js & Materiales 3D
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-reels">
+        <i class="ri-movie-line"></i> 4. Videos Cortos (Reels)
       </button>
       <button type="button" class="tab-btn" data-tab="tab-servicios">
-        <i class="ri-price-tag-3-line"></i> Precios & Servicios
+        <i class="ri-price-tag-3-line"></i> 5. Catálogo & Precios
       </button>
-      <button type="button" class="tab-btn" data-tab="tab-resenas">
-        <i class="ri-chat-heart-line"></i> Reseñas de Clientas
+      <button type="button" class="tab-btn" data-tab="tab-vip">
+        <i class="ri-vip-crown-line"></i> 6. Club VIP, Referidos & Reseñas
       </button>
     </nav>
 
-    <!-- PESTAÑA 1: CITAS Y DOMICILIOS CON GPS (CLOUD FIRESTORE) -->
+    <!-- ======================================================================
+         PESTAÑA 1: CITAS, PEDIDOS Y UBICACIONES GPS EN TIEMPO REAL
+         ====================================================================== -->
     <section class="tab-panel is-active" id="tab-citas">
       <div class="panel-card">
-        <h3>Agenda de Clientas & Ubicaciones GPS en Tiempo Real</h3>
+        <h3>Solicitudes Recibidas, Métodos de Pago y Enlaces GPS</h3>
         <div id="bookings-list-container">
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Cargando citas desde Cloud Firestore...</p>
+          <p style="color: var(--text-muted); font-size: 0.84rem;">Cargando solicitudes desde Cloud Firestore...</p>
         </div>
       </div>
     </section>
 
-    <!-- PESTAÑA 2: MARCA, WHATSAPP, PANORAMA Y PORTADA -->
-    <section class="tab-panel" id="tab-marca">
+    <!-- ======================================================================
+         PESTAÑA 2: MODO DE NEGOCIO, MONEDA, COLOR, REDES SOCIALES Y PAGOS
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-ajustes">
       <div class="panel-card">
-        <h3>Datos Principales & Contacto en El Junquito (Panorama)</h3>
-        <div class="grid-2">
+        <h3>Configuración Multirubro, Tasa del Día y Colores de Marca</h3>
+        <div class="grid-3">
           <div class="form-group">
-            <label>Nombre de la Marca (Cabecera)</label>
-            <input type="text" id="cfg-brand-name" class="admin-input">
+            <label>Modo de Negocio (Adapta toda la Web)</label>
+            <select id="cfg-business-mode" class="admin-select">
+              <option value="services">Modo Servicios / Citas (Uñas, Barbería, Spa)</option>
+              <option value="products">Modo Tienda de Productos (Ropa, Comida, Accesorios)</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>WhatsApp para Recibir Citas (Con código 58)</label>
+            <label>Nombre de la Marca (Cabecera)</label>
+            <input type="text" id="cfg-brand-name" class="admin-input" placeholder="Ej: kalon nails">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp Oficial de Pedidos (Con código 58)</label>
             <input type="text" id="cfg-whatsapp" class="admin-input" placeholder="584120000000">
           </div>
           <div class="form-group">
-            <label>Título de Ubicación / Estudio</label>
+            <label>Tasa de Cambio Referencial (1 USD a Bs.)</label>
+            <input type="number" step="0.01" id="cfg-exchange-rate" class="admin-input" placeholder="45.50">
+          </div>
+          <div class="form-group">
+            <label>% Descuento por Código de Referido VIP</label>
+            <input type="number" id="cfg-referral-discount" class="admin-input" placeholder="10">
+          </div>
+          <div class="form-group">
+            <label>Color Principal de la Marca (Acento)</label>
+            <input type="color" id="cfg-theme-accent" class="admin-color-picker" value="#c9a86a">
+          </div>
+        </div>
+      </div>
+
+      <!-- PUNTO 1: REDES SOCIALES DINÁMICAS -->
+      <div class="panel-card">
+        <h3>Redes Sociales Oficiales (Deja en blanco las que no uses)</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label><i class="ri-instagram-line"></i> Enlace de Instagram</label>
+            <input type="url" id="cfg-soc-instagram" class="admin-input" placeholder="https://instagram.com/tumarca">
+          </div>
+          <div class="form-group">
+            <label><i class="ri-tiktok-fill"></i> Enlace de TikTok</label>
+            <input type="url" id="cfg-soc-tiktok" class="admin-input" placeholder="https://tiktok.com/@tumarca">
+          </div>
+          <div class="form-group">
+            <label><i class="ri-facebook-circle-fill"></i> Enlace de Facebook</label>
+            <input type="url" id="cfg-soc-facebook" class="admin-input" placeholder="https://facebook.com/tumarca">
+          </div>
+          <div class="form-group">
+            <label><i class="ri-youtube-fill"></i> Enlace de YouTube / Shorts</label>
+            <input type="url" id="cfg-soc-youtube" class="admin-input" placeholder="https://youtube.com/@tumarca">
+          </div>
+        </div>
+      </div>
+
+      <!-- PASARELA DE PAGOS Y UBICACIÓN -->
+      <div class="panel-card">
+        <h3>Datos de Pago Móvil, Zelle / Binance y Ubicación (Panorama)</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Datos para Pago Móvil (Bs.)</label>
+            <input type="text" id="cfg-pay-pagomovil" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Datos para Zelle / Binance USDT</label>
+            <input type="text" id="cfg-pay-zelle" class="admin-input">
+          </div>
+          <div class="form-group">
+            <label>Título de Sede Principal</label>
             <input type="text" id="cfg-loc-title" class="admin-input">
           </div>
           <div class="form-group">
@@ -396,7 +524,7 @@
             <input type="text" id="cfg-loc-hours" class="admin-input">
           </div>
           <div class="form-group">
-            <label>Teléfono Visible en la Web</label>
+            <label>Teléfono Visible</label>
             <input type="text" id="cfg-loc-phone" class="admin-input">
           </div>
         </div>
@@ -414,11 +542,11 @@
             <input type="text" id="cfg-hero-main" class="admin-input">
           </div>
           <div class="form-group">
-            <label>Palabra en Cursiva Dorada</label>
+            <label>Palabra en Cursiva Destacada</label>
             <input type="text" id="cfg-hero-accent" class="admin-input">
           </div>
           <div class="form-group">
-            <label>URL de Imagen de Portada</label>
+            <label>URL de Foto de Portada</label>
             <input type="url" id="cfg-hero-img" class="admin-input">
           </div>
         </div>
@@ -429,21 +557,57 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 3: MODELO 3D Y FICHA TÉCNICA DE MATERIALES DE UÑAS -->
-    <section class="tab-panel" id="tab-3d">
+    <!-- ======================================================================
+         PESTAÑA 3: EDITOR VISUAL DE PUNTOS D3.JS Y MATERIALES 3D (PUNTO 3)
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-puntos-3d">
       <div class="panel-card">
-        <h3>Configuración del Visor 3D (.GLB)</h3>
+        <h3>Editor Visual de Puntos Dorados (Toca la foto para agregar un punto)</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
+          Cambia la URL de la foto si lo deseas y <strong>haz clic o toca directamente sobre la imagen</strong> donde quieras colocar un nuevo punto de precio interactivo:
+        </p>
+
+        <div class="form-group">
+          <label>URL de la Imagen del Escaparate ("Shop the Look")</label>
+          <input type="url" id="cfg-lookbook-img" class="admin-input">
+        </div>
+
+        <div class="grid-2" style="align-items: start;">
+          <!-- Lienzo interactivo donde el admin toca para crear puntos -->
+          <div>
+            <div class="visual-hotspot-picker" id="admin-hotspot-canvas">
+              <img id="admin-lookbook-preview" src="" alt="Vista previa interactiva">
+              <div id="admin-dots-overlay"></div>
+            </div>
+            <p style="text-align:center; font-size:0.74rem; color:var(--accent-gold);">
+              👆 Toca cualquier parte de la foto para crear un punto en esa coordenada exacta
+            </p>
+          </div>
+
+          <!-- Lista editable de los puntos creados -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+              <strong style="font-size:0.85rem; color:var(--accent-gold);">Puntos Activos sobre la Imagen:</strong>
+              <button type="button" class="btn-outline" id="add-manual-hotspot-btn">+ Punto Manual</button>
+            </div>
+            <div id="hotspots-editor-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Visor 3D (.GLB) y Capas de Materiales (Polygel, Base, Esmalte, etc.)</h3>
         <div class="grid-2">
           <div class="form-group">
-            <label>Ruta o Enlace del Archivo .GLB (Ej: ./unas-demo.glb)</label>
-            <input type="text" id="cfg-3d-url" class="admin-input">
+            <label>Archivo o URL del Modelo 3D (.GLB)</label>
+            <input type="text" id="cfg-3d-url" class="admin-input" placeholder="./unas-demo.glb">
           </div>
           <div class="form-group">
-            <label>Precio del Sistema Mostrado en 3D ($)</label>
+            <label>Precio del Diseño 3D Mostrado ($)</label>
             <input type="number" id="cfg-3d-price" class="admin-input">
           </div>
           <div class="form-group">
-            <label>Nombre del Sistema 3D al Agendar</label>
+            <label>Nombre al Agregar al Carrito</label>
             <input type="text" id="cfg-3d-sys-title" class="admin-input">
           </div>
           <div class="form-group">
@@ -451,46 +615,74 @@
             <input type="text" id="cfg-3d-title" class="admin-input">
           </div>
         </div>
-      </div>
 
-      <div class="panel-card">
-        <h3>Ficha Técnica de Materiales Usados en las Uñas (Polygel, Base, Esmalte, Brillo)</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin: 1rem 0 0.8rem;">
+          <strong style="color:var(--accent-gold); font-size:0.88rem;">Capas / Materiales Técnicos del Modelo 3D:</strong>
+          <button type="button" class="btn-outline" id="add-tech-spec-btn">+ Agregar Material / Capa</button>
+        </div>
         <div id="tech-specs-editor-list"></div>
       </div>
     </section>
 
-    <!-- PESTAÑA 4: CATÁLOGO DE SERVICIOS Y PRECIOS -->
+    <!-- ======================================================================
+         PESTAÑA 4: VIDEOS CORTOS PUBLICITARIOS / REELS (PUNTO 4)
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-reels">
+      <div class="panel-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <div>
+            <h3 style="margin:0; border:none;">Videos Cortos Tipo Reels / TikTok</h3>
+            <p style="font-size:0.78rem; color:var(--text-muted);">Usa enlaces .mp4 cortos (de 5 a 15 seg) para mostrar tus trabajos en movimiento sin poner lenta la página.</p>
+          </div>
+          <button type="button" class="btn-outline" id="add-new-reel-btn">+ Agregar Video Reel</button>
+        </div>
+        <div id="reels-editor-container"></div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         PESTAÑA 5: CATÁLOGO DE SERVICIOS / PRODUCTOS Y PRECIOS
+         ====================================================================== -->
     <section class="tab-panel" id="tab-servicios">
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-          <h3 style="margin:0; border:none;">Sistemas Destacados (Carrusel Principal)</h3>
-          <button type="button" class="btn-outline" id="add-new-set-btn">+ Agregar Servicio Promo</button>
+          <h3 style="margin:0; border:none;">Destacados / Promociones (Carrusel Principal)</h3>
+          <button type="button" class="btn-outline" id="add-new-set-btn">+ Agregar Destacado</button>
         </div>
         <div id="sets-editor-container"></div>
       </div>
 
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-          <h3 style="margin:0; border:none;">Servicios por Técnica (Polygel, Soft Gel, Manicura Rusa)</h3>
-          <button type="button" class="btn-outline" id="add-new-arrival-btn">+ Agregar Servicio al Catálogo</button>
+          <h3 style="margin:0; border:none;">Catálogo por Categoría / Técnica</h3>
+          <button type="button" class="btn-outline" id="add-new-arrival-btn">+ Agregar al Catálogo</button>
         </div>
         <div id="arrivals-editor-container"></div>
       </div>
     </section>
 
-    <!-- PESTAÑA 5: RESEÑAS DE CLIENTAS (FIRESTORE) -->
-    <section class="tab-panel" id="tab-resenas">
+    <!-- ======================================================================
+         PESTAÑA 6: MIEMBROS DEL CLUB VIP, REFERIDOS Y RESEÑAS (PUNTO 2)
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-vip">
       <div class="panel-card">
-        <h3>Reseñas Publicadas por Clientas</h3>
+        <h3>Miembros Registrados en el Club VIP & Contador de Referidos</h3>
+        <div id="vip-users-admin-list">
+          <p style="color:var(--text-muted); font-size:0.84rem;">Cargando miembros VIP...</p>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Moderación de Reseñas de Clientes</h3>
         <div id="reviews-admin-list">
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Cargando reseñas...</p>
+          <p style="color:var(--text-muted); font-size:0.84rem;">Cargando reseñas...</p>
         </div>
       </div>
     </section>
 
   </main>
 
-  <div class="toast-bar" id="toast-bar">✓ Cambios publicados en tiempo real</div>
+  <div class="toast-bar" id="toast-bar">✓ Cambios publicados en vivo</div>
 
   <!-- LIBRERÍAS Y FIREBASE SDK -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -503,7 +695,6 @@
   <script>
     "use strict";
 
-    // Conexión a tu proyecto Firebase mipaginawed-519fd
     const firebaseConfig = {
       apiKey: "AIzaSyBJ_cmnwIqaE_2WW5tJVOGgebsquSLKBxs",
       authDomain: "mipaginawed-519fd.firebaseapp.com",
@@ -522,7 +713,7 @@
     const dbRealtime = firebase.database();
     const dbFirestore = firebase.firestore();
 
-    let currentConfig = null;
+    let currentConfig = {};
 
     function sanitize(str) {
       if (typeof str !== "string") return "";
@@ -532,38 +723,49 @@
     function showToast(msg) {
       const $t = $("#toast-bar");
       $t.text(msg).fadeIn(200);
-      setTimeout(() => $t.fadeOut(300), 2600);
+      setTimeout(() => $t.fadeOut(300), 2800);
     }
 
-    // 1. CONTROL DE SESIÓN SEGURA (Firebase Auth)
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        $("#login-screen").hide();
-        $("#dashboard-wrap").fadeIn(250);
-        $("#admin-user-label").text(`Sesión activa: ${user.email}`);
-        loadStoreConfigForAdmin();
-        listenBookingsRealtime();
-        listenReviewsRealtime();
-      } else {
+    // 1. AUTENTICACIÓN SEGURA CON SEPARACIÓN DE ROL ADMIN VS CLIENTE VIP (REGLA 5)
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
         $("#dashboard-wrap").hide();
         $("#login-screen").fadeIn(200);
+        return;
       }
+
+      // Verifica si el correo pertenece a un cliente normal del Club VIP sin permiso de Admin
+      try {
+        const vipDoc = await dbFirestore.collection("usuarios_vip").doc(user.uid).get();
+        if (vipDoc.exists && vipDoc.data().isAdmin !== true) {
+          await auth.signOut();
+          $("#login-error-msg").text("Acceso denegado: Esta cuenta es de Cliente VIP, no de Administrador.");
+          return;
+        }
+      } catch (e) {}
+
+      $("#login-screen").hide();
+      $("#dashboard-wrap").fadeIn(250);
+      $("#admin-user-label").text(`Administrador activo: ${user.email}`);
+      loadStoreConfigForAdmin();
+      listenBookingsRealtime();
+      listenVipUsersRealtime();
+      listenReviewsRealtime();
     });
 
     $("#admin-login-form").on("submit", function (e) {
       e.preventDefault();
       const email = $("#admin-email").val().trim();
       const pass = $("#admin-pass").val();
-      $("#login-error-msg").text("Verificando credenciales...");
+      $("#login-error-msg").text("Verificando credenciales de Administrador...");
 
-      auth.signInWithEmailAndPassword(email, pass).catch((err) => {
-        $("#login-error-msg").text("Correo o contraseña incorrectos. Verifica que agregaste tu usuario en la pestaña 'Usuarios' de Firebase Authentication.");
+      auth.signInWithEmailAndPassword(email, pass).catch(() => {
+        $("#login-error-msg").text("Correo o contraseña incorrectos.");
       });
     });
 
     $("#logout-btn").on("click", () => auth.signOut());
 
-    // Cambio de pestañas
     $(".tab-btn").on("click", function () {
       $(".tab-btn").removeClass("is-active");
       $(this).addClass("is-active");
@@ -571,14 +773,14 @@
       $(`#${$(this).data("tab")}`).addClass("is-active");
     });
 
-    // 2. ESCUCHAR CITAS Y UBICACIONES GPS EN TIEMPO REAL (FIRESTORE)
+    // 2. CITAS Y PEDIDOS CON GPS EN TIEMPO REAL
     function listenBookingsRealtime() {
       dbFirestore.collection("citas_agendadas").orderBy("createdAt", "desc").onSnapshot((snap) => {
         const $box = $("#bookings-list-container");
         $box.empty();
 
         if (snap.empty) {
-          $box.html('<p style="color:var(--text-muted); font-size:0.85rem;">Aún no hay citas registradas.</p>');
+          $box.html('<p style="color:var(--text-muted); font-size:0.84rem;">Aún no hay solicitudes registradas.</p>');
           return;
         }
 
@@ -597,20 +799,23 @@
                 </div>
                 <span class="status-pill ${b.status === "Atendida" ? "status-atendida" : "status-pendiente"}">${sanitize(b.status || "Pendiente")}</span>
               </div>
-              <p style="font-size:0.82rem; margin-bottom:0.35rem;">
-                <strong>📅 Fecha/Hora:</strong> ${sanitize(b.bookingDate)} a las ${sanitize(b.bookingTime)} |
-                <strong>🛵 Modalidad:</strong> ${sanitize(b.modality)}
+              <p style="font-size:0.8rem; margin-bottom:0.3rem;">
+                <strong>📅 Fecha/Hora:</strong> ${sanitize(b.bookingDate)} ${sanitize(b.bookingTime)} |
+                <strong>🛵 Modalidad:</strong> ${sanitize(b.modality)} |
+                <strong>💳 Pago:</strong> ${sanitize(b.paymentMethod || "Por acordar")}
               </p>
-              <p style="font-size:0.82rem; margin-bottom:0.35rem;">
+              <p style="font-size:0.8rem; margin-bottom:0.3rem;">
                 <strong>📍 Zona / Dirección:</strong> ${sanitize(b.zone)} — ${sanitize(b.addressReference)}
               </p>
-              <p style="font-size:0.82rem; margin-bottom:0.65rem; color:#d1d5db;">
-                <strong>💅 Servicios:</strong> ${itemsText} | <strong style="color:var(--accent-gold);">Total: $${b.totalAmount}</strong>
+              <p style="font-size:0.8rem; margin-bottom:0.6rem; color:#d1d5db;">
+                <strong>🛍️ Pedido:</strong> ${itemsText} |
+                <strong style="color:var(--accent-gold);">Total: $${b.totalAmount} (${sanitize(b.totalBsRef || "")})</strong>
+                ${b.referralCodeUsed && b.referralCodeUsed !== "Ninguno" ? ` | 🎁 Ref: ${sanitize(b.referralCodeUsed)}` : ""}
               </p>
               <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
                 ${hasGps ? `<a href="${b.gpsMapLink}" target="_blank" class="btn-outline" style="border-color:#10b981; color:#6ee7b7;"><i class="ri-map-pin-2-fill"></i> Abrir GPS en Google Maps</a>` : ""}
                 <button type="button" class="btn-success mark-booking-btn" data-id="${id}">✓ Marcar Atendida</button>
-                <button type="button" class="btn-danger delete-booking-btn" data-id="${id}">Eliminar Cita</button>
+                <button type="button" class="btn-danger delete-booking-btn" data-id="${id}">Eliminar</button>
               </div>
             </div>
           `);
@@ -619,19 +824,17 @@
     }
 
     $(document).on("click", ".mark-booking-btn", function () {
-      const id = $(this).data("id");
-      dbFirestore.collection("citas_agendadas").doc(id).update({ status: "Atendida" });
-      showToast("✓ Cita marcada como Atendida");
+      dbFirestore.collection("citas_agendadas").doc($(this).data("id")).update({ status: "Atendida" });
+      showToast("✓ Solicitud marcada como Atendida");
     });
 
     $(document).on("click", ".delete-booking-btn", function () {
-      const id = $(this).data("id");
-      if (confirm("¿Seguro que deseas eliminar esta cita del historial?")) {
-        dbFirestore.collection("citas_agendadas").doc(id).delete();
+      if (confirm("¿Eliminar este registro?")) {
+        dbFirestore.collection("citas_agendadas").doc($(this).data("id")).delete();
       }
     });
 
-    // 3. CARGAR Y EDITAR CONFIGURACIÓN DE LA TIENDA (REALTIME DATABASE)
+    // 3. CARGAR CONFIGURACIÓN DE LA TIENDA DESDE REALTIME DATABASE
     function loadStoreConfigForAdmin() {
       dbRealtime.ref("store_config").once("value", (snap) => {
         currentConfig = snap.val() || {};
@@ -640,10 +843,25 @@
     }
 
     function populateAdminFields() {
-      if (!currentConfig) return;
-
+      $("#cfg-business-mode").val(currentConfig.businessMode || "services");
       $("#cfg-brand-name").val(currentConfig.brandName || "kalon nails");
       $("#cfg-whatsapp").val(currentConfig.whatsappNumber || "584120000000");
+      $("#cfg-exchange-rate").val(currentConfig.exchangeRateBs || 45.50);
+      $("#cfg-referral-discount").val(currentConfig.referralDiscountPercent || 10);
+
+      if (currentConfig.theme && currentConfig.theme.accentColor) {
+        $("#cfg-theme-accent").val(currentConfig.theme.accentColor);
+      }
+
+      const soc = currentConfig.socials || {};
+      $("#cfg-soc-instagram").val(soc.instagram || "");
+      $("#cfg-soc-tiktok").val(soc.tiktok || "");
+      $("#cfg-soc-facebook").val(soc.facebook || "");
+      $("#cfg-soc-youtube").val(soc.youtube || "");
+
+      const pay = currentConfig.paymentMethodsInfo || {};
+      $("#cfg-pay-pagomovil").val(pay["Pago Móvil"] || "");
+      $("#cfg-pay-zelle").val(pay["Zelle / Binance"] || "");
 
       if (currentConfig.location) {
         $("#cfg-loc-title").val(currentConfig.location.title || "");
@@ -660,49 +878,188 @@
         $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
       }
 
+      // Escaparate D3.js e Imagen Interactiva
+      const lbImg = (currentConfig.lookbook && currentConfig.lookbook.image) || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80";
+      $("#cfg-lookbook-img").val(lbImg);
+      $("#admin-lookbook-preview").attr("src", lbImg);
+      renderHotspotsEditor((currentConfig.lookbook && currentConfig.lookbook.hotspots) || []);
+
+      // Modelo 3D y Materiales
       if (currentConfig.model3D) {
         $("#cfg-3d-url").val(currentConfig.model3D.glbUrl || "./unas-demo.glb");
         $("#cfg-3d-price").val(currentConfig.model3D.systemPrice || 25);
         $("#cfg-3d-sys-title").val(currentConfig.model3D.systemTitle || "");
         $("#cfg-3d-title").val(currentConfig.model3D.title || "");
-
-        const $specsBox = $("#tech-specs-editor-list");
-        $specsBox.empty();
-        (currentConfig.model3D.techSpecs || []).forEach((sp, i) => {
-          $specsBox.append(`
-            <div class="service-edit-item spec-edit-row">
-              <div class="grid-2">
-                <div class="form-group">
-                  <label>Etapa / Capa #${i + 1}</label>
-                  <input type="text" class="admin-input spec-layer" value="${sanitize(sp.layer)}">
-                </div>
-                <div class="form-group">
-                  <label>Material / Polímero / Marca</label>
-                  <input type="text" class="admin-input spec-name" value="${sanitize(sp.name)}">
-                </div>
-              </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label>Explicación Técnica para la Clienta</label>
-                <input type="text" class="admin-input spec-detail" value="${sanitize(sp.detail)}">
-              </div>
-            </div>
-          `);
-        });
+        renderTechSpecsEditor(currentConfig.model3D.techSpecs || []);
       }
 
+      // Videos Cortos (Reels)
+      renderReelsEditor(currentConfig.promoReels || []);
+
+      // Catálogo de Servicios / Productos
       renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
       renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
     }
 
+    // 4. EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS (PUNTO 3)
+    $("#cfg-lookbook-img").on("input", function () {
+      $("#admin-lookbook-preview").attr("src", $(this).val().trim());
+    });
+
+    function renderHotspotsEditor(hotspots) {
+      const $list = $("#hotspots-editor-list");
+      $list.empty();
+      hotspots.forEach((hs, idx) => {
+        appendHotspotRow(hs.title, hs.price, hs.x, hs.y, idx + 1);
+      });
+      refreshVisualDotsOnCanvas();
+    }
+
+    function appendHotspotRow(title, price, x, y) {
+      $("#hotspots-editor-list").append(`
+        <div class="service-edit-item hs-edit-row">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Nombre de Técnica / Pieza</label>
+              <input type="text" class="admin-input hs-title" value="${sanitize(title)}">
+            </div>
+            <div class="form-group">
+              <label>Precio ($ USD)</label>
+              <input type="number" class="admin-input hs-price" value="${Number(price)}">
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+            <div style="display:flex; gap:0.5rem; font-size:0.75rem; color:var(--text-muted);">
+              <span>X%: <input type="number" class="admin-input hs-x" value="${Math.round(x)}" style="width:65px; padding:0.3rem;"></span>
+              <span>Y%: <input type="number" class="admin-input hs-y" value="${Math.round(y)}" style="width:65px; padding:0.3rem;"></span>
+            </div>
+            <button type="button" class="btn-danger remove-hs-btn">Quitar Punto</button>
+          </div>
+        </div>
+      `);
+      refreshVisualDotsOnCanvas();
+    }
+
+    function refreshVisualDotsOnCanvas() {
+      const $overlay = $("#admin-dots-overlay");
+      $overlay.empty();
+      $("#hotspots-editor-list .hs-edit-row").each(function (i) {
+        const x = Number($(this).find(".hs-x").val() || 50);
+        const y = Number($(this).find(".hs-y").val() || 50);
+        $overlay.append(`<span class="admin-dot-marker" style="left:${x}%; top:${y}%;">${i + 1}</span>`);
+      });
+    }
+
+    // Al tocar sobre la foto, calcula X% e Y% automáticamente y agrega el punto
+    $("#admin-hotspot-canvas").on("click", function (e) {
+      const rect = this.getBoundingClientRect();
+      const xPercent = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+      const yPercent = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+      appendHotspotRow("Nuevo Detalle / Producto", 15, xPercent, yPercent);
+      showToast(`📍 Punto agregado en X:${xPercent}% Y:${yPercent}%`);
+    });
+
+    $("#add-manual-hotspot-btn").on("click", () => appendHotspotRow("Nuevo Detalle", 15, 50, 50));
+
+    $(document).on("input", ".hs-x, .hs-y", refreshVisualDotsOnCanvas);
+    $(document).on("click", ".remove-hs-btn", function () {
+      $(this).closest(".hs-edit-row").remove();
+      refreshVisualDotsOnCanvas();
+    });
+
+    // Editor de Materiales 3D
+    function renderTechSpecsEditor(specs) {
+      const $box = $("#tech-specs-editor-list");
+      $box.empty();
+      specs.forEach((sp) => appendTechSpecRow(sp.layer, sp.name, sp.detail));
+    }
+
+    function appendTechSpecRow(layer, name, detail) {
+      $("#tech-specs-editor-list").append(`
+        <div class="service-edit-item spec-edit-row">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Etapa / Capa (Ej: 1. ESTRUCTURA)</label>
+              <input type="text" class="admin-input spec-layer" value="${sanitize(layer)}">
+            </div>
+            <div class="form-group">
+              <label>Material / Marca (Ej: Polygel Alta Densidad)</label>
+              <input type="text" class="admin-input spec-name" value="${sanitize(name)}">
+            </div>
+          </div>
+          <div style="display:flex; gap:0.6rem; align-items:center;">
+            <input type="text" class="admin-input spec-detail" value="${sanitize(detail)}" placeholder="Explicación del material y beneficio">
+            <button type="button" class="btn-danger remove-srv-row">Quitar</button>
+          </div>
+        </div>
+      `);
+    }
+
+    $("#add-tech-spec-btn").on("click", () =>
+      appendTechSpecRow("NUEVA CAPA TÉCNICA", "Nombre del Material o Marca", "Descripción de calidad y durabilidad.")
+    );
+
+    // 5. EDITOR DE VIDEOS CORTOS PUBLICITARIOS / REELS (PUNTO 4)
+    function renderReelsEditor(reels) {
+      const $box = $("#reels-editor-container");
+      $box.empty();
+      reels.forEach((r) => appendReelRow(r.tag, r.title, r.price, r.videoUrl, r.poster));
+    }
+
+    function appendReelRow(tag, title, price, videoUrl, poster) {
+      $("#reels-editor-container").append(`
+        <div class="service-edit-item reel-edit-row">
+          <div class="grid-3">
+            <div class="form-group">
+              <label>Etiqueta Superior (Ej: EN VIVO)</label>
+              <input type="text" class="admin-input reel-tag" value="${sanitize(tag)}">
+            </div>
+            <div class="form-group">
+              <label>Título del Trabajo / Producto</label>
+              <input type="text" class="admin-input reel-title" value="${sanitize(title)}">
+            </div>
+            <div class="form-group">
+              <label>Precio ($ USD)</label>
+              <input type="number" class="admin-input reel-price" value="${Number(price)}">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>URL del Video Corto (.mp4 / .webm)</label>
+              <input type="url" class="admin-input reel-video" value="${sanitize(videoUrl)}">
+            </div>
+            <div class="form-group">
+              <label>URL de Imagen de Portada (Poster)</label>
+              <input type="url" class="admin-input reel-poster" value="${sanitize(poster)}">
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <button type="button" class="btn-danger remove-srv-row">Eliminar Video Reel</button>
+          </div>
+        </div>
+      `);
+    }
+
+    $("#add-new-reel-btn").on("click", () =>
+      appendReelRow(
+        "NUEVO REEL",
+        "Demostración de Acabado",
+        20,
+        "https://assets.mixkit.co/videos/preview/mixkit-woman-showing-her-manicured-nails-42622-large.mp4",
+        "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=500&q=80"
+      )
+    );
+
+    // 6. EDITOR DE CATÁLOGO Y PRECIOS
     function renderServicesEditor(selector, list, includeCategory) {
       const $box = $(selector);
       $box.empty();
-      list.forEach((item, idx) => {
+      list.forEach((item) => {
         $box.append(`
-          <div class="service-edit-item" data-idx="${idx}">
+          <div class="service-edit-item">
             <div class="grid-2">
               <div class="form-group">
-                <label>Nombre del Servicio</label>
+                <label>Nombre del Servicio o Producto</label>
                 <input type="text" class="admin-input srv-title" value="${sanitize(item.title)}">
               </div>
               <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
@@ -718,20 +1075,20 @@
             </div>
             <div class="grid-2">
               <div class="form-group">
-                <label>URL de Foto del Trabajo</label>
+                <label>URL de Imagen</label>
                 <input type="text" class="admin-input srv-img" value="${sanitize(item.image)}">
               </div>
               ${includeCategory ? `
               <div class="form-group">
-                <label>Categoría (POLYGEL, SOFT GEL, MANICURA RUSA, ADICIONALES)</label>
+                <label>Categoría</label>
                 <input type="text" class="admin-input srv-cat" value="${sanitize(item.category || "POLYGEL")}">
               </div>` : ""}
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <label style="font-size:0.78rem; color:var(--text-light);">
-                <input type="checkbox" class="srv-stock" ${item.inStock !== false ? "checked" : ""}> Cupo Disponible
+              <label style="font-size:0.78rem;">
+                <input type="checkbox" class="srv-stock" ${item.inStock !== false ? "checked" : ""}> Disponible
               </label>
-              <button type="button" class="btn-danger remove-srv-row">Quitar Servicio</button>
+              <button type="button" class="btn-danger remove-srv-row">Quitar</button>
             </div>
           </div>
         `);
@@ -746,16 +1103,16 @@
       $("#sets-editor-container").prepend(`
         <div class="service-edit-item">
           <div class="grid-2">
-            <div class="form-group"><label>Nombre del Servicio</label><input type="text" class="admin-input srv-title" value="NUEVO SISTEMA DE UÑAS"></div>
+            <div class="form-group"><label>Nombre</label><input type="text" class="admin-input srv-title" value="NUEVA PROMOCIÓN"></div>
             <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-              <div><label>Precio Actual ($)</label><input type="number" class="admin-input srv-price" value="20"></div>
-              <div><label>Precio Anterior ($)</label><input type="number" class="admin-input srv-oldprice" value="25"></div>
+              <div><label>Precio ($)</label><input type="number" class="admin-input srv-price" value="20"></div>
+              <div><label>Precio Antes ($)</label><input type="number" class="admin-input srv-oldprice" value="25"></div>
             </div>
           </div>
-          <div class="form-group"><label>URL de Foto</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
+          <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Cupo Disponible</label>
-            <button type="button" class="btn-danger remove-srv-row">Quitar Servicio</button>
+            <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Disponible</label>
+            <button type="button" class="btn-danger remove-srv-row">Quitar</button>
           </div>
         </div>
       `);
@@ -765,34 +1122,53 @@
       $("#arrivals-editor-container").prepend(`
         <div class="service-edit-item">
           <div class="grid-2">
-            <div class="form-group"><label>Nombre del Servicio</label><input type="text" class="admin-input srv-title" value="NUEVA TÉCNICA"></div>
+            <div class="form-group"><label>Nombre</label><input type="text" class="admin-input srv-title" value="NUEVA OPCIÓN"></div>
             <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-              <div><label>Precio Actual ($)</label><input type="number" class="admin-input srv-price" value="18"></div>
-              <div><label>Precio Anterior ($)</label><input type="number" class="admin-input srv-oldprice" value="22"></div>
+              <div><label>Precio ($)</label><input type="number" class="admin-input srv-price" value="18"></div>
+              <div><label>Precio Antes ($)</label><input type="number" class="admin-input srv-oldprice" value="22"></div>
             </div>
           </div>
           <div class="grid-2">
-            <div class="form-group"><label>URL de Foto</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"></div>
+            <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"></div>
             <div class="form-group"><label>Categoría</label><input type="text" class="admin-input srv-cat" value="POLYGEL"></div>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Cupo Disponible</label>
-            <button type="button" class="btn-danger remove-srv-row">Quitar Servicio</button>
+            <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Disponible</label>
+            <button type="button" class="btn-danger remove-srv-row">Quitar</button>
           </div>
         </div>
       `);
     });
 
-    // 4. PUBLICAR TODOS LOS CAMBIOS EN VIVO EN REALTIME DATABASE
+    // 7. PUBLICAR TODOS LOS CAMBIOS EN TIEMPO REAL EN FIREBASE
     $("#save-all-cloud-btn").on("click", function () {
-      if (!currentConfig) currentConfig = {};
-
+      currentConfig.businessMode = $("#cfg-business-mode").val();
       currentConfig.brandName = $("#cfg-brand-name").val().trim();
       currentConfig.whatsappNumber = $("#cfg-whatsapp").val().trim();
+      currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val() || 45.5);
+      currentConfig.referralDiscountPercent = Number($("#cfg-referral-discount").val() || 10);
+
+      currentConfig.theme = {
+        accentColor: $("#cfg-theme-accent").val(),
+        bgDark: "#0a0a0a"
+      };
+
+      currentConfig.socials = {
+        instagram: $("#cfg-soc-instagram").val().trim(),
+        tiktok: $("#cfg-soc-tiktok").val().trim(),
+        facebook: $("#cfg-soc-facebook").val().trim(),
+        youtube: $("#cfg-soc-youtube").val().trim(),
+        whatsapp: `https://wa.me/${currentConfig.whatsappNumber}`
+      };
+
+      currentConfig.paymentMethodsInfo = Object.assign({}, currentConfig.paymentMethodsInfo, {
+        "Pago Móvil": $("#cfg-pay-pagomovil").val().trim(),
+        "Zelle / Binance": $("#cfg-pay-zelle").val().trim()
+      });
 
       currentConfig.location = {
         title: $("#cfg-loc-title").val().trim(),
-        city: "ATENCIÓN EN ESTUDIO PRIVADO Y A DOMICILIO",
+        city: "ATENCIÓN EN SEDE Y A DOMICILIO",
         address: $("#cfg-loc-address").val().trim(),
         hours: $("#cfg-loc-hours").val().trim(),
         phone: $("#cfg-loc-phone").val().trim()
@@ -806,6 +1182,23 @@
         lead: $("#cfg-hero-lead").val().trim()
       });
 
+      // Guardar Puntos D3.js
+      const updatedHotspots = [];
+      $("#hotspots-editor-list .hs-edit-row").each(function (i) {
+        updatedHotspots.push({
+          id: `hs-${i}-${Date.now()}`,
+          title: $(this).find(".hs-title").val().trim(),
+          price: Number($(this).find(".hs-price").val() || 0),
+          x: Number($(this).find(".hs-x").val() || 50),
+          y: Number($(this).find(".hs-y").val() || 50)
+        });
+      });
+      currentConfig.lookbook = {
+        image: $("#cfg-lookbook-img").val().trim(),
+        hotspots: updatedHotspots
+      };
+
+      // Guardar Modelo 3D y Materiales
       const updatedSpecs = [];
       $("#tech-specs-editor-list .spec-edit-row").each(function () {
         updatedSpecs.push({
@@ -814,7 +1207,6 @@
           detail: $(this).find(".spec-detail").val().trim()
         });
       });
-
       currentConfig.model3D = Object.assign({}, currentConfig.model3D, {
         glbUrl: $("#cfg-3d-url").val().trim(),
         systemPrice: Number($("#cfg-3d-price").val() || 25),
@@ -823,10 +1215,25 @@
         techSpecs: updatedSpecs
       });
 
+      // Guardar Videos Cortos (Reels)
+      const updatedReels = [];
+      $("#reels-editor-container .reel-edit-row").each(function (i) {
+        updatedReels.push({
+          id: `reel-${i}-${Date.now()}`,
+          tag: $(this).find(".reel-tag").val().trim(),
+          title: $(this).find(".reel-title").val().trim(),
+          price: Number($(this).find(".reel-price").val() || 0),
+          videoUrl: $(this).find(".reel-video").val().trim(),
+          poster: $(this).find(".reel-poster").val().trim()
+        });
+      });
+      currentConfig.promoReels = updatedReels;
+
+      // Guardar Catálogo
       const updatedSets = [];
       $("#sets-editor-container .service-edit-item").each(function (i) {
         updatedSets.push({
-          id: `set-item-${i}-${Date.now()}`,
+          id: `set-${i}-${Date.now()}`,
           title: $(this).find(".srv-title").val().trim(),
           price: Number($(this).find(".srv-price").val() || 0),
           oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
@@ -840,7 +1247,7 @@
       const updatedArrivals = [];
       $("#arrivals-editor-container .service-edit-item").each(function (i) {
         updatedArrivals.push({
-          id: `arr-item-${i}-${Date.now()}`,
+          id: `arr-${i}-${Date.now()}`,
           title: $(this).find(".srv-title").val().trim(),
           price: Number($(this).find(".srv-price").val() || 0),
           oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
@@ -851,18 +1258,60 @@
       });
       currentConfig.arrivalsProducts = updatedArrivals;
 
+      const categoriesSet = _.uniq(updatedArrivals.map((a) => a.category));
+      if (categoriesSet.length > 0) {
+        currentConfig.arrivalFilters = categoriesSet;
+      }
+
       dbRealtime.ref("store_config").set(currentConfig).then(() => {
-        showToast("✓ ¡Tienda actualizada en vivo para todas las clientas!");
+        showToast("✓ ¡Toda la plataforma se actualizó en vivo!");
       });
     });
 
-    // 5. MODERAR RESEÑAS DE CLIENTAS (FIRESTORE)
+    // 8. GESTIÓN DEL CLUB VIP, REFERIDOS Y RESEÑAS (PUNTO 2)
+    function listenVipUsersRealtime() {
+      dbFirestore.collection("usuarios_vip").orderBy("createdAt", "desc").onSnapshot((snap) => {
+        const $box = $("#vip-users-admin-list");
+        $box.empty();
+        if (snap.empty) {
+          $box.html('<p style="color:var(--text-muted); font-size:0.84rem;">Aún no hay miembros registrados en el Club VIP.</p>');
+          return;
+        }
+        snap.forEach((doc) => {
+          const u = doc.data();
+          $box.append(`
+            <div class="booking-item" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:0.8rem;">
+              <div>
+                <strong style="color:var(--accent-gold);">${sanitize(u.name)}</strong>
+                <span style="font-size:0.76rem; color:var(--text-muted);"> (${sanitize(u.email)})</span>
+                <p style="font-size:0.8rem; margin-top:0.2rem;">
+                  Código: <strong>${sanitize(u.referralCode)}</strong> •
+                  Referidos logrados: <strong>${u.referralsCount || 0}</strong> •
+                  Puntos VIP: <strong>${u.points || 100}</strong>
+                </p>
+              </div>
+              <div style="display:flex; gap:0.45rem;">
+                <button type="button" class="btn-success add-vip-points-btn" data-id="${doc.id}" data-pts="${u.points || 100}">+50 Puntos</button>
+              </div>
+            </div>
+          `);
+        });
+      });
+    }
+
+    $(document).on("click", ".add-vip-points-btn", function () {
+      const id = $(this).data("id");
+      const currentPts = Number($(this).data("pts") || 100);
+      dbFirestore.collection("usuarios_vip").doc(id).update({ points: currentPts + 50 });
+      showToast("✓ +50 puntos sumados al miembro VIP");
+    });
+
     function listenReviewsRealtime() {
       dbFirestore.collection("resenas_clientas").orderBy("createdAt", "desc").onSnapshot((snap) => {
         const $list = $("#reviews-admin-list");
         $list.empty();
         if (snap.empty) {
-          $list.html('<p style="color:var(--text-muted); font-size:0.85rem;">No hay reseñas enviadas desde el formulario aún.</p>');
+          $list.html('<p style="color:var(--text-muted); font-size:0.84rem;">Sin reseñas aún.</p>');
           return;
         }
         snap.forEach((doc) => {
@@ -881,8 +1330,7 @@
     }
 
     $(document).on("click", ".delete-review-btn", function () {
-      const id = $(this).data("id");
-      dbFirestore.collection("resenas_clientas").doc(id).delete();
+      dbFirestore.collection("resenas_clientas").doc($(this).data("id")).delete();
     });
   </script>
 </body>
