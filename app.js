@@ -1,8 +1,6 @@
 /**
  * ============================================================================
- * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (SAAS) + FIREBASE EN TIEMPO REAL
- * Incluye: Redes Dinámicas, Club VIP & Referidos, Puntos D3.js Editables,
- * Videos Cortos (Reels), Visor 3D + Materiales, Domicilio GPS y Multi-Moneda
+ * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO + DOLARAPI + 3D DESPIECE
  * ============================================================================
  */
 
@@ -22,6 +20,9 @@ const firebaseConfig = {
   measurementId: "G-968MQ61PQ6"
 };
 
+// Lista blanca de correos administradores que jamás serán tratados como clientes normales
+const MASTER_ADMIN_EMAILS = ["yakuzafadeco@gmail.com"];
+
 let dbRealtime = null;
 let dbFirestore = null;
 let authFirebase = null;
@@ -34,30 +35,39 @@ try {
   dbFirestore = firebase.firestore();
   authFirebase = firebase.auth();
 } catch (err) {
-  console.warn("Cargando configuración local de respaldo:", err);
+  console.warn("Modo local de respaldo activo:", err);
 }
 
 /* ============================================================================
    2. CONFIGURACIÓN MAESTRA ESCALABLE (REGLA 6)
-   Todo este bloque se sincroniza y modifica desde tu panel admin.html
    ============================================================================ */
 let STORE_CONFIG = {
-  // Configuración General y Modo de Negocio ("services" para Citas/Uñas/Barbería o "products" para Ropa/Comida/Tienda)
-  businessMode: "services",
+  businessMode: "services", // "services" (Citas/Uñas/Barbería) o "products" (Tienda/Ropa/Comida)
   brandName: "kalon nails",
   brandSpaced: "K A L O N",
-  currencySymbol: "$",
-  exchangeRateBs: 45.50, // Tasa referencial editable desde el Admin
-  referralDiscountPercent: 10, // % de descuento al usar un código de referido
+  
+  // Punto 1: Moneda ($ o €) y sincronización con https://ve.dolarapi.com/v1/dolares/oficial
+  currencyCode: "USD", // "USD" o "EUR"
+  currencySymbol: "$", // "$" o "€"
+  autoSyncDolarApi: true,
+  euroMultiplier: 1.09, // Factor de conversión cuando se selecciona Euro (€)
+  exchangeRateBs: 45.50,
+  
+  // Punto 2: Configuración de duración y textos del Preloader inicial
+  preloader: {
+    enabled: true,
+    subtitle: "ESTUDIO DE UÑAS & ARTE 3D",
+    durationSeconds: 2.2
+  },
+
+  referralDiscountPercent: 10,
   whatsappNumber: "584120000000",
 
-  // Tema Visual Editable desde el Admin
   theme: {
     accentColor: "#c9a86a",
     bgDark: "#0a0a0a"
   },
 
-  // 1. Redes Sociales Dinámicas (Punto 1)
   socials: {
     instagram: "https://instagram.com/",
     tiktok: "https://tiktok.com/",
@@ -66,15 +76,13 @@ let STORE_CONFIG = {
     whatsapp: "https://wa.me/584120000000"
   },
 
-  // Métodos de Pago Configurables desde el Admin (Punto 5)
   paymentMethodsInfo: {
-    "Pago Móvil": "Banco: Mercantil (0105) • Tel: 0412-0000000 • CI: V-00.000.000 (Enviar captura por WhatsApp)",
-    "Efectivo Divisas": "Pago en efectivo directamente al momento de tu atención en Panorama o a domicilio.",
+    "Pago Móvil": "Banco: Mercantil (0105) • Tel: 0412-0000000 • CI: V-00.000.000 (Calculado a tasa oficial BCV)",
+    "Efectivo Divisas": "Pago en efectivo ($ / €) directamente al momento de tu atención en Panorama o a domicilio.",
     "Zelle / Binance": "Correo Zelle / Binance Pay: pagos@kalonnails.com (Titular: Kalon Studio)",
     "Transferencia / Punto": "Coordinamos los datos de transferencia directamente al abrir tu chat de WhatsApp."
   },
 
-  // Zonas de Domicilio Editables
   deliveryZones: [
     { label: "El Junquito - Sector Panorama / Km 11-13", fee: 3 },
     { label: "El Junquito - Pueblo / Km 14 al Km 23", fee: 5 },
@@ -91,7 +99,7 @@ let STORE_CONFIG = {
 
   navigation: [
     { label: "INICIO", href: "#main-content", hasSubmenu: false },
-    { label: "MODELO 3D & MATERIALES", href: "#showcase-3d", hasSubmenu: false },
+    { label: "MODELO 3D & DESPIECE", href: "#showcase-3d", hasSubmenu: false },
     { label: "VIDEOS & REELS", href: "#reels-section", hasSubmenu: false },
     { label: "DESTACADOS & PROMOS", href: "#colecciones", hasSubmenu: true },
     { label: "ESPECIALIDADES", href: "#categorias", hasSubmenu: true },
@@ -114,11 +122,11 @@ let STORE_CONFIG = {
     ]
   },
 
-  // 3. Visor 3D + Materiales Editables desde el Admin (Punto 3)
+  // Punto 8: Visor 3D con ángulos de cámara por capa para efecto Desarmado y Auto-Centrado
   model3D: {
-    subtitle: "INTERACCIÓN 360° • MODELO REAL",
+    subtitle: "INTERACCIÓN 360° • DESPIECE TÉCNICO",
     title: "Escultura & Materiales en 3D",
-    desc: "Gira las manos con tu dedo para inspeccionar el relieve 3D, el sellado de cutícula y conoce qué productos exactos usamos.",
+    desc: "Gira las manos con tu dedo o presiona 'Desarmar Capas' para ver cada material por separado y vuelve a centrarlo cuando quieras.",
     glbUrl: "./unas-demo.glb",
     systemPrice: 25,
     systemTitle: "SISTEMA ESCULPIDO AZUL COBALTO 3D (POLYGEL)",
@@ -126,27 +134,30 @@ let STORE_CONFIG = {
       {
         layer: "1. PREPARACIÓN & CUTÍCULA",
         name: "Manicura Rusa Combinada + Deshidratador pH",
-        detail: "Limpieza profunda del bolsillo de la cutícula con brocas diamantadas suaves y nivelación de pH libre de ácido."
+        detail: "Limpieza profunda del bolsillo de la cutícula con brocas diamantadas suaves y nivelación de pH libre de ácido.",
+        orbit: "-35deg 65deg 75%"
       },
       {
         layer: "2. BASE ADHERENTE & PROTECCIÓN",
         name: "Rubber Base Gel Flexible (Capa Amortiguadora)",
-        detail: "Base elástica vitaminada que protege la uña natural y absorbe impactos sin quebrar la estructura."
+        detail: "Base elástica vitaminada que protege la uña natural y absorbe impactos sin quebrar la estructura.",
+        orbit: "25deg 70deg 72%"
       },
       {
         layer: "3. ESTRUCTURA & ESCULPIDO",
         name: "Polygel Acrigel de Alta Densidad (Grado Salón)",
-        detail: "Combina la fuerza del acrílico con la ligereza del gel. Curvatura C estilizada y duración de 21 a 30 días."
+        detail: "Combina la fuerza del acrílico con la ligereza del gel. Curvatura C estilizada y duración de 21 a 30 días.",
+        orbit: "-15deg 55deg 68%"
       },
       {
         layer: "4. COLOR, RELIEVE & BRILLO ESPEJO",
         name: "Esmalte Gel Azul Cobalto + Top Coat Cristal UV",
-        detail: "Pigmento mineral de alta cobertura curado en lámpara LED/UV y sellado con Top Coat Diamond anti-rayaduras."
+        detail: "Pigmento mineral de alta cobertura curado en lámpara LED/UV y sellado con Top Coat Diamond anti-rayaduras.",
+        orbit: "10deg 80deg 65%"
       }
     ]
   },
 
-  // 4. Videos Cortos Publicitarios / Shoppable Reels (Punto 4)
   promoReels: [
     {
       id: "reel-1",
@@ -283,7 +294,6 @@ let STORE_CONFIG = {
     }
   ],
 
-  // 3. Puntos Interactivos D3.js Editables desde el Admin (Punto 3)
   lookbook: {
     image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
     hotspots: [
@@ -344,21 +354,53 @@ let STORE_CONFIG = {
 };
 
 /* ============================================================================
-   3. SEGURIDAD XSS (REGLA 5), MULTI-MONEDA Y TEMA DINÁMICO
+   3. SINCRONIZACIÓN CON DOLARAPI OFICIAL ($ / €) Y FORMATEO (PUNTO 1)
    ============================================================================ */
+let liveUsdOfficialRate = 0;
+
+async function syncOfficialExchangeRate() {
+  if (STORE_CONFIG.autoSyncDolarApi === false) return;
+  try {
+    const response = await fetch("https://ve.dolarapi.com/v1/dolares/oficial");
+    if (!response.ok) return;
+    const data = await response.json();
+    if (data && data.promedio && Number(data.promedio) > 0) {
+      liveUsdOfficialRate = Number(data.promedio);
+      const isEuro = STORE_CONFIG.currencyCode === "EUR";
+      const factor = isEuro ? Number(STORE_CONFIG.euroMultiplier || 1.09) : 1;
+      STORE_CONFIG.exchangeRateBs = Number((liveUsdOfficialRate * factor).toFixed(2));
+
+      // Refresca precios en las tarjetas y el carrito con la tasa oficial recién descargada
+      renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
+      if (STORE_CONFIG.arrivalFilters && STORE_CONFIG.arrivalFilters.length > 0) {
+        const activeCat = $("#filter-pills-container .filter-pill-btn.is-active").data("category") || STORE_CONFIG.arrivalFilters[0];
+        filterArrivalsByCategory(activeCat);
+      }
+      renderPromoReels();
+      renderCartUI();
+    }
+  } catch (err) {
+    console.warn("Usando tasa guardada en configuración:", err);
+  }
+}
+
 function sanitizeInput(str) {
   if (typeof str !== "string") return "";
   return _.escape(str.trim()).replace(/[<>/"'`;()]/g, "");
 }
 
-function formatCurrency(amount) {
-  return `${STORE_CONFIG.currencySymbol} ${Number(amount).toLocaleString("es-VE", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+function getActiveSymbol() {
+  return STORE_CONFIG.currencyCode === "EUR" ? "€" : (STORE_CONFIG.currencySymbol || "$");
 }
 
-function formatBs(usdAmount) {
+function formatCurrency(amount) {
+  return `${getActiveSymbol()} ${Number(amount).toLocaleString("es-VE", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
+
+function formatBs(foreignAmount) {
   const rate = Number(STORE_CONFIG.exchangeRateBs || 0);
   if (!rate || rate <= 0) return "";
-  const bs = Number(usdAmount) * rate;
+  const bs = Number(foreignAmount) * rate;
   return `Bs. ${bs.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
@@ -374,7 +416,174 @@ function applyDynamicTheme() {
 }
 
 /* ============================================================================
-   4. ESTADO DEL CARRITO, REFERIDOS VIP, DOMICILIO Y GPS
+   4. HISTORIAL DEL BOTÓN "ATRÁS" DEL CELULAR / TABLET (PUNTO 5)
+   ============================================================================ */
+let isOverlayOpenInHistory = false;
+
+function pushOverlayHistoryState(overlayName) {
+  if (!isOverlayOpenInHistory) {
+    window.history.pushState({ overlay: overlayName }, "");
+    isOverlayOpenInHistory = true;
+  }
+}
+
+function closeAllOverlaysUI() {
+  $("#side-drawer, #side-cart").removeClass("is-open").attr("aria-hidden", "true");
+  $("#drawer-backdrop").removeClass("is-active");
+  $("#vip-modal, #legal-modal").removeClass("is-open").attr("aria-hidden", "true");
+}
+
+window.addEventListener("popstate", function () {
+  if (
+    $("#side-drawer").hasClass("is-open") ||
+    $("#side-cart").hasClass("is-open") ||
+    $("#vip-modal").hasClass("is-open") ||
+    $("#legal-modal").hasClass("is-open")
+  ) {
+    isOverlayOpenInHistory = false;
+    closeAllOverlaysUI();
+  }
+});
+
+/* ============================================================================
+   5. ACCESO SECRETO AL PANEL ADMIN CON 3 TOQUES EN EL NOMBRE (PUNTO 6)
+   ============================================================================ */
+function initSecretAdminTrigger() {
+  let tapCount = 0;
+  let tapTimer = null;
+
+  $("#header-logo, #footer-secret-trigger").on("click", function (e) {
+    e.preventDefault();
+    tapCount += 1;
+
+    if (tapTimer) clearTimeout(tapTimer);
+
+    if (tapCount >= 3) {
+      tapCount = 0;
+      window.location.href = "admin.html";
+      return;
+    }
+
+    tapTimer = setTimeout(() => {
+      if (tapCount === 1 && $(this).attr("id") === "header-logo") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      tapCount = 0;
+    }, 950);
+  });
+}
+
+/* ============================================================================
+   6. DESPIECE / DESARMADO DEL MODELO 3D Y AUTO-CENTRADO (PUNTO 8)
+   ============================================================================ */
+let is3DExploded = false;
+
+function toggleExplode3DModel(forceState, targetOrbit) {
+  const viewer = document.getElementById("main-3d-model");
+  const $card = $("#viewer-3d-card");
+  const $overlay = $("#exploded-layers-overlay");
+  const $btn = $("#explode-3d-btn");
+
+  if (!viewer) return;
+
+  is3DExploded = typeof forceState === "boolean" ? forceState : !is3DExploded;
+
+  if (is3DExploded) {
+    $card.addClass("is-exploded");
+    $btn.html('<i class="ri-stack-fill"></i> Unir Capas');
+    viewer.removeAttribute("auto-rotate");
+
+    // Si el archivo .glb incluye animación de separación, la reproduce
+    if (viewer.availableAnimations && viewer.availableAnimations.length > 0) {
+      viewer.animationName = viewer.availableAnimations[0];
+      viewer.play({ repetitions: 1 });
+    }
+
+    // Mueve la cámara al ángulo de inspección de las capas
+    viewer.cameraOrbit = targetOrbit || "-25deg 62deg 72%";
+    viewer.fieldOfView = "22deg";
+
+    // Construye y anima las etiquetas flotantes de despiece con Anime.js
+    const specs = (STORE_CONFIG.model3D && STORE_CONFIG.model3D.techSpecs) || [];
+    const chipsHtml = specs
+      .map(
+        (sp, idx) => `
+        <div class="exploded-chip" data-idx="${idx}">
+          <strong>${sanitizeInput(sp.layer)}</strong>
+          <span>${sanitizeInput(sp.name)}</span>
+        </div>
+      `
+      )
+      .join("");
+    $overlay.html(chipsHtml).attr("aria-hidden", "false");
+
+    anime({
+      targets: "#exploded-layers-overlay .exploded-chip",
+      opacity: [0, 1],
+      translateX: (el, i) => (i % 2 === 0 ? [-28, 0] : [28, 0]),
+      scale: [0.88, 1],
+      delay: anime.stagger(110),
+      duration: 480,
+      easing: "easeOutCubic"
+    });
+  } else {
+    reset3DModelToCenter();
+  }
+}
+
+function reset3DModelToCenter() {
+  const viewer = document.getElementById("main-3d-model");
+  const $card = $("#viewer-3d-card");
+  const $overlay = $("#exploded-layers-overlay");
+  const $btn = $("#explode-3d-btn");
+
+  is3DExploded = false;
+  $card.removeClass("is-exploded");
+  $btn.html('<i class="ri-stack-line"></i> Desarmar Capas');
+
+  if (viewer) {
+    if (typeof viewer.pause === "function") viewer.pause();
+    viewer.currentTime = 0;
+    viewer.cameraOrbit = "0deg 75deg 105%";
+    viewer.fieldOfView = "30deg";
+    if (typeof viewer.resetTurntableRotation === "function") {
+      viewer.resetTurntableRotation();
+    }
+    viewer.setAttribute("auto-rotate", "");
+  }
+
+  anime({
+    targets: "#exploded-layers-overlay .exploded-chip",
+    opacity: 0,
+    scale: 0.85,
+    duration: 240,
+    easing: "easeInQuad",
+    complete: function () {
+      $overlay.empty().attr("aria-hidden", "true");
+    }
+  });
+}
+
+function init3DAutoRecenterOnScroll() {
+  const sectionEl = document.getElementById("showcase-3d");
+  if (!sectionEl || !("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        // Cuando el usuario baja o sube y sale de la sección 3D, vuelve a centrar el objeto automáticamente
+        if (!entry.isIntersecting && is3DExploded) {
+          reset3DModelToCenter();
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+  observer.observe(sectionEl);
+}
+
+/* ============================================================================
+   7. ESTADO DEL CARRITO, REFERIDOS VIP, DOMICILIO Y GPS
    ============================================================================ */
 let cartState = [];
 let deliveryMode = "estudio";
@@ -455,6 +664,7 @@ function renderCartUI() {
   const { discountAmount, grandTotal } = calculateCartTotals();
 
   $("#cart-count").text(totalCount);
+  $("#cart-currency-label").text(`Total (${STORE_CONFIG.currencyCode || "USD"}):`);
   $("#cart-total-price").text(
     discountAmount > 0 ? `${formatCurrency(grandTotal)} (-${activeDiscountPercent}% VIP)` : formatCurrency(grandTotal)
   );
@@ -485,7 +695,7 @@ function renderCartUI() {
 }
 
 /* ============================================================================
-   5. DETECCIÓN DE ENLACES DE REFERIDOS (?ref=CODIGO) Y CLUB VIP (PUNTO 2)
+   8. CLUB VIP SEGURO (NO CONVIERTE CUENTAS DE ADMIN EN CLIENTES - PUNTO 4)
    ============================================================================ */
 function checkUrlReferralParam() {
   try {
@@ -510,54 +720,40 @@ function initVipAuthListener() {
   if (!authFirebase || !dbFirestore) return;
 
   authFirebase.onAuthStateChanged(async (user) => {
-    if (user) {
+    if (!user) {
+      currentVipProfile = null;
+      $("#vip-profile-view").hide();
+      $("#vip-auth-view").fadeIn(200);
+      return;
+    }
+
+    const docRef = dbFirestore.collection("usuarios_vip").doc(user.uid);
+    const snap = await docRef.get().catch(() => null);
+
+    // IMPORTANTE (Punto 4): Solo lee el perfil si ya existe en usuarios_vip; NO crea un documento automático
+    // al recargar la página para no degradar cuentas de Administrador a Cliente VIP.
+    if (snap && snap.exists) {
+      currentVipProfile = snap.data();
       $("#vip-auth-view").hide();
       $("#vip-profile-view").fadeIn(200);
 
-      const docRef = dbFirestore.collection("usuarios_vip").doc(user.uid);
-      const snap = await docRef.get().catch(() => null);
-
-      if (snap && snap.exists) {
-        currentVipProfile = snap.data();
-      } else {
-        const prefix = (user.email || "VIP").split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 5);
-        const randomNum = Math.floor(100 + Math.random() * 900);
-        currentVipProfile = {
-          uid: user.uid,
-          name: sanitizeInput($("#vip-user-name").val()) || prefix,
-          email: user.email,
-          referralCode: `${prefix}-${randomNum}`,
-          points: 100,
-          referralsCount: 0,
-          discountPercent: 10,
-          createdAt: new Date().toISOString()
-        };
-        await docRef.set(currentVipProfile).catch(() => {});
-      }
-
-      // Renderiza datos en la tarjeta VIP
       $("#vip-member-name").text(currentVipProfile.name || user.email);
       $("#vip-points-val").text(currentVipProfile.points || 100);
       $("#vip-referrals-val").text(currentVipProfile.referralsCount || 0);
       $("#vip-discount-val").text(`${currentVipProfile.discountPercent || 10}%`);
-      $("#vip-my-code").text(currentVipProfile.referralCode);
+      $("#vip-my-code").text(currentVipProfile.referralCode || "VIP-10");
 
-      // Rellena automáticamente el nombre en el carrito y aplica su descuento VIP
       if (!$("#booking-client-name").val()) {
         $("#booking-client-name").val(currentVipProfile.name);
       }
       activeDiscountPercent = Number(currentVipProfile.discountPercent || 10);
       renderCartUI();
-    } else {
-      currentVipProfile = null;
-      $("#vip-profile-view").hide();
-      $("#vip-auth-view").fadeIn(200);
     }
   });
 }
 
 /* ============================================================================
-   6. SINCRONIZACIÓN EN VIVO CON FIREBASE
+   9. SINCRONIZACIÓN EN VIVO CON FIREBASE
    ============================================================================ */
 function syncStoreWithFirebase() {
   if (!dbRealtime) return;
@@ -567,7 +763,6 @@ function syncStoreWithFirebase() {
     const cloudData = snapshot.val();
     if (cloudData) {
       STORE_CONFIG = _.merge({}, STORE_CONFIG, cloudData);
-      // Si en el Admin se borraron o actualizaron arreglos completos, respetamos la lista de la nube
       if (cloudData.setsProducts) STORE_CONFIG.setsProducts = cloudData.setsProducts;
       if (cloudData.arrivalsProducts) STORE_CONFIG.arrivalsProducts = cloudData.arrivalsProducts;
       if (cloudData.promoReels) STORE_CONFIG.promoReels = cloudData.promoReels;
@@ -581,9 +776,11 @@ function syncStoreWithFirebase() {
       applyDynamicTheme();
       initStorefrontContent();
       initD3LookbookHotspots();
+      syncOfficialExchangeRate();
       renderCartUI();
     } else {
       configRef.set(STORE_CONFIG).catch(() => {});
+      syncOfficialExchangeRate();
     }
   });
 
@@ -606,14 +803,13 @@ function syncStoreWithFirebase() {
 }
 
 /* ============================================================================
-   7. RENDERIZADO DE CONTENIDO, REDES, VIDEOS REELS Y MODO DE NEGOCIO
+   10. RENDERIZADO DE CONTENIDO, REDES, VIDEOS REELS Y MODO DE NEGOCIO
    ============================================================================ */
 function initStorefrontContent() {
   applyDynamicTheme();
 
   const isProductStore = STORE_CONFIG.businessMode === "products";
 
-  // Adapta textos según el rubro elegido en el Admin (Modo Citas vs Modo Tienda de Productos)
   $("#cart-drawer-title").text(isProductStore ? "Tu Carrito de Compras" : "Tu Cita & Servicios");
   $("#booking-form-heading").html(
     isProductStore
@@ -630,9 +826,9 @@ function initStorefrontContent() {
     $("#label-mode-delivery").text("A Domicilio");
   }
 
-  // Tasa del Día en Cabecera
-  $("#header-rate-pill").text(`Tasa: Bs. ${Number(STORE_CONFIG.exchangeRateBs || 0).toFixed(2)}`);
-
+  if (STORE_CONFIG.preloader && STORE_CONFIG.preloader.subtitle) {
+    $("#preloader-sub").text(STORE_CONFIG.preloader.subtitle);
+  }
   $("#preloader-brand").text(STORE_CONFIG.brandSpaced);
   $("#header-logo").text(STORE_CONFIG.brandName);
   $("#footer-brand-name").text(STORE_CONFIG.brandName.toUpperCase());
@@ -643,7 +839,7 @@ function initStorefrontContent() {
     .join("");
   $("#marquee-track").html(marqueeItems);
 
-  // 2. Navegación y Redes Sociales Dinámicas (Punto 1)
+  // 2. Navegación y Redes Sociales Dinámicas
   const navHtml = (STORE_CONFIG.navigation || [])
     .map(
       (item) => `
@@ -661,10 +857,11 @@ function initStorefrontContent() {
   renderDynamicSocialLinks();
 
   // 3. Zonas de Domicilio e Instrucciones de Pago
+  const sym = getActiveSymbol();
   const zonesHtml = [
     '<option value="0">Selecciona tu zona de domicilio...</option>',
     ...(STORE_CONFIG.deliveryZones || []).map(
-      (z) => `<option value="${Number(z.fee)}">${sanitizeInput(z.label)} (+ $${z.fee})</option>`
+      (z) => `<option value="${Number(z.fee)}">${sanitizeInput(z.label)} (+ ${sym}${z.fee})</option>`
     )
   ].join("");
   $("#booking-zone-select").html(zonesHtml);
@@ -710,7 +907,7 @@ function initStorefrontContent() {
   const specsHtml = (STORE_CONFIG.model3D.techSpecs || [])
     .map(
       (spec, idx) => `
-      <div class="spec-item ${idx === 0 ? "is-active" : ""}">
+      <div class="spec-item ${idx === 0 ? "is-active" : ""}" data-orbit="${spec.orbit || "-20deg 65deg 72%"}">
         <button type="button" class="spec-header-btn">
           <div>
             <span class="spec-layer-tag">${sanitizeInput(spec.layer)}</span>
@@ -727,7 +924,7 @@ function initStorefrontContent() {
     .join("");
   $("#nail-tech-specs").html(specsHtml);
 
-  // 6. Videos Cortos Publicitarios / Shoppable Reels (Punto 4)
+  // 6. Videos Cortos Publicitarios / Shoppable Reels
   renderPromoReels();
 
   // 7. Carrusel Principal y Especialidades
@@ -828,7 +1025,6 @@ function initStorefrontContent() {
   $("#footer-accordions").html(accordionsHtml);
 }
 
-// Dibuja los íconos de Redes Sociales solo si tienen un enlace configurado en el Admin
 function renderDynamicSocialLinks() {
   const s = STORE_CONFIG.socials || {};
   const iconMap = [
@@ -853,7 +1049,6 @@ function renderDynamicSocialLinks() {
   $("#footer-socials, #drawer-socials").html(html);
 }
 
-// Renderiza los Videos Cortos Publicitarios (Reels) con reproducción inteligente al estar visibles
 function renderPromoReels() {
   const reels = STORE_CONFIG.promoReels || [];
   if (reels.length === 0) {
@@ -893,7 +1088,6 @@ function renderPromoReels() {
 
   $("#reels-carousel").html(html);
 
-  // Observador inteligente: solo reproduce el video cuando está en pantalla para ahorrar batería y datos
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -908,7 +1102,6 @@ function renderPromoReels() {
       },
       { threshold: 0.55 }
     );
-
     document.querySelectorAll(".smart-reel-video").forEach((v) => observer.observe(v));
   }
 }
@@ -1003,7 +1196,7 @@ function updatePaymentInstructionsUI() {
 }
 
 /* ============================================================================
-   8. ESCAPARATE INTERACTIVO CON D3.JS (PUNTOS MODIFICABLES DESDE EL ADMIN)
+   11. ESCAPARATE INTERACTIVO CON D3.JS
    ============================================================================ */
 function initD3LookbookHotspots() {
   $("#lookbook-img").attr("src", STORE_CONFIG.lookbook.image);
@@ -1047,39 +1240,47 @@ function initD3LookbookHotspots() {
 }
 
 /* ============================================================================
-   9. PRELOADER CON ANIME.JS Y COTIZADOR REACT
+   12. PRELOADER CONFIGURABLE CON ANIME.JS (PUNTO 2) Y COTIZADOR REACT
    ============================================================================ */
 function runPreloaderAnimation() {
+  if (STORE_CONFIG.preloader && STORE_CONFIG.preloader.enabled === false) {
+    $("#preloader").hide();
+    return;
+  }
+
+  const totalSec = Number((STORE_CONFIG.preloader && STORE_CONFIG.preloader.durationSeconds) || 2.2);
+  const stepMs = Math.max(250, Math.round((totalSec * 1000) / 3.2));
+
   const tl = anime.timeline({ easing: "easeOutExpo" });
 
   tl.add({
     targets: ".preloader-subtitle",
     opacity: [0, 1],
     translateY: [10, 0],
-    duration: 600
+    duration: stepMs
   })
     .add(
       {
         targets: ".preloader-title",
         opacity: [0, 1],
-        letterSpacing: ["0.65em", "0.4em"],
-        duration: 900
+        letterSpacing: ["0.55em", "0.35em"],
+        duration: stepMs * 1.2
       },
-      "-=300"
+      "-=250"
     )
     .add(
       {
         targets: ".preloader-line",
         width: ["0%", "75%"],
-        duration: 700
+        duration: stepMs
       },
-      "-=500"
+      "-=400"
     )
     .add({
       targets: "#preloader",
       opacity: [1, 0],
-      duration: 650,
-      delay: 280,
+      duration: 550,
+      delay: Math.max(150, Math.round(stepMs * 0.4)),
       complete: function () {
         $("#preloader").css("display", "none");
       }
@@ -1106,6 +1307,7 @@ function mountReactCustomKitBuilder() {
         price: total,
         image: STORE_CONFIG.lookbook.image
       });
+      pushOverlayHistoryState("cart");
       $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
       $("#drawer-backdrop").addClass("is-active");
     }
@@ -1132,7 +1334,7 @@ function mountReactCustomKitBuilder() {
               className: `filter-pill-btn ${baseOpt.name === sys.name ? "is-active" : ""}`,
               onClick: () => setBaseOpt(sys)
             },
-            `${sys.name} ($${sys.price})`
+            `${sys.name} (${getActiveSymbol()}${sys.price})`
           )
         )
       ),
@@ -1151,7 +1353,7 @@ function mountReactCustomKitBuilder() {
               className: `filter-pill-btn ${sizeOpt.name === len.name ? "is-active" : ""}`,
               onClick: () => setSizeOpt(len)
             },
-            `${len.name} (+$${len.extra})`
+            `${len.name} (+${getActiveSymbol()}${len.extra})`
           )
         )
       ),
@@ -1171,7 +1373,7 @@ function mountReactCustomKitBuilder() {
               className: `filter-pill-btn ${finishOpt.name === art.name ? "is-active" : ""}`,
               onClick: () => setFinishOpt(art)
             },
-            `${art.name} (+$${art.extra})`
+            `${art.name} (+${getActiveSymbol()}${art.extra})`
           )
         )
       ),
@@ -1194,7 +1396,7 @@ function mountReactCustomKitBuilder() {
 }
 
 /* ============================================================================
-   10. EVENTOS DE INTERFAZ, VIP, VIDEOS REELS, GPS Y CHECKOUT
+   13. EVENTOS DE INTERFAZ, DESPIECE 3D, VIP, REELS, GPS Y CHECKOUT
    ============================================================================ */
 $(document).ready(function () {
   loadCartFromStorage();
@@ -1205,46 +1407,91 @@ $(document).ready(function () {
   runPreloaderAnimation();
   mountReactCustomKitBuilder();
   initVipAuthListener();
+  initSecretAdminTrigger();
+  init3DAutoRecenterOnScroll();
   syncStoreWithFirebase();
+  syncOfficialExchangeRate();
 
-  // Abrir/Cerrar Menú Lateral y Carrito
+  // Abrir Menú Lateral, Carrito y Modales registrando en Historial para el botón "Atrás" (Punto 5)
   $("#open-menu-btn").on("click", function () {
+    pushOverlayHistoryState("menu");
     $("#side-drawer").addClass("is-open").attr("aria-hidden", "false");
     $("#drawer-backdrop").addClass("is-active");
   });
 
   $("#open-cart-btn, #open-booking-drawer-btn").on("click", function () {
+    pushOverlayHistoryState("cart");
     $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
     $("#drawer-backdrop").addClass("is-active");
   });
 
   $("#close-menu-btn, #close-cart-btn, #drawer-backdrop, .drawer-nav-link").on("click", function () {
-    $("#side-drawer, #side-cart").removeClass("is-open").attr("aria-hidden", "true");
-    $("#drawer-backdrop").removeClass("is-active");
+    closeAllOverlaysUI();
+    if (isOverlayOpenInHistory) {
+      isOverlayOpenInHistory = false;
+      window.history.back();
+    }
   });
 
-  // Abrir y Cerrar Modal Club VIP & Referidos (Punto 2)
   $("#open-vip-btn, #hero-vip-btn").on("click", function () {
+    pushOverlayHistoryState("vip");
     $("#vip-modal").addClass("is-open").attr("aria-hidden", "false");
   });
 
   $("#close-vip-modal, #vip-modal").on("click", function (e) {
     if (e.target === this || $(e.target).closest("#close-vip-modal").length) {
       $("#vip-modal").removeClass("is-open").attr("aria-hidden", "true");
+      if (isOverlayOpenInHistory) {
+        isOverlayOpenInHistory = false;
+        window.history.back();
+      }
     }
   });
 
-  // Registro de Nueva Cuenta VIP + Suma de Puntos al Referidor
+  // Botones de Desarmar / Capas 3D y Centrar (Punto 8)
+  $("#explode-3d-btn").on("click", function () {
+    toggleExplode3DModel();
+  });
+
+  $("#reset-3d-btn").on("click", function () {
+    reset3DModelToCenter();
+  });
+
+  // Al tocar una etapa de material o una etiqueta flotante, enfoca esa capa en el 3D
+  $(document).on("click", ".spec-header-btn", function () {
+    const $parent = $(this).closest(".spec-item");
+    $(".spec-item").removeClass("is-active");
+    $parent.addClass("is-active");
+
+    const orbit = $parent.data("orbit") || "-20deg 65deg 70%";
+    toggleExplode3DModel(true, orbit);
+  });
+
+  $(document).on("click", ".exploded-chip", function () {
+    const idx = Number($(this).data("idx") || 0);
+    const $targetSpec = $(".spec-item").eq(idx);
+    if ($targetSpec.length) {
+      $(".spec-item").removeClass("is-active");
+      $targetSpec.addClass("is-active");
+      const viewer = document.getElementById("main-3d-model");
+      if (viewer) {
+        viewer.cameraOrbit = $targetSpec.data("orbit") || "15deg 65deg 68%";
+      }
+    }
+  });
+
+  // Registro voluntario de Cuenta VIP (Con protección para correos Admin - Punto 4)
   $("#vip-auth-form").on("submit", async function (e) {
     e.preventDefault();
     if (!authFirebase) return;
 
     const name = sanitizeInput($("#vip-user-name").val()) || "Miembro VIP";
-    const email = $("#vip-user-email").val().trim();
+    const email = $("#vip-user-email").val().trim().toLowerCase();
     const pass = $("#vip-user-pass").val();
     const invitedBy = sanitizeInput($("#vip-invited-by").val()).toUpperCase();
+    const isMasterAdmin = MASTER_ADMIN_EMAILS.includes(email);
 
-    $("#vip-auth-feedback").text("Creando tu tarjeta VIP y activando beneficio...");
+    $("#vip-auth-feedback").text("Activando tu tarjeta VIP...");
 
     try {
       const cred = await authFirebase.createUserWithEmailAndPassword(email, pass);
@@ -1260,13 +1507,13 @@ $(document).ready(function () {
         points: 150,
         referralsCount: 0,
         discountPercent: 10,
+        isAdmin: isMasterAdmin,
         createdAt: new Date().toISOString()
       };
 
       if (dbFirestore) {
         await dbFirestore.collection("usuarios_vip").doc(cred.user.uid).set(newProfile);
 
-        // Si puso el código de una amiga, le sumamos +1 referido y +100 puntos a su amiga
         if (invitedBy.length >= 3) {
           const refSnap = await dbFirestore
             .collection("usuarios_vip")
@@ -1283,15 +1530,15 @@ $(document).ready(function () {
         }
       }
       $("#vip-auth-feedback").text("¡Cuenta VIP creada con éxito!");
+      initVipAuthListener();
     } catch (err) {
       $("#vip-auth-feedback").text("Si ya tienes cuenta con ese correo, toca 'YA TENGO CUENTA'.");
     }
   });
 
-  // Iniciar Sesión en Cuenta VIP existente
   $("#vip-login-btn").on("click", async function () {
     if (!authFirebase) return;
-    const email = $("#vip-user-email").val().trim();
+    const email = $("#vip-user-email").val().trim().toLowerCase();
     const pass = $("#vip-user-pass").val();
     if (!email || !pass) {
       $("#vip-auth-feedback").text("Ingresa tu correo y contraseña arriba.");
@@ -1299,8 +1546,27 @@ $(document).ready(function () {
     }
     $("#vip-auth-feedback").text("Iniciando sesión VIP...");
     try {
-      await authFirebase.signInWithEmailAndPassword(email, pass);
+      const cred = await authFirebase.signInWithEmailAndPassword(email, pass);
+      if (dbFirestore) {
+        const docRef = dbFirestore.collection("usuarios_vip").doc(cred.user.uid);
+        const snap = await docRef.get();
+        if (!snap.exists) {
+          const prefix = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 5) || "VIP";
+          await docRef.set({
+            uid: cred.user.uid,
+            name: prefix,
+            email,
+            referralCode: `${prefix}-${Math.floor(100 + Math.random() * 900)}`,
+            points: 100,
+            referralsCount: 0,
+            discountPercent: 10,
+            isAdmin: MASTER_ADMIN_EMAILS.includes(email),
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
       $("#vip-auth-feedback").text("");
+      initVipAuthListener();
     } catch (err) {
       $("#vip-auth-feedback").text("Correo o contraseña incorrectos.");
     }
@@ -1310,7 +1576,6 @@ $(document).ready(function () {
     if (authFirebase) authFirebase.signOut();
   });
 
-  // Compartir Enlace de Referido por WhatsApp
   $("#share-referral-wa-btn").on("click", function () {
     const code = $("#vip-my-code").text().trim();
     const baseUrl = window.location.origin + window.location.pathname;
@@ -1321,7 +1586,6 @@ $(document).ready(function () {
     window.open(`https://wa.me/?text=${msg}`, "_blank", "noopener,noreferrer");
   });
 
-  // Aplicar código de referido manualmente en el carrito
   $("#apply-referral-btn").on("click", function () {
     const code = sanitizeInput($("#cart-referral-code").val()).toUpperCase();
     if (code.length < 3) {
@@ -1335,7 +1599,7 @@ $(document).ready(function () {
     renderCartUI();
   });
 
-  // Sonido y Compra desde Videos Cortos (Reels - Punto 4)
+  // Sonido y Compra desde Videos Cortos (Reels)
   $(document).on("click", ".reel-sound-btn", function () {
     const videoEl = $(this).siblings("video")[0];
     if (!videoEl) return;
@@ -1353,30 +1617,25 @@ $(document).ready(function () {
         price: foundReel.price,
         image: foundReel.poster || STORE_CONFIG.hero.bgImage
       });
+      pushOverlayHistoryState("cart");
       $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
       $("#drawer-backdrop").addClass("is-active");
     }
   });
 
-  // Ficha Técnica de Materiales al lado del 3D
-  $(document).on("click", ".spec-header-btn", function () {
-    const $parent = $(this).closest(".spec-item");
-    $(".spec-item").removeClass("is-active");
-    $parent.addClass("is-active");
-  });
-
   $("#book-3d-look-btn").on("click", function () {
+    reset3DModelToCenter();
     addToCart({
       id: "sistema-3d-estrella",
       title: STORE_CONFIG.model3D.systemTitle,
       price: STORE_CONFIG.model3D.systemPrice,
       image: STORE_CONFIG.hero.bgImage
     });
+    pushOverlayHistoryState("cart");
     $("#side-cart").addClass("is-open").attr("aria-hidden", "false");
     $("#drawer-backdrop").addClass("is-active");
   });
 
-  // Modalidad Estudio vs Domicilio + GPS
   $(".mode-btn").on("click", function () {
     $(".mode-btn").removeClass("is-active");
     $(this).addClass("is-active");
@@ -1422,7 +1681,6 @@ $(document).ready(function () {
     );
   });
 
-  // Buscador en vivo
   $("#live-search-input").on(
     "input",
     _.debounce(function () {
@@ -1455,10 +1713,10 @@ $(document).ready(function () {
     if (!viewer) return;
     if (viewer.hasAttribute("auto-rotate")) {
       viewer.removeAttribute("auto-rotate");
-      $(this).html('<i class="ri-play-line"></i> Girar 3D');
+      $(this).html('<i class="ri-play-line"></i> Giro');
     } else {
       viewer.setAttribute("auto-rotate", "");
-      $(this).html('<i class="ri-pause-line"></i> Pausar 3D');
+      $(this).html('<i class="ri-pause-line"></i> Giro');
     }
   });
 
@@ -1508,7 +1766,6 @@ $(document).ready(function () {
     removeFromCart($(this).data("id"));
   });
 
-  // CONFIRMAR SOLICITUD: Guarda en Firestore, suma puntos VIP y envía a WhatsApp
   $("#checkout-whatsapp-btn").on("click", async function () {
     if (cartState.length === 0) {
       alert("Selecciona al menos un servicio o producto antes de confirmar.");
@@ -1538,6 +1795,7 @@ $(document).ready(function () {
       discountApplied: discountAmount,
       items: cartState.map((i) => ({ title: i.title, qty: i.qty, price: i.price })),
       deliveryFee: activeFee,
+      currencyCode: STORE_CONFIG.currencyCode || "USD",
       totalAmount: grandTotal,
       totalBsRef: formatBs(grandTotal),
       status: "Pendiente",
@@ -1547,7 +1805,6 @@ $(document).ready(function () {
     if (dbFirestore) {
       try {
         await dbFirestore.collection("citas_agendadas").add(bookingRecord);
-        // Si el cliente tiene sesión VIP activa, le sumamos +50 puntos por su compra
         if (currentVipProfile && currentVipProfile.uid) {
           await dbFirestore
             .collection("usuarios_vip")
@@ -1578,14 +1835,13 @@ $(document).ready(function () {
         refLine +
         `\n${locationLines}\n\n` +
         `🛍️ *Detalle:*\n${itemsLines}\n\n` +
-        `*Total USD: ${formatCurrency(grandTotal)}*\n` +
-        `*Ref. Bs: ${formatBs(grandTotal)}*`
+        `*Total (${STORE_CONFIG.currencyCode || "USD"}): ${formatCurrency(grandTotal)}*\n` +
+        `*Equivalente BCV: ${formatBs(grandTotal)}*`
     );
 
     window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${whatsappMsg}`, "_blank", "noopener,noreferrer");
   });
 
-  // Formulario de Reseñas en Vivo
   $("#client-review-form").on("submit", async function (e) {
     e.preventDefault();
     const name = sanitizeInput($("#review-name").val());
@@ -1655,12 +1911,17 @@ $(document).ready(function () {
   });
 
   $("#cookie-policy-link, #open-legal-modal").on("click", function () {
+    pushOverlayHistoryState("legal");
     $("#legal-modal").addClass("is-open").attr("aria-hidden", "false");
   });
 
   $("#close-legal-modal, #legal-modal").on("click", function (e) {
     if (e.target === this || $(e.target).closest("#close-legal-modal").length) {
       $("#legal-modal").removeClass("is-open").attr("aria-hidden", "true");
+      if (isOverlayOpenInHistory) {
+        isOverlayOpenInHistory = false;
+        window.history.back();
+      }
     }
   });
 });
