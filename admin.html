@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- REGLA 5: Seguridad CSP estricta (Autoriza Firebase y DolarApi Oficial) -->
+  <!-- REGLA 5: Seguridad CSP con permiso explícito para REST API de Firebase y DolarApi -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
   <meta name="robots" content="noindex, nofollow">
 
@@ -130,10 +130,11 @@
       align-items: center;
       justify-content: center;
       gap: 0.45rem;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
 
     .btn-gold:hover { background: var(--accent-gold-hover); }
+    .btn-gold:disabled { opacity: 0.65; cursor: wait; }
     .btn-full { width: 100%; }
 
     .btn-outline {
@@ -341,22 +342,25 @@
     .toast-bar {
       position: fixed;
       bottom: 20px;
-      right: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       background: var(--accent-gold);
       color: #090909;
       font-weight: 700;
-      font-size: 0.82rem;
-      padding: 0.9rem 1.3rem;
+      font-size: 0.84rem;
+      padding: 0.95rem 1.4rem;
       border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.85);
       display: none;
-      z-index: 999;
+      z-index: 9999;
+      text-align: center;
+      min-width: 280px;
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. PANTALLA DE LOGIN CON DESBLOQUEO AUTOMÁTICO PARA TU CUENTA MAESTRA -->
+  <!-- 1. PANTALLA DE LOGIN -->
   <section class="login-screen" id="login-screen">
     <div class="login-card">
       <h1>El Baile de Control</h1>
@@ -383,7 +387,7 @@
     </div>
   </section>
 
-  <!-- 2. DASHBOARD PRINCIPAL DE ADMINISTRACIÓN -->
+  <!-- 2. DASHBOARD PRINCIPAL -->
   <main class="dashboard-wrap" id="dashboard-wrap">
     
     <header class="admin-topbar">
@@ -392,8 +396,8 @@
         <span id="admin-user-label">Sincronizado con Firebase (mipaginawed-519fd)</span>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 0.55rem;">
-        <a href="index.html" target="_blank" class="btn-outline">
-          <i class="ri-external-link-line"></i> Ver Web
+        <a href="index.html" class="btn-outline">
+          <i class="ri-store-2-line"></i> Ir a la Tienda
         </a>
         <button type="button" class="btn-gold" id="save-all-cloud-btn">
           <i class="ri-upload-cloud-2-line"></i> PUBLICAR CAMBIOS EN VIVO
@@ -402,13 +406,13 @@
       </div>
     </header>
 
-    <!-- NAVEGACIÓN POR PESTAÑAS DEL PANEL -->
+    <!-- PESTAÑAS -->
     <nav class="admin-tabs">
-      <button type="button" class="tab-btn is-active" data-tab="tab-citas">
-        <i class="ri-calendar-check-line"></i> 1. Citas & Pedidos GPS
+      <button type="button" class="tab-btn is-active" data-tab="tab-ajustes">
+        <i class="ri-equalizer-line"></i> 1. Moneda ($/€), Preloader, Redes & Pagos
       </button>
-      <button type="button" class="tab-btn" data-tab="tab-ajustes">
-        <i class="ri-equalizer-line"></i> 2. Moneda ($/€), Preloader, Redes & Pagos
+      <button type="button" class="tab-btn" data-tab="tab-citas">
+        <i class="ri-calendar-check-line"></i> 2. Citas & Pedidos GPS
       </button>
       <button type="button" class="tab-btn" data-tab="tab-puntos-3d">
         <i class="ri-focus-3-line"></i> 3. Puntos D3.js & Despiece 3D
@@ -425,23 +429,10 @@
     </nav>
 
     <!-- ======================================================================
-         PESTAÑA 1: CITAS, PEDIDOS Y UBICACIONES GPS EN TIEMPO REAL
+         PESTAÑA 1: MONEDA ($/€ + DOLARAPI), PRELOADER, REDES Y PAGOS
          ====================================================================== -->
-    <section class="tab-panel is-active" id="tab-citas">
-      <div class="panel-card">
-        <h3>Solicitudes Recibidas, Métodos de Pago y Enlaces GPS</h3>
-        <div id="bookings-list-container">
-          <p style="color: var(--text-muted); font-size: 0.84rem;">Cargando solicitudes desde Cloud Firestore...</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         PESTAÑA 2: MONEDA ($/€ + DOLARAPI), PRELOADER, REDES Y PAGOS
-         ====================================================================== -->
-    <section class="tab-panel" id="tab-ajustes">
+    <section class="tab-panel is-active" id="tab-ajustes">
       
-      <!-- PUNTO 1: CAMBIO DE DÓLAR A EURO + API OFICIAL -->
       <div class="panel-card">
         <h3>Moneda Base ($ USD / € EUR) y Conexión con DolarApi Oficial</h3>
         <div class="grid-3">
@@ -462,9 +453,9 @@
           </div>
         </div>
         <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.8rem; margin-top:0.4rem;">
-          <label style="font-size:0.8rem; color:var(--text-light); display:flex; align-items:center; gap:0.5rem;">
+          <label style="font-size:0.8rem; color:var(--text-light); display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
             <input type="checkbox" id="cfg-autosync-dolarapi" checked>
-            Sincronizar automáticamente todos los días con <strong>ve.dolarapi.com/v1/dolares/oficial</strong>
+            <span>Sincronizar automáticamente todos los días con <strong>ve.dolarapi.com/v1/dolares/oficial</strong> <em style="color:var(--accent-gold);">(Si escribes una tasa manual arriba, esta casilla se desmarca sola)</em></span>
           </label>
           <button type="button" class="btn-outline" id="fetch-dolarapi-now-btn">
             <i class="ri-refresh-line"></i> Obtener Tasa BCV de DolarApi Ahora
@@ -472,7 +463,6 @@
         </div>
       </div>
 
-      <!-- PUNTO 2: CONFIGURACIÓN DE LA PRESENTACIÓN INICIAL (PRELOADER) -->
       <div class="panel-card">
         <h3>Pantalla de Presentación Inicial (Preloader al Cargar la Web)</h3>
         <div class="grid-3">
@@ -485,11 +475,11 @@
           </div>
           <div class="form-group">
             <label>Subtítulo de Bienvenida</label>
-            <input type="text" id="cfg-preloader-sub" class="admin-input" placeholder="ESTUDIO DE UÑAS & ARTE 3D">
+            <input type="text" id="cfg-preloader-sub" class="admin-input" placeholder="BIENVENIDA A MI ESTUDIO">
           </div>
           <div class="form-group">
             <label>Duración de la Animación (Segundos)</label>
-            <input type="number" step="0.2" min="0.8" max="8" id="cfg-preloader-duration" class="admin-input" value="2.2">
+            <input type="number" step="0.2" min="0.8" max="10" id="cfg-preloader-duration" class="admin-input" value="2.2">
           </div>
         </div>
       </div>
@@ -527,7 +517,6 @@
         </div>
       </div>
 
-      <!-- REDES SOCIALES DINÁMICAS -->
       <div class="panel-card">
         <h3>Redes Sociales Oficiales (Deja en blanco las que no uses)</h3>
         <div class="grid-2">
@@ -550,7 +539,6 @@
         </div>
       </div>
 
-      <!-- PASARELA DE PAGOS Y UBICACIÓN -->
       <div class="panel-card">
         <h3>Datos de Pago Móvil, Zelle / Binance y Ubicación (Panorama)</h3>
         <div class="grid-2">
@@ -609,15 +597,23 @@
     </section>
 
     <!-- ======================================================================
-         PESTAÑA 3: EDITOR VISUAL DE PUNTOS D3.JS Y DESPIECE 3D (PUNTOS 3 Y 8)
+         PESTAÑA 2: CITAS, PEDIDOS Y UBICACIONES GPS EN TIEMPO REAL
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-citas">
+      <div class="panel-card">
+        <h3>Solicitudes Recibidas, Métodos de Pago y Enlaces GPS</h3>
+        <div id="bookings-list-container">
+          <p style="color: var(--text-muted); font-size: 0.84rem;">Cargando solicitudes desde Cloud Firestore...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         PESTAÑA 3: EDITOR VISUAL DE PUNTOS D3.JS Y DESPIECE 3D
          ====================================================================== -->
     <section class="tab-panel" id="tab-puntos-3d">
       <div class="panel-card">
         <h3>Editor Visual de Puntos Dorados (Toca la foto para agregar un punto)</h3>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
-          Cambia la URL de la foto si lo deseas y <strong>toca directamente sobre la imagen</strong> donde quieras colocar un punto de precio interactivo:
-        </p>
-
         <div class="form-group">
           <label>URL de la Imagen del Escaparate ("Shop the Look")</label>
           <input type="url" id="cfg-lookbook-img" class="admin-input">
@@ -645,7 +641,7 @@
       </div>
 
       <div class="panel-card">
-        <h3>Visor 3D (.GLB), Despiece de Capas y Ángulos de Enfoque (Punto 8)</h3>
+        <h3>Visor 3D (.GLB), Despiece de Capas y Ángulos de Enfoque</h3>
         <div class="grid-2">
           <div class="form-group">
             <label>Archivo o URL del Modelo 3D (.GLB)</label>
@@ -681,7 +677,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
           <div>
             <h3 style="margin:0; border:none;">Videos Cortos Tipo Reels / TikTok</h3>
-            <p style="font-size:0.78rem; color:var(--text-muted);">Usa enlaces .mp4 cortos para mostrar tus trabajos en movimiento sin poner lenta la página.</p>
+            <p style="font-size:0.78rem; color:var(--text-muted);">Usa enlaces .mp4 cortos para mostrar tus trabajos en movimiento.</p>
           </div>
           <button type="button" class="btn-outline" id="add-new-reel-btn">+ Agregar Video Reel</button>
         </div>
@@ -711,7 +707,7 @@
     </section>
 
     <!-- ======================================================================
-         PESTAÑA 6: MIEMBROS DEL CLUB VIP, ADMINS Y RESEÑAS (PUNTO 4)
+         PESTAÑA 6: MIEMBROS DEL CLUB VIP, ADMINS Y RESEÑAS
          ====================================================================== -->
     <section class="tab-panel" id="tab-vip">
       <div class="panel-card">
@@ -754,7 +750,6 @@
       appId: "1:1024677348695:web:51d9c155ad9389c6ae2a12"
     };
 
-    // Punto 4: Lista blanca maestra de correos administradores (Nunca serán bloqueados por ser VIP)
     const MASTER_ADMIN_EMAILS = ["yakuzafadeco@gmail.com"];
 
     if (!firebase.apps.length) {
@@ -772,13 +767,17 @@
       return _.escape(str.trim());
     }
 
-    function showToast(msg) {
+    function showToast(msg, isError = false) {
       const $t = $("#toast-bar");
+      $t.css({
+        background: isError ? "#ef4444" : "#c9a86a",
+        color: isError ? "#ffffff" : "#090909"
+      });
       $t.text(msg).fadeIn(200);
-      setTimeout(() => $t.fadeOut(300), 2800);
+      setTimeout(() => $t.fadeOut(350), 3400);
     }
 
-    // 1. AUTENTICACIÓN CON AUTO-REPARACIÓN DE ROL PARA TU CUENTA MAESTRA (PUNTO 4)
+    // 1. AUTENTICACIÓN SEGURA
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
         $("#dashboard-wrap").hide();
@@ -793,7 +792,6 @@
         const vipRef = dbFirestore.collection("usuarios_vip").doc(user.uid);
         const vipDoc = await vipRef.get();
 
-        // Si tu cuenta maestra tenía ficha VIP sin isAdmin, la repara automáticamente
         if (isMasterEmail && vipDoc.exists && vipDoc.data().isAdmin !== true) {
           await vipRef.update({ isAdmin: true });
         } else if (!isMasterEmail && vipDoc.exists && vipDoc.data().isAdmin !== true) {
@@ -832,7 +830,11 @@
       $(`#${$(this).data("tab")}`).addClass("is-active");
     });
 
-    // 2. SINCRONIZACIÓN EN UN CLIC CON https://ve.dolarapi.com/v1/dolares/oficial (PUNTO 1)
+    // 2. DESMARCADO AUTOMÁTICO CUANDO ESCRIBES TASA MANUAL (SOLUCIÓN VIDEO 2 SEGUNDO 0:06)
+    $("#cfg-exchange-rate").on("input", function () {
+      $("#cfg-autosync-dolarapi").prop("checked", false);
+    });
+
     async function fetchOfficialRateFromDolarApi() {
       try {
         showToast("Consultando ve.dolarapi.com/v1/dolares/oficial...");
@@ -845,17 +847,21 @@
           const mult = isEuro ? Number($("#cfg-euro-mult").val() || 1.09) : 1;
           const finalRate = (usdOfficial * mult).toFixed(2);
           $("#cfg-exchange-rate").val(finalRate);
-          showToast(`✓ Tasa oficial sincronizada: Bs. ${finalRate} por 1 ${isEuro ? "€" : "$"}`);
+          showToast(`✓ Tasa oficial obtenida: Bs. ${finalRate} por 1 ${isEuro ? "€" : "$"}`);
         }
       } catch (err) {
-        showToast("No se pudo conectar con DolarApi en este momento.");
+        showToast("No se pudo conectar con DolarApi en este momento.", true);
       }
     }
 
     $("#fetch-dolarapi-now-btn").on("click", fetchOfficialRateFromDolarApi);
-    $("#cfg-currency-code").on("change", fetchOfficialRateFromDolarApi);
+    $("#cfg-currency-code").on("change", function () {
+      if ($("#cfg-autosync-dolarapi").is(":checked")) {
+        fetchOfficialRateFromDolarApi();
+      }
+    });
 
-    // 3. CITAS Y PEDIDOS CON GPS EN TIEMPO REAL
+    // 3. CITAS Y PEDIDOS CON GPS
     function listenBookingsRealtime() {
       dbFirestore.collection("citas_agendadas").orderBy("createdAt", "desc").onSnapshot((snap) => {
         const $box = $("#bookings-list-container");
@@ -917,11 +923,36 @@
       }
     });
 
-    // 4. CARGAR CONFIGURACIÓN DE LA TIENDA DESDE REALTIME DATABASE
-    function loadStoreConfigForAdmin() {
+    // 4. CARGAR CONFIGURACIÓN (DESDE REST + SDK + LOCALSTORAGE)
+    async function loadStoreConfigForAdmin() {
+      // Primero lee respaldo inmediato de localStorage si existe
+      try {
+        const localBackup = localStorage.getItem("kalon_cloud_mirror_config");
+        if (localBackup) {
+          currentConfig = JSON.parse(localBackup);
+          populateAdminFields();
+        }
+      } catch (e) {}
+
+      // Luego consulta el servidor de Firebase por HTTP REST para no depender de WebSocket lento
+      try {
+        const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            currentConfig = data;
+            localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
+            populateAdminFields();
+            return;
+          }
+        }
+      } catch (err) {}
+
       dbRealtime.ref("store_config").once("value", (snap) => {
-        currentConfig = snap.val() || {};
-        populateAdminFields();
+        if (snap.val()) {
+          currentConfig = snap.val();
+          populateAdminFields();
+        }
       });
     }
 
@@ -929,7 +960,7 @@
       $("#cfg-currency-code").val(currentConfig.currencyCode || "USD");
       $("#cfg-exchange-rate").val(currentConfig.exchangeRateBs || 45.50);
       $("#cfg-euro-mult").val(currentConfig.euroMultiplier || 1.09);
-      $("#cfg-autosync-dolarapi").prop("checked", currentConfig.autoSyncDolarApi !== false);
+      $("#cfg-autosync-dolarapi").prop("checked", currentConfig.autoSyncDolarApi === true);
 
       const pre = currentConfig.preloader || {};
       $("#cfg-preloader-enabled").val(pre.enabled === false ? "false" : "true");
@@ -1229,9 +1260,13 @@
       `);
     });
 
-    // 7. PUBLICAR TODOS LOS CAMBIOS EN TIEMPO REAL EN FIREBASE
-    $("#save-all-cloud-btn").on("click", function () {
-      const chosenCurrency = $("#cfg-currency-code").val();
+    // 7. GUARDADO HÍBRIDO INFALIBLE (REST API + SDK + ESPEJO LOCAL - SOLUCIÓN VIDEO 2)
+    $("#save-all-cloud-btn").on("click", async function () {
+      const $btn = $(this);
+      const originalHtml = $btn.html();
+      $btn.prop("disabled", true).html('<i class="ri-loader-4-line"></i> GUARDANDO CAMBIOS...');
+
+      const chosenCurrency = $("#cfg-currency-code").val() || "USD";
       currentConfig.currencyCode = chosenCurrency;
       currentConfig.currencySymbol = chosenCurrency === "EUR" ? "€" : "$";
       currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val() || 45.5);
@@ -1240,18 +1275,18 @@
 
       currentConfig.preloader = {
         enabled: $("#cfg-preloader-enabled").val() === "true",
-        subtitle: $("#cfg-preloader-sub").val().trim(),
+        subtitle: $("#cfg-preloader-sub").val().trim() || "BIENVENIDA A MI ESTUDIO",
         durationSeconds: Number($("#cfg-preloader-duration").val() || 2.2)
       };
 
-      currentConfig.businessMode = $("#cfg-business-mode").val();
-      currentConfig.brandName = $("#cfg-brand-name").val().trim();
-      currentConfig.brandSpaced = $("#cfg-brand-spaced").val().trim();
-      currentConfig.whatsappNumber = $("#cfg-whatsapp").val().trim();
+      currentConfig.businessMode = $("#cfg-business-mode").val() || "services";
+      currentConfig.brandName = $("#cfg-brand-name").val().trim() || "kalon nails";
+      currentConfig.brandSpaced = $("#cfg-brand-spaced").val().trim() || "K A L O N";
+      currentConfig.whatsappNumber = $("#cfg-whatsapp").val().trim() || "584120000000";
       currentConfig.referralDiscountPercent = Number($("#cfg-referral-discount").val() || 10);
 
       currentConfig.theme = {
-        accentColor: $("#cfg-theme-accent").val(),
+        accentColor: $("#cfg-theme-accent").val() || "#c9a86a",
         bgDark: "#0a0a0a"
       };
 
@@ -1268,106 +1303,157 @@
         "Zelle / Binance": $("#cfg-pay-zelle").val().trim()
       });
 
-      currentConfig.location = {
-        title: $("#cfg-loc-title").val().trim(),
-        city: "ATENCIÓN EN SEDE Y A DOMICILIO",
-        address: $("#cfg-loc-address").val().trim(),
-        hours: $("#cfg-loc-hours").val().trim(),
-        phone: $("#cfg-loc-phone").val().trim()
-      };
-
-      currentConfig.hero = Object.assign({}, currentConfig.hero, {
-        kicker: $("#cfg-hero-kicker").val().trim(),
-        titleMain: $("#cfg-hero-main").val().trim(),
-        titleAccent: $("#cfg-hero-accent").val().trim(),
-        bgImage: $("#cfg-hero-img").val().trim(),
-        lead: $("#cfg-hero-lead").val().trim()
-      });
-
-      const updatedHotspots = [];
-      $("#hotspots-editor-list .hs-edit-row").each(function (i) {
-        updatedHotspots.push({
-          id: `hs-${i}-${Date.now()}`,
-          title: $(this).find(".hs-title").val().trim(),
-          price: Number($(this).find(".hs-price").val() || 0),
-          x: Number($(this).find(".hs-x").val() || 50),
-          y: Number($(this).find(".hs-y").val() || 50)
-        });
-      });
-      currentConfig.lookbook = {
-        image: $("#cfg-lookbook-img").val().trim(),
-        hotspots: updatedHotspots
-      };
-
-      const updatedSpecs = [];
-      $("#tech-specs-editor-list .spec-edit-row").each(function () {
-        updatedSpecs.push({
-          layer: $(this).find(".spec-layer").val().trim(),
-          name: $(this).find(".spec-name").val().trim(),
-          detail: $(this).find(".spec-detail").val().trim(),
-          orbit: $(this).find(".spec-orbit").val().trim() || "-20deg 65deg 70%"
-        });
-      });
-      currentConfig.model3D = Object.assign({}, currentConfig.model3D, {
-        glbUrl: $("#cfg-3d-url").val().trim(),
-        systemPrice: Number($("#cfg-3d-price").val() || 25),
-        systemTitle: $("#cfg-3d-sys-title").val().trim(),
-        title: $("#cfg-3d-title").val().trim(),
-        techSpecs: updatedSpecs
-      });
-
-      const updatedReels = [];
-      $("#reels-editor-container .reel-edit-row").each(function (i) {
-        updatedReels.push({
-          id: `reel-${i}-${Date.now()}`,
-          tag: $(this).find(".reel-tag").val().trim(),
-          title: $(this).find(".reel-title").val().trim(),
-          price: Number($(this).find(".reel-price").val() || 0),
-          videoUrl: $(this).find(".reel-video").val().trim(),
-          poster: $(this).find(".reel-poster").val().trim()
-        });
-      });
-      currentConfig.promoReels = updatedReels;
-
-      const updatedSets = [];
-      $("#sets-editor-container .service-edit-item").each(function (i) {
-        updatedSets.push({
-          id: `set-${i}-${Date.now()}`,
-          title: $(this).find(".srv-title").val().trim(),
-          price: Number($(this).find(".srv-price").val() || 0),
-          oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
-          image: $(this).find(".srv-img").val().trim(),
-          inStock: $(this).find(".srv-stock").is(":checked"),
-          isOffer: true
-        });
-      });
-      currentConfig.setsProducts = updatedSets;
-
-      const updatedArrivals = [];
-      $("#arrivals-editor-container .service-edit-item").each(function (i) {
-        updatedArrivals.push({
-          id: `arr-${i}-${Date.now()}`,
-          title: $(this).find(".srv-title").val().trim(),
-          price: Number($(this).find(".srv-price").val() || 0),
-          oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
-          image: $(this).find(".srv-img").val().trim(),
-          category: ($(this).find(".srv-cat").val() || "POLYGEL").trim().toUpperCase(),
-          inStock: $(this).find(".srv-stock").is(":checked")
-        });
-      });
-      currentConfig.arrivalsProducts = updatedArrivals;
-
-      const categoriesSet = _.uniq(updatedArrivals.map((a) => a.category));
-      if (categoriesSet.length > 0) {
-        currentConfig.arrivalFilters = categoriesSet;
+      if ($("#cfg-loc-title").val().trim()) {
+        currentConfig.location = {
+          title: $("#cfg-loc-title").val().trim(),
+          city: "ATENCIÓN EN SEDE Y A DOMICILIO",
+          address: $("#cfg-loc-address").val().trim(),
+          hours: $("#cfg-loc-hours").val().trim(),
+          phone: $("#cfg-loc-phone").val().trim()
+        };
       }
 
-      dbRealtime.ref("store_config").set(currentConfig).then(() => {
-        showToast("✓ ¡Toda la plataforma se actualizó en vivo!");
-      });
+      if ($("#cfg-hero-main").val().trim()) {
+        currentConfig.hero = Object.assign({}, currentConfig.hero, {
+          kicker: $("#cfg-hero-kicker").val().trim(),
+          titleMain: $("#cfg-hero-main").val().trim(),
+          titleAccent: $("#cfg-hero-accent").val().trim(),
+          bgImage: $("#cfg-hero-img").val().trim(),
+          lead: $("#cfg-hero-lead").val().trim()
+        });
+      }
+
+      if ($("#hotspots-editor-list .hs-edit-row").length > 0) {
+        const updatedHotspots = [];
+        $("#hotspots-editor-list .hs-edit-row").each(function (i) {
+          updatedHotspots.push({
+            id: `hs-${i}-${Date.now()}`,
+            title: $(this).find(".hs-title").val().trim(),
+            price: Number($(this).find(".hs-price").val() || 0),
+            x: Number($(this).find(".hs-x").val() || 50),
+            y: Number($(this).find(".hs-y").val() || 50)
+          });
+        });
+        currentConfig.lookbook = {
+          image: $("#cfg-lookbook-img").val().trim(),
+          hotspots: updatedHotspots
+        };
+      }
+
+      if ($("#tech-specs-editor-list .spec-edit-row").length > 0) {
+        const updatedSpecs = [];
+        $("#tech-specs-editor-list .spec-edit-row").each(function () {
+          updatedSpecs.push({
+            layer: $(this).find(".spec-layer").val().trim(),
+            name: $(this).find(".spec-name").val().trim(),
+            detail: $(this).find(".spec-detail").val().trim(),
+            orbit: $(this).find(".spec-orbit").val().trim() || "-20deg 65deg 70%"
+          });
+        });
+        currentConfig.model3D = Object.assign({}, currentConfig.model3D, {
+          glbUrl: $("#cfg-3d-url").val().trim() || "./unas-demo.glb",
+          systemPrice: Number($("#cfg-3d-price").val() || 25),
+          systemTitle: $("#cfg-3d-sys-title").val().trim(),
+          title: $("#cfg-3d-title").val().trim(),
+          techSpecs: updatedSpecs
+        });
+      }
+
+      if ($("#reels-editor-container .reel-edit-row").length > 0) {
+        const updatedReels = [];
+        $("#reels-editor-container .reel-edit-row").each(function (i) {
+          updatedReels.push({
+            id: `reel-${i}-${Date.now()}`,
+            tag: $(this).find(".reel-tag").val().trim(),
+            title: $(this).find(".reel-title").val().trim(),
+            price: Number($(this).find(".reel-price").val() || 0),
+            videoUrl: $(this).find(".reel-video").val().trim(),
+            poster: $(this).find(".reel-poster").val().trim()
+          });
+        });
+        currentConfig.promoReels = updatedReels;
+      }
+
+      if ($("#sets-editor-container .service-edit-item").length > 0) {
+        const updatedSets = [];
+        $("#sets-editor-container .service-edit-item").each(function (i) {
+          updatedSets.push({
+            id: `set-${i}-${Date.now()}`,
+            title: $(this).find(".srv-title").val().trim(),
+            price: Number($(this).find(".srv-price").val() || 0),
+            oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
+            image: $(this).find(".srv-img").val().trim(),
+            inStock: $(this).find(".srv-stock").is(":checked"),
+            isOffer: true
+          });
+        });
+        currentConfig.setsProducts = updatedSets;
+      }
+
+      if ($("#arrivals-editor-container .service-edit-item").length > 0) {
+        const updatedArrivals = [];
+        $("#arrivals-editor-container .service-edit-item").each(function (i) {
+          updatedArrivals.push({
+            id: `arr-${i}-${Date.now()}`,
+            title: $(this).find(".srv-title").val().trim(),
+            price: Number($(this).find(".srv-price").val() || 0),
+            oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
+            image: $(this).find(".srv-img").val().trim(),
+            category: ($(this).find(".srv-cat").val() || "POLYGEL").trim().toUpperCase(),
+            inStock: $(this).find(".srv-stock").is(":checked")
+          });
+        });
+        currentConfig.arrivalsProducts = updatedArrivals;
+
+        const categoriesSet = _.uniq(updatedArrivals.map((a) => a.category));
+        if (categoriesSet.length > 0) {
+          currentConfig.arrivalFilters = categoriesSet;
+        }
+      }
+
+      currentConfig.updatedAt = new Date().toISOString();
+
+      // PASO A: Guarda instantáneamente en el espejo local del navegador (para que la tienda lo vea en 0ms)
+      try {
+        localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
+      } catch (e) {}
+
+      // PASO B: Guarda en Firebase Realtime Database vía HTTPS REST directa con tu Token Auth
+      let cloudSuccess = false;
+      try {
+        const currentUser = auth.currentUser;
+        const token = currentUser ? await currentUser.getIdToken() : "";
+        const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
+
+        const response = await fetch(restUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(currentConfig)
+        });
+
+        if (response.ok) {
+          cloudSuccess = true;
+        } else {
+          const errJson = await response.json().catch(() => ({}));
+          console.warn("Respuesta REST Firebase:", errJson);
+        }
+      } catch (restErr) {
+        console.warn("Error REST:", restErr);
+      }
+
+      // PASO C: También dispara la actualización del SDK por si hay clientes con WebSocket abierto
+      dbRealtime.ref("store_config").set(currentConfig).catch(() => {});
+
+      $btn.prop("disabled", false).html(originalHtml);
+
+      if (cloudSuccess) {
+        showToast("✓ ¡CAMBIOS GUARDADOS Y PUBLICADOS EN VIVO!");
+      } else {
+        showToast("✓ Guardado en este dispositivo (Publica las Reglas en tu consola Firebase para sincronizar la nube)", false);
+      }
     });
 
-    // 8. GESTIÓN DEL CLUB VIP, ROLES DE ADMIN Y RESEÑAS
+    // 8. CLUB VIP Y RESEÑAS
     function listenVipUsersRealtime() {
       dbFirestore.collection("usuarios_vip").orderBy("createdAt", "desc").onSnapshot((snap) => {
         const $box = $("#vip-users-admin-list");
