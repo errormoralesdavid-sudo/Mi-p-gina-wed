@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- REGLA 5: Seguridad CSP estricta para proteger el Panel de Administrador -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
+  <!-- REGLA 5: Seguridad CSP estricta (Autoriza Firebase y DolarApi Oficial) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
   <meta name="robots" content="noindex, nofollow">
 
   <title>El Baile de Control | Panel Maestro SaaS — Kalon</title>
@@ -41,7 +41,6 @@
       padding-bottom: 4rem;
     }
 
-    /* PANTALLA DE LOGIN SEGURO */
     .login-screen {
       min-height: 100vh;
       display: flex;
@@ -175,7 +174,6 @@
       cursor: pointer;
     }
 
-    /* DASHBOARD PRINCIPAL */
     .dashboard-wrap {
       display: none;
       max-width: 1220px;
@@ -303,7 +301,6 @@
     .status-pendiente { background: rgba(201, 168, 106, 0.22); color: var(--accent-gold); }
     .status-atendida { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; }
 
-    /* EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS (PUNTO 3) */
     .visual-hotspot-picker {
       position: relative;
       max-width: 420px;
@@ -359,7 +356,7 @@
 </head>
 <body>
 
-  <!-- 1. PANTALLA DE LOGIN CON FIREBASE AUTHENTICATION -->
+  <!-- 1. PANTALLA DE LOGIN CON DESBLOQUEO AUTOMÁTICO PARA TU CUENTA MAESTRA -->
   <section class="login-screen" id="login-screen">
     <div class="login-card">
       <h1>El Baile de Control</h1>
@@ -368,7 +365,7 @@
       <form id="admin-login-form">
         <div class="form-group">
           <label>Correo Administrador</label>
-          <input type="email" id="admin-email" class="admin-input" placeholder="admin@tutienda.com" required>
+          <input type="email" id="admin-email" class="admin-input" placeholder="yakuzafadeco@gmail.com" required>
         </div>
         <div class="form-group">
           <label>Contraseña</label>
@@ -411,10 +408,10 @@
         <i class="ri-calendar-check-line"></i> 1. Citas & Pedidos GPS
       </button>
       <button type="button" class="tab-btn" data-tab="tab-ajustes">
-        <i class="ri-equalizer-line"></i> 2. Rubro, Moneda, Pagos & Redes
+        <i class="ri-equalizer-line"></i> 2. Moneda ($/€), Preloader, Redes & Pagos
       </button>
       <button type="button" class="tab-btn" data-tab="tab-puntos-3d">
-        <i class="ri-focus-3-line"></i> 3. Puntos D3.js & Materiales 3D
+        <i class="ri-focus-3-line"></i> 3. Puntos D3.js & Despiece 3D
       </button>
       <button type="button" class="tab-btn" data-tab="tab-reels">
         <i class="ri-movie-line"></i> 4. Videos Cortos (Reels)
@@ -423,7 +420,7 @@
         <i class="ri-price-tag-3-line"></i> 5. Catálogo & Precios
       </button>
       <button type="button" class="tab-btn" data-tab="tab-vip">
-        <i class="ri-vip-crown-line"></i> 6. Club VIP, Referidos & Reseñas
+        <i class="ri-vip-crown-line"></i> 6. Club VIP, Admins & Reseñas
       </button>
     </nav>
 
@@ -440,11 +437,65 @@
     </section>
 
     <!-- ======================================================================
-         PESTAÑA 2: MODO DE NEGOCIO, MONEDA, COLOR, REDES SOCIALES Y PAGOS
+         PESTAÑA 2: MONEDA ($/€ + DOLARAPI), PRELOADER, REDES Y PAGOS
          ====================================================================== -->
     <section class="tab-panel" id="tab-ajustes">
+      
+      <!-- PUNTO 1: CAMBIO DE DÓLAR A EURO + API OFICIAL -->
       <div class="panel-card">
-        <h3>Configuración Multirubro, Tasa del Día y Colores de Marca</h3>
+        <h3>Moneda Base ($ USD / € EUR) y Conexión con DolarApi Oficial</h3>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Moneda de los Precios</label>
+            <select id="cfg-currency-code" class="admin-select">
+              <option value="USD">Dólar Estadounidense ($ USD)</option>
+              <option value="EUR">Euro Europeo (€ EUR)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tasa Activa en Bs. (Por 1 $ o €)</label>
+            <input type="number" step="0.01" id="cfg-exchange-rate" class="admin-input" placeholder="45.50">
+          </div>
+          <div class="form-group">
+            <label>Multiplicador Euro frente al Dólar</label>
+            <input type="number" step="0.01" id="cfg-euro-mult" class="admin-input" value="1.09">
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.8rem; margin-top:0.4rem;">
+          <label style="font-size:0.8rem; color:var(--text-light); display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" id="cfg-autosync-dolarapi" checked>
+            Sincronizar automáticamente todos los días con <strong>ve.dolarapi.com/v1/dolares/oficial</strong>
+          </label>
+          <button type="button" class="btn-outline" id="fetch-dolarapi-now-btn">
+            <i class="ri-refresh-line"></i> Obtener Tasa BCV de DolarApi Ahora
+          </button>
+        </div>
+      </div>
+
+      <!-- PUNTO 2: CONFIGURACIÓN DE LA PRESENTACIÓN INICIAL (PRELOADER) -->
+      <div class="panel-card">
+        <h3>Pantalla de Presentación Inicial (Preloader al Cargar la Web)</h3>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Estado de la Presentación</label>
+            <select id="cfg-preloader-enabled" class="admin-select">
+              <option value="true">Activada (Animación de lujo al entrar)</option>
+              <option value="false">Desactivada (Entrar directo a la tienda)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Subtítulo de Bienvenida</label>
+            <input type="text" id="cfg-preloader-sub" class="admin-input" placeholder="ESTUDIO DE UÑAS & ARTE 3D">
+          </div>
+          <div class="form-group">
+            <label>Duración de la Animación (Segundos)</label>
+            <input type="number" step="0.2" min="0.8" max="8" id="cfg-preloader-duration" class="admin-input" value="2.2">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Modo de Negocio, Nombre de Marca y Color</h3>
         <div class="grid-3">
           <div class="form-group">
             <label>Modo de Negocio (Adapta toda la Web)</label>
@@ -458,12 +509,12 @@
             <input type="text" id="cfg-brand-name" class="admin-input" placeholder="Ej: kalon nails">
           </div>
           <div class="form-group">
-            <label>WhatsApp Oficial de Pedidos (Con código 58)</label>
-            <input type="text" id="cfg-whatsapp" class="admin-input" placeholder="584120000000">
+            <label>Nombre Espaciado (En el Preloader)</label>
+            <input type="text" id="cfg-brand-spaced" class="admin-input" placeholder="K A L O N">
           </div>
           <div class="form-group">
-            <label>Tasa de Cambio Referencial (1 USD a Bs.)</label>
-            <input type="number" step="0.01" id="cfg-exchange-rate" class="admin-input" placeholder="45.50">
+            <label>WhatsApp Oficial de Pedidos (Con código 58)</label>
+            <input type="text" id="cfg-whatsapp" class="admin-input" placeholder="584120000000">
           </div>
           <div class="form-group">
             <label>% Descuento por Código de Referido VIP</label>
@@ -476,7 +527,7 @@
         </div>
       </div>
 
-      <!-- PUNTO 1: REDES SOCIALES DINÁMICAS -->
+      <!-- REDES SOCIALES DINÁMICAS -->
       <div class="panel-card">
         <h3>Redes Sociales Oficiales (Deja en blanco las que no uses)</h3>
         <div class="grid-2">
@@ -558,13 +609,13 @@
     </section>
 
     <!-- ======================================================================
-         PESTAÑA 3: EDITOR VISUAL DE PUNTOS D3.JS Y MATERIALES 3D (PUNTO 3)
+         PESTAÑA 3: EDITOR VISUAL DE PUNTOS D3.JS Y DESPIECE 3D (PUNTOS 3 Y 8)
          ====================================================================== -->
     <section class="tab-panel" id="tab-puntos-3d">
       <div class="panel-card">
         <h3>Editor Visual de Puntos Dorados (Toca la foto para agregar un punto)</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
-          Cambia la URL de la foto si lo deseas y <strong>haz clic o toca directamente sobre la imagen</strong> donde quieras colocar un nuevo punto de precio interactivo:
+          Cambia la URL de la foto si lo deseas y <strong>toca directamente sobre la imagen</strong> donde quieras colocar un punto de precio interactivo:
         </p>
 
         <div class="form-group">
@@ -573,7 +624,6 @@
         </div>
 
         <div class="grid-2" style="align-items: start;">
-          <!-- Lienzo interactivo donde el admin toca para crear puntos -->
           <div>
             <div class="visual-hotspot-picker" id="admin-hotspot-canvas">
               <img id="admin-lookbook-preview" src="" alt="Vista previa interactiva">
@@ -584,7 +634,6 @@
             </p>
           </div>
 
-          <!-- Lista editable de los puntos creados -->
           <div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
               <strong style="font-size:0.85rem; color:var(--accent-gold);">Puntos Activos sobre la Imagen:</strong>
@@ -596,14 +645,14 @@
       </div>
 
       <div class="panel-card">
-        <h3>Visor 3D (.GLB) y Capas de Materiales (Polygel, Base, Esmalte, etc.)</h3>
+        <h3>Visor 3D (.GLB), Despiece de Capas y Ángulos de Enfoque (Punto 8)</h3>
         <div class="grid-2">
           <div class="form-group">
             <label>Archivo o URL del Modelo 3D (.GLB)</label>
             <input type="text" id="cfg-3d-url" class="admin-input" placeholder="./unas-demo.glb">
           </div>
           <div class="form-group">
-            <label>Precio del Diseño 3D Mostrado ($)</label>
+            <label>Precio del Diseño 3D Mostrado</label>
             <input type="number" id="cfg-3d-price" class="admin-input">
           </div>
           <div class="form-group">
@@ -617,22 +666,22 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin: 1rem 0 0.8rem;">
-          <strong style="color:var(--accent-gold); font-size:0.88rem;">Capas / Materiales Técnicos del Modelo 3D:</strong>
-          <button type="button" class="btn-outline" id="add-tech-spec-btn">+ Agregar Material / Capa</button>
+          <strong style="color:var(--accent-gold); font-size:0.88rem;">Capas que aparecen al presionar "Desarmar Capas":</strong>
+          <button type="button" class="btn-outline" id="add-tech-spec-btn">+ Agregar Material / Capa 3D</button>
         </div>
         <div id="tech-specs-editor-list"></div>
       </div>
     </section>
 
     <!-- ======================================================================
-         PESTAÑA 4: VIDEOS CORTOS PUBLICITARIOS / REELS (PUNTO 4)
+         PESTAÑA 4: VIDEOS CORTOS PUBLICITARIOS / REELS
          ====================================================================== -->
     <section class="tab-panel" id="tab-reels">
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
           <div>
             <h3 style="margin:0; border:none;">Videos Cortos Tipo Reels / TikTok</h3>
-            <p style="font-size:0.78rem; color:var(--text-muted);">Usa enlaces .mp4 cortos (de 5 a 15 seg) para mostrar tus trabajos en movimiento sin poner lenta la página.</p>
+            <p style="font-size:0.78rem; color:var(--text-muted);">Usa enlaces .mp4 cortos para mostrar tus trabajos en movimiento sin poner lenta la página.</p>
           </div>
           <button type="button" class="btn-outline" id="add-new-reel-btn">+ Agregar Video Reel</button>
         </div>
@@ -662,11 +711,11 @@
     </section>
 
     <!-- ======================================================================
-         PESTAÑA 6: MIEMBROS DEL CLUB VIP, REFERIDOS Y RESEÑAS (PUNTO 2)
+         PESTAÑA 6: MIEMBROS DEL CLUB VIP, ADMINS Y RESEÑAS (PUNTO 4)
          ====================================================================== -->
     <section class="tab-panel" id="tab-vip">
       <div class="panel-card">
-        <h3>Miembros Registrados en el Club VIP & Contador de Referidos</h3>
+        <h3>Miembros Registrados en el Club VIP & Permisos de Administrador</h3>
         <div id="vip-users-admin-list">
           <p style="color:var(--text-muted); font-size:0.84rem;">Cargando miembros VIP...</p>
         </div>
@@ -705,6 +754,9 @@
       appId: "1:1024677348695:web:51d9c155ad9389c6ae2a12"
     };
 
+    // Punto 4: Lista blanca maestra de correos administradores (Nunca serán bloqueados por ser VIP)
+    const MASTER_ADMIN_EMAILS = ["yakuzafadeco@gmail.com"];
+
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
@@ -726,7 +778,7 @@
       setTimeout(() => $t.fadeOut(300), 2800);
     }
 
-    // 1. AUTENTICACIÓN SEGURA CON SEPARACIÓN DE ROL ADMIN VS CLIENTE VIP (REGLA 5)
+    // 1. AUTENTICACIÓN CON AUTO-REPARACIÓN DE ROL PARA TU CUENTA MAESTRA (PUNTO 4)
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
         $("#dashboard-wrap").hide();
@@ -734,10 +786,17 @@
         return;
       }
 
-      // Verifica si el correo pertenece a un cliente normal del Club VIP sin permiso de Admin
+      const emailLower = (user.email || "").toLowerCase();
+      const isMasterEmail = MASTER_ADMIN_EMAILS.includes(emailLower);
+
       try {
-        const vipDoc = await dbFirestore.collection("usuarios_vip").doc(user.uid).get();
-        if (vipDoc.exists && vipDoc.data().isAdmin !== true) {
+        const vipRef = dbFirestore.collection("usuarios_vip").doc(user.uid);
+        const vipDoc = await vipRef.get();
+
+        // Si tu cuenta maestra tenía ficha VIP sin isAdmin, la repara automáticamente
+        if (isMasterEmail && vipDoc.exists && vipDoc.data().isAdmin !== true) {
+          await vipRef.update({ isAdmin: true });
+        } else if (!isMasterEmail && vipDoc.exists && vipDoc.data().isAdmin !== true) {
           await auth.signOut();
           $("#login-error-msg").text("Acceso denegado: Esta cuenta es de Cliente VIP, no de Administrador.");
           return;
@@ -773,7 +832,30 @@
       $(`#${$(this).data("tab")}`).addClass("is-active");
     });
 
-    // 2. CITAS Y PEDIDOS CON GPS EN TIEMPO REAL
+    // 2. SINCRONIZACIÓN EN UN CLIC CON https://ve.dolarapi.com/v1/dolares/oficial (PUNTO 1)
+    async function fetchOfficialRateFromDolarApi() {
+      try {
+        showToast("Consultando ve.dolarapi.com/v1/dolares/oficial...");
+        const res = await fetch("https://ve.dolarapi.com/v1/dolares/oficial");
+        if (!res.ok) throw new Error("Error de red");
+        const data = await res.json();
+        if (data && data.promedio) {
+          const usdOfficial = Number(data.promedio);
+          const isEuro = $("#cfg-currency-code").val() === "EUR";
+          const mult = isEuro ? Number($("#cfg-euro-mult").val() || 1.09) : 1;
+          const finalRate = (usdOfficial * mult).toFixed(2);
+          $("#cfg-exchange-rate").val(finalRate);
+          showToast(`✓ Tasa oficial sincronizada: Bs. ${finalRate} por 1 ${isEuro ? "€" : "$"}`);
+        }
+      } catch (err) {
+        showToast("No se pudo conectar con DolarApi en este momento.");
+      }
+    }
+
+    $("#fetch-dolarapi-now-btn").on("click", fetchOfficialRateFromDolarApi);
+    $("#cfg-currency-code").on("change", fetchOfficialRateFromDolarApi);
+
+    // 3. CITAS Y PEDIDOS CON GPS EN TIEMPO REAL
     function listenBookingsRealtime() {
       dbFirestore.collection("citas_agendadas").orderBy("createdAt", "desc").onSnapshot((snap) => {
         const $box = $("#bookings-list-container");
@@ -787,7 +869,8 @@
         snap.forEach((doc) => {
           const b = doc.data();
           const id = doc.id;
-          const itemsText = (b.items || []).map((i) => `${i.qty}x ${sanitize(i.title)} ($${i.price})`).join(" • ");
+          const sym = b.currencyCode === "EUR" ? "€" : "$";
+          const itemsText = (b.items || []).map((i) => `${i.qty}x ${sanitize(i.title)} (${sym}${i.price})`).join(" • ");
           const hasGps = b.gpsMapLink && b.gpsMapLink.startsWith("https://maps.google.com");
 
           $box.append(`
@@ -809,7 +892,7 @@
               </p>
               <p style="font-size:0.8rem; margin-bottom:0.6rem; color:#d1d5db;">
                 <strong>🛍️ Pedido:</strong> ${itemsText} |
-                <strong style="color:var(--accent-gold);">Total: $${b.totalAmount} (${sanitize(b.totalBsRef || "")})</strong>
+                <strong style="color:var(--accent-gold);">Total: ${sym}${b.totalAmount} (${sanitize(b.totalBsRef || "")})</strong>
                 ${b.referralCodeUsed && b.referralCodeUsed !== "Ninguno" ? ` | 🎁 Ref: ${sanitize(b.referralCodeUsed)}` : ""}
               </p>
               <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
@@ -834,7 +917,7 @@
       }
     });
 
-    // 3. CARGAR CONFIGURACIÓN DE LA TIENDA DESDE REALTIME DATABASE
+    // 4. CARGAR CONFIGURACIÓN DE LA TIENDA DESDE REALTIME DATABASE
     function loadStoreConfigForAdmin() {
       dbRealtime.ref("store_config").once("value", (snap) => {
         currentConfig = snap.val() || {};
@@ -843,10 +926,20 @@
     }
 
     function populateAdminFields() {
+      $("#cfg-currency-code").val(currentConfig.currencyCode || "USD");
+      $("#cfg-exchange-rate").val(currentConfig.exchangeRateBs || 45.50);
+      $("#cfg-euro-mult").val(currentConfig.euroMultiplier || 1.09);
+      $("#cfg-autosync-dolarapi").prop("checked", currentConfig.autoSyncDolarApi !== false);
+
+      const pre = currentConfig.preloader || {};
+      $("#cfg-preloader-enabled").val(pre.enabled === false ? "false" : "true");
+      $("#cfg-preloader-sub").val(pre.subtitle || "ESTUDIO DE UÑAS & ARTE 3D");
+      $("#cfg-preloader-duration").val(pre.durationSeconds || 2.2);
+
       $("#cfg-business-mode").val(currentConfig.businessMode || "services");
       $("#cfg-brand-name").val(currentConfig.brandName || "kalon nails");
+      $("#cfg-brand-spaced").val(currentConfig.brandSpaced || "K A L O N");
       $("#cfg-whatsapp").val(currentConfig.whatsappNumber || "584120000000");
-      $("#cfg-exchange-rate").val(currentConfig.exchangeRateBs || 45.50);
       $("#cfg-referral-discount").val(currentConfig.referralDiscountPercent || 10);
 
       if (currentConfig.theme && currentConfig.theme.accentColor) {
@@ -878,13 +971,11 @@
         $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
       }
 
-      // Escaparate D3.js e Imagen Interactiva
       const lbImg = (currentConfig.lookbook && currentConfig.lookbook.image) || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80";
       $("#cfg-lookbook-img").val(lbImg);
       $("#admin-lookbook-preview").attr("src", lbImg);
       renderHotspotsEditor((currentConfig.lookbook && currentConfig.lookbook.hotspots) || []);
 
-      // Modelo 3D y Materiales
       if (currentConfig.model3D) {
         $("#cfg-3d-url").val(currentConfig.model3D.glbUrl || "./unas-demo.glb");
         $("#cfg-3d-price").val(currentConfig.model3D.systemPrice || 25);
@@ -893,15 +984,12 @@
         renderTechSpecsEditor(currentConfig.model3D.techSpecs || []);
       }
 
-      // Videos Cortos (Reels)
       renderReelsEditor(currentConfig.promoReels || []);
-
-      // Catálogo de Servicios / Productos
       renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
       renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
     }
 
-    // 4. EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS (PUNTO 3)
+    // 5. EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS Y DESPIECE 3D
     $("#cfg-lookbook-img").on("input", function () {
       $("#admin-lookbook-preview").attr("src", $(this).val().trim());
     });
@@ -924,7 +1012,7 @@
               <input type="text" class="admin-input hs-title" value="${sanitize(title)}">
             </div>
             <div class="form-group">
-              <label>Precio ($ USD)</label>
+              <label>Precio</label>
               <input type="number" class="admin-input hs-price" value="${Number(price)}">
             </div>
           </div>
@@ -950,7 +1038,6 @@
       });
     }
 
-    // Al tocar sobre la foto, calcula X% e Y% automáticamente y agrega el punto
     $("#admin-hotspot-canvas").on("click", function (e) {
       const rect = this.getBoundingClientRect();
       const xPercent = Math.round(((e.clientX - rect.left) / rect.width) * 100);
@@ -967,24 +1054,27 @@
       refreshVisualDotsOnCanvas();
     });
 
-    // Editor de Materiales 3D
     function renderTechSpecsEditor(specs) {
       const $box = $("#tech-specs-editor-list");
       $box.empty();
-      specs.forEach((sp) => appendTechSpecRow(sp.layer, sp.name, sp.detail));
+      specs.forEach((sp) => appendTechSpecRow(sp.layer, sp.name, sp.detail, sp.orbit));
     }
 
-    function appendTechSpecRow(layer, name, detail) {
+    function appendTechSpecRow(layer, name, detail, orbit) {
       $("#tech-specs-editor-list").append(`
         <div class="service-edit-item spec-edit-row">
-          <div class="grid-2">
+          <div class="grid-3">
             <div class="form-group">
               <label>Etapa / Capa (Ej: 1. ESTRUCTURA)</label>
               <input type="text" class="admin-input spec-layer" value="${sanitize(layer)}">
             </div>
             <div class="form-group">
-              <label>Material / Marca (Ej: Polygel Alta Densidad)</label>
+              <label>Material / Marca</label>
               <input type="text" class="admin-input spec-name" value="${sanitize(name)}">
+            </div>
+            <div class="form-group">
+              <label>Ángulo Cámara 3D al Desarmar</label>
+              <input type="text" class="admin-input spec-orbit" value="${sanitize(orbit || "-25deg 65deg 70%")}">
             </div>
           </div>
           <div style="display:flex; gap:0.6rem; align-items:center;">
@@ -996,10 +1086,10 @@
     }
 
     $("#add-tech-spec-btn").on("click", () =>
-      appendTechSpecRow("NUEVA CAPA TÉCNICA", "Nombre del Material o Marca", "Descripción de calidad y durabilidad.")
+      appendTechSpecRow("NUEVA CAPA TÉCNICA", "Nombre del Material", "Descripción de calidad y durabilidad.", "20deg 65deg 70%")
     );
 
-    // 5. EDITOR DE VIDEOS CORTOS PUBLICITARIOS / REELS (PUNTO 4)
+    // 6. EDITOR DE VIDEOS CORTOS / REELS Y CATÁLOGO
     function renderReelsEditor(reels) {
       const $box = $("#reels-editor-container");
       $box.empty();
@@ -1011,15 +1101,15 @@
         <div class="service-edit-item reel-edit-row">
           <div class="grid-3">
             <div class="form-group">
-              <label>Etiqueta Superior (Ej: EN VIVO)</label>
+              <label>Etiqueta Superior</label>
               <input type="text" class="admin-input reel-tag" value="${sanitize(tag)}">
             </div>
             <div class="form-group">
-              <label>Título del Trabajo / Producto</label>
+              <label>Título del Trabajo</label>
               <input type="text" class="admin-input reel-title" value="${sanitize(title)}">
             </div>
             <div class="form-group">
-              <label>Precio ($ USD)</label>
+              <label>Precio</label>
               <input type="number" class="admin-input reel-price" value="${Number(price)}">
             </div>
           </div>
@@ -1029,7 +1119,7 @@
               <input type="url" class="admin-input reel-video" value="${sanitize(videoUrl)}">
             </div>
             <div class="form-group">
-              <label>URL de Imagen de Portada (Poster)</label>
+              <label>URL de Imagen de Portada</label>
               <input type="url" class="admin-input reel-poster" value="${sanitize(poster)}">
             </div>
           </div>
@@ -1043,14 +1133,13 @@
     $("#add-new-reel-btn").on("click", () =>
       appendReelRow(
         "NUEVO REEL",
-        "Demostración de Acabado",
+        "Demostración en Video",
         20,
         "https://assets.mixkit.co/videos/preview/mixkit-woman-showing-her-manicured-nails-42622-large.mp4",
         "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=500&q=80"
       )
     );
 
-    // 6. EDITOR DE CATÁLOGO Y PRECIOS
     function renderServicesEditor(selector, list, includeCategory) {
       const $box = $(selector);
       $box.empty();
@@ -1064,11 +1153,11 @@
               </div>
               <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
                 <div>
-                  <label>Precio Actual ($)</label>
+                  <label>Precio Actual</label>
                   <input type="number" class="admin-input srv-price" value="${item.price}">
                 </div>
                 <div>
-                  <label>Precio Anterior ($)</label>
+                  <label>Precio Anterior</label>
                   <input type="number" class="admin-input srv-oldprice" value="${item.oldPrice || 0}">
                 </div>
               </div>
@@ -1105,8 +1194,8 @@
           <div class="grid-2">
             <div class="form-group"><label>Nombre</label><input type="text" class="admin-input srv-title" value="NUEVA PROMOCIÓN"></div>
             <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-              <div><label>Precio ($)</label><input type="number" class="admin-input srv-price" value="20"></div>
-              <div><label>Precio Antes ($)</label><input type="number" class="admin-input srv-oldprice" value="25"></div>
+              <div><label>Precio</label><input type="number" class="admin-input srv-price" value="20"></div>
+              <div><label>Precio Antes</label><input type="number" class="admin-input srv-oldprice" value="25"></div>
             </div>
           </div>
           <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
@@ -1124,8 +1213,8 @@
           <div class="grid-2">
             <div class="form-group"><label>Nombre</label><input type="text" class="admin-input srv-title" value="NUEVA OPCIÓN"></div>
             <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-              <div><label>Precio ($)</label><input type="number" class="admin-input srv-price" value="18"></div>
-              <div><label>Precio Antes ($)</label><input type="number" class="admin-input srv-oldprice" value="22"></div>
+              <div><label>Precio</label><input type="number" class="admin-input srv-price" value="18"></div>
+              <div><label>Precio Antes</label><input type="number" class="admin-input srv-oldprice" value="22"></div>
             </div>
           </div>
           <div class="grid-2">
@@ -1142,10 +1231,23 @@
 
     // 7. PUBLICAR TODOS LOS CAMBIOS EN TIEMPO REAL EN FIREBASE
     $("#save-all-cloud-btn").on("click", function () {
+      const chosenCurrency = $("#cfg-currency-code").val();
+      currentConfig.currencyCode = chosenCurrency;
+      currentConfig.currencySymbol = chosenCurrency === "EUR" ? "€" : "$";
+      currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val() || 45.5);
+      currentConfig.euroMultiplier = Number($("#cfg-euro-mult").val() || 1.09);
+      currentConfig.autoSyncDolarApi = $("#cfg-autosync-dolarapi").is(":checked");
+
+      currentConfig.preloader = {
+        enabled: $("#cfg-preloader-enabled").val() === "true",
+        subtitle: $("#cfg-preloader-sub").val().trim(),
+        durationSeconds: Number($("#cfg-preloader-duration").val() || 2.2)
+      };
+
       currentConfig.businessMode = $("#cfg-business-mode").val();
       currentConfig.brandName = $("#cfg-brand-name").val().trim();
+      currentConfig.brandSpaced = $("#cfg-brand-spaced").val().trim();
       currentConfig.whatsappNumber = $("#cfg-whatsapp").val().trim();
-      currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val() || 45.5);
       currentConfig.referralDiscountPercent = Number($("#cfg-referral-discount").val() || 10);
 
       currentConfig.theme = {
@@ -1182,7 +1284,6 @@
         lead: $("#cfg-hero-lead").val().trim()
       });
 
-      // Guardar Puntos D3.js
       const updatedHotspots = [];
       $("#hotspots-editor-list .hs-edit-row").each(function (i) {
         updatedHotspots.push({
@@ -1198,13 +1299,13 @@
         hotspots: updatedHotspots
       };
 
-      // Guardar Modelo 3D y Materiales
       const updatedSpecs = [];
       $("#tech-specs-editor-list .spec-edit-row").each(function () {
         updatedSpecs.push({
           layer: $(this).find(".spec-layer").val().trim(),
           name: $(this).find(".spec-name").val().trim(),
-          detail: $(this).find(".spec-detail").val().trim()
+          detail: $(this).find(".spec-detail").val().trim(),
+          orbit: $(this).find(".spec-orbit").val().trim() || "-20deg 65deg 70%"
         });
       });
       currentConfig.model3D = Object.assign({}, currentConfig.model3D, {
@@ -1215,7 +1316,6 @@
         techSpecs: updatedSpecs
       });
 
-      // Guardar Videos Cortos (Reels)
       const updatedReels = [];
       $("#reels-editor-container .reel-edit-row").each(function (i) {
         updatedReels.push({
@@ -1229,7 +1329,6 @@
       });
       currentConfig.promoReels = updatedReels;
 
-      // Guardar Catálogo
       const updatedSets = [];
       $("#sets-editor-container .service-edit-item").each(function (i) {
         updatedSets.push({
@@ -1268,7 +1367,7 @@
       });
     });
 
-    // 8. GESTIÓN DEL CLUB VIP, REFERIDOS Y RESEÑAS (PUNTO 2)
+    // 8. GESTIÓN DEL CLUB VIP, ROLES DE ADMIN Y RESEÑAS
     function listenVipUsersRealtime() {
       dbFirestore.collection("usuarios_vip").orderBy("createdAt", "desc").onSnapshot((snap) => {
         const $box = $("#vip-users-admin-list");
@@ -1284,14 +1383,18 @@
               <div>
                 <strong style="color:var(--accent-gold);">${sanitize(u.name)}</strong>
                 <span style="font-size:0.76rem; color:var(--text-muted);"> (${sanitize(u.email)})</span>
+                ${u.isAdmin ? '<span class="status-pill status-atendida" style="margin-left:0.4rem;">ADMIN</span>' : ""}
                 <p style="font-size:0.8rem; margin-top:0.2rem;">
                   Código: <strong>${sanitize(u.referralCode)}</strong> •
-                  Referidos logrados: <strong>${u.referralsCount || 0}</strong> •
+                  Referidos: <strong>${u.referralsCount || 0}</strong> •
                   Puntos VIP: <strong>${u.points || 100}</strong>
                 </p>
               </div>
-              <div style="display:flex; gap:0.45rem;">
+              <div style="display:flex; flex-wrap:wrap; gap:0.45rem;">
                 <button type="button" class="btn-success add-vip-points-btn" data-id="${doc.id}" data-pts="${u.points || 100}">+50 Puntos</button>
+                <button type="button" class="btn-outline toggle-admin-role-btn" data-id="${doc.id}" data-admin="${u.isAdmin === true}">
+                  ${u.isAdmin ? "Quitar Admin" : "Hacer Admin"}
+                </button>
               </div>
             </div>
           `);
@@ -1304,6 +1407,13 @@
       const currentPts = Number($(this).data("pts") || 100);
       dbFirestore.collection("usuarios_vip").doc(id).update({ points: currentPts + 50 });
       showToast("✓ +50 puntos sumados al miembro VIP");
+    });
+
+    $(document).on("click", ".toggle-admin-role-btn", function () {
+      const id = $(this).data("id");
+      const isCurrentlyAdmin = $(this).data("admin") === true || $(this).data("admin") === "true";
+      dbFirestore.collection("usuarios_vip").doc(id).update({ isAdmin: !isCurrentlyAdmin });
+      showToast("✓ Permiso de usuario actualizado");
     });
 
     function listenReviewsRealtime() {
