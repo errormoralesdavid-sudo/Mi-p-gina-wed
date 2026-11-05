@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. VARIABLES ESCALABLES (:root) - CONTROLADAS TAMBIÉN DESDE EL ADMIN (REGLA 6)
+   1. VARIABLES ESCALABLES (:root) - CONTROLADAS DESDE EL ADMIN (REGLA 6)
    ========================================================================== */
 :root {
   --bg-dark: #0a0a0a;
@@ -84,7 +84,7 @@ ul {
 }
 
 /* ==========================================================================
-   3. PRELOADER / PANTALLA DE BIENVENIDA
+   3. PRELOADER / PANTALLA DE BIENVENIDA (PUNTO 2)
    ========================================================================== */
 .preloader {
   position: fixed;
@@ -99,12 +99,13 @@ ul {
 
 .preloader-inner {
   padding: 2rem;
+  max-width: 90vw;
 }
 
 .preloader-subtitle {
   display: block;
-  font-size: 0.7rem;
-  letter-spacing: 0.35em;
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
   color: var(--accent-gold);
   margin-bottom: 0.8rem;
   text-transform: uppercase;
@@ -113,11 +114,12 @@ ul {
 
 .preloader-title {
   font-family: var(--font-serif);
-  font-size: 2.4rem;
+  font-size: clamp(1.8rem, 7vw, 2.5rem);
   font-weight: 400;
-  letter-spacing: 0.4em;
+  letter-spacing: 0.35em;
   color: var(--text-light);
-  margin-left: 0.4em;
+  margin-left: 0.35em;
+  white-space: nowrap;
   opacity: 0;
 }
 
@@ -129,7 +131,7 @@ ul {
 }
 
 /* ==========================================================================
-   4. BARRA SUPERIOR MARQUEE, TASA MULTI-MONEDA Y CABECERA FIJA
+   4. BARRA SUPERIOR MARQUEE Y CABECERA FIJA LIMPIA (PUNTOS 3, 6 Y 7)
    ========================================================================== */
 .topbar {
   height: var(--topbar-height);
@@ -173,55 +175,59 @@ ul {
   100% { transform: translateX(-50%); }
 }
 
+/* Grilla 3 columnas para que el nombre central jamás se parta ni se sature */
 .site-header {
   height: var(--header-height);
-  background-color: rgba(10, 10, 10, 0.92);
+  background-color: rgba(10, 10, 10, 0.94);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 0.85rem;
+  padding: 0 0.9rem;
   position: sticky;
   top: var(--topbar-height);
   z-index: 99;
 }
 
-.header-left,
+.header-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
-}
-
-.exchange-pill {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: var(--accent-gold);
-  background-color: var(--accent-gold-soft);
-  border: 1px solid var(--border-subtle);
-  padding: 0.22rem 0.55rem;
-  border-radius: 999px;
-  white-space: nowrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
 }
 
 .brand-logo {
   font-family: var(--font-serif);
-  font-size: 1.85rem;
+  font-size: clamp(1.35rem, 5.2vw, 1.95rem);
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   color: var(--text-light);
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 62vw;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
 }
 
 .icon-btn {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   color: var(--text-light);
   border-radius: var(--radius-sm);
   transition: color 0.2s ease, transform 0.2s ease;
@@ -241,8 +247,8 @@ ul {
 
 .cart-badge {
   position: absolute;
-  top: 4px;
-  right: 2px;
+  top: 5px;
+  right: 3px;
   background-color: var(--accent-gold);
   color: var(--bg-dark);
   font-size: 0.62rem;
@@ -416,7 +422,7 @@ ul {
   color: var(--accent-gold);
 }
 
-/* Carrito, Referidos, Domicilio GPS y Métodos de Pago */
+/* Carrito y Checkout */
 .cart-items-container {
   flex: 1;
   overflow-y: auto;
@@ -801,7 +807,7 @@ ul {
 }
 
 /* ==========================================================================
-   8. VISOR 3D + FICHA TÉCNICA DE MATERIALES
+   8. VISOR 3D + DESPIECE DE CAPAS INTERACTIVO + FICHA TÉCNICA (PUNTO 8)
    ========================================================================== */
 .showcase-3d-section {
   padding: 2.8rem 1.2rem 1.5rem;
@@ -822,6 +828,13 @@ ul {
   border-radius: var(--radius-lg);
   padding: 1rem;
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transition: border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.viewer-3d-card.is-exploded {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 35px rgba(201, 168, 106, 0.28);
 }
 
 .viewer-badge {
@@ -835,7 +848,7 @@ ul {
   letter-spacing: 0.12em;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  z-index: 5;
+  z-index: 6;
 }
 
 model-viewer {
@@ -843,22 +856,67 @@ model-viewer {
   height: 360px;
   background-color: transparent;
   --poster-color: transparent;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Capas flotantes que se despliegan cuando el usuario presiona "Desarmar Capas" */
+.exploded-layers-overlay {
+  position: absolute;
+  inset: 52px 12px 68px 12px;
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.exploded-chip {
+  background: rgba(10, 10, 10, 0.84);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--accent-gold);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem;
+  max-width: 245px;
+  opacity: 0;
+  transform: translateX(-25px) scale(0.9);
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.65);
+}
+
+.exploded-chip:nth-child(even) {
+  align-self: flex-end;
+  border-left: 1px solid var(--accent-gold);
+  border-right: 4px solid var(--accent-gold);
+  text-align: right;
+}
+
+.exploded-chip strong {
+  display: block;
+  font-size: 0.64rem;
+  color: var(--accent-gold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.exploded-chip span {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  font-weight: 500;
 }
 
 .viewer-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 0.45rem;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.viewer-hint {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
+  position: relative;
+  z-index: 6;
 }
 
 .nail-specs-card {
@@ -934,7 +992,7 @@ model-viewer {
 }
 
 /* ==========================================================================
-   9. NUEVA SECCIÓN: VIDEOS CORTOS PUBLICITARIOS / SHOPPABLE REELS (PUNTO 4)
+   9. VIDEOS CORTOS PUBLICITARIOS / SHOPPABLE REELS
    ========================================================================== */
 .reels-section {
   padding: 2.2rem 0 1.2rem;
@@ -1536,7 +1594,7 @@ model-viewer {
 }
 
 /* ==========================================================================
-   13. CLUB VIP & SISTEMA DE REFERIDOS (PUNTO 2)
+   13. CLUB VIP & SISTEMA DE REFERIDOS
    ========================================================================== */
 .vip-modal-dark {
   background: linear-gradient(160deg, #161512 0%, #0b0b0b 100%) !important;
@@ -1677,6 +1735,12 @@ model-viewer {
   margin-top: 1.8rem;
   font-size: 0.74rem;
   color: var(--text-muted);
+}
+
+.copyright {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
 }
 
 .text-link {
