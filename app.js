@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (CON PROTECCIÓN ANTI-RESET)
+ * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (MULTI-NUBE + BCV EN VIVO)
  * ============================================================================
  */
 
@@ -38,7 +38,7 @@ try {
 }
 
 /* ============================================================================
-   2. CONFIGURACIÓN BASE (SOLO SE USA SI AÚN NO HAY CAMBIOS GUARDADOS)
+   2. CONFIGURACIÓN BASE (SE REEMPLAZA EN VIVO CON TUS CAMBIOS DE LA NUBE)
    ============================================================================ */
 let STORE_CONFIG = {
   businessMode: "services",
@@ -47,7 +47,7 @@ let STORE_CONFIG = {
   
   currencyCode: "USD",
   currencySymbol: "$",
-  autoSyncDolarApi: false,
+  autoSyncDolarApi: true,
   euroMultiplier: 1.09,
   exchangeRateBs: 45.50,
   
@@ -350,7 +350,109 @@ let STORE_CONFIG = {
 };
 
 /* ============================================================================
-   3. PROTECCIÓN DE SELLO DE TIEMPO (NUNCA REEMPLAZA CAMBIOS NUEVOS POR VIEJOS)
+   3. TU FUNCIÓN OFICIAL PARA OBTENER DÓLAR BCV Y EURO BCV EN TIEMPO REAL
+   ============================================================================ */
+async function obtenerTasasOficialesBCV() {
+  let tasaUSD = null;
+  let tasaEUR = null;
+
+  // 1. Servidor Principal (Trae Dólar BCV y Euro BCV juntos)
+  try {
+    const respuesta = await fetch("https://rates.dolarvzla.com/bcv/current.json?t=" + Date.now(), {
+      cache: "no-store"
+    });
+
+    if (respuesta.ok) {
+      const datos = await respuesta.json();
+      if (datos && datos.current) {
+        tasaUSD = parseFloat(datos.current.usd) || null;
+        tasaEUR = parseFloat(datos.current.eur) || null;
+      }
+    }
+  } catch (error) {
+    console.warn("Servidor principal BCV no disponible, intentando respaldo...");
+  }
+
+  // 2. Servidor de Respaldo para Dólar BCV (Si el principal tarda o falla)
+  if (!tasaUSD) {
+    try {
+      const respBackup = await fetch("https://ve.dolarapi.com/v1/dolares/oficial?t=" + Date.now(), {
+        cache: "no-store"
+      });
+      if (respBackup.ok) {
+        const datosBackup = await respBackup.json();
+        if (datosBackup && datosBackup.promedio) {
+          tasaUSD = parseFloat(datosBackup.promedio) || null;
+        }
+      }
+    } catch (errorBackup) {
+      console.warn("Servidor de respaldo BCV sin conexión.");
+    }
+  }
+
+  // 3. Guardar o recuperar del almacenamiento local (Modo Offline)
+  if (tasaUSD && tasaEUR) {
+    try {
+      localStorage.setItem(
+        "respaldo_tasas_bcv",
+        JSON.stringify({
+          usd: tasaUSD,
+          eur: tasaEUR,
+          fecha: new Date().toISOString()
+        })
+      );
+    } catch (e) {}
+  } else {
+    try {
+      const guardado = JSON.parse(localStorage.getItem("respaldo_tasas_bcv") || "{}");
+      if (!tasaUSD && guardado.usd) tasaUSD = parseFloat(guardado.usd);
+      if (!tasaEUR && guardado.eur) tasaEUR = parseFloat(guardado.eur);
+    } catch (e) {}
+  }
+
+  return {
+    usd: tasaUSD || 0,
+    eur: tasaEUR || 0
+  };
+}
+
+function formatearBs(monto) {
+  return Number(monto || 0).toLocaleString("es-VE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+async function actualizarPantallaTasas() {
+  const tasas = await obtenerTasasOficialesBCV();
+
+  const elDolar = document.getElementById("precio-bcv-usd");
+  const elEuro = document.getElementById("precio-bcv-eur");
+
+  if (elDolar && tasas.usd > 0) elDolar.textContent = formatearBs(tasas.usd) + " Bs";
+  if (elEuro && tasas.eur > 0) elEuro.textContent = formatearBs(tasas.eur) + " Bs";
+
+  // Si en el Admin está activa la sincronización automática, aplica la tasa BCV exacta ($ o €)
+  if (STORE_CONFIG.autoSyncDolarApi !== false) {
+    const isEuro = STORE_CONFIG.currencyCode === "EUR";
+    const chosenRate = isEuro ? tasas.eur : tasas.usd;
+    if (chosenRate > 0) {
+      STORE_CONFIG.exchangeRateBs = Number(chosenRate.toFixed(2));
+      renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
+      if (STORE_CONFIG.arrivalFilters && STORE_CONFIG.arrivalFilters.length > 0) {
+        const activeCat =
+          $("#filter-pills-container .filter-pill-btn.is-active").data("category") ||
+          STORE_CONFIG.arrivalFilters[0];
+        filterArrivalsByCategory(activeCat);
+      }
+      renderPromoReels();
+      renderCartUI();
+    }
+  }
+}
+
+/* ============================================================================
+   4. FUSIÓN SEGURA POR SELLO DE TIEMPO (updatedAt)
    ============================================================================ */
 function applyCloudConfigObject(incomingData) {
   if (!incomingData || typeof incomingData !== "object") return false;
@@ -358,7 +460,6 @@ function applyCloudConfigObject(incomingData) {
   const currentTs = STORE_CONFIG.updatedAt ? new Date(STORE_CONFIG.updatedAt).getTime() : 0;
   const incomingTs = incomingData.updatedAt ? new Date(incomingData.updatedAt).getTime() : 0;
 
-  // Si la memoria ya tiene una modificación más reciente que lo que viene llegando, no permite que se pise
   if (currentTs > 0 && incomingTs > 0 && incomingTs < currentTs) {
     return false;
   }
@@ -382,29 +483,6 @@ function applyCloudConfigObject(incomingData) {
   return true;
 }
 
-async function syncOfficialExchangeRate() {
-  if (STORE_CONFIG.autoSyncDolarApi !== true) return;
-  try {
-    const response = await fetch("https://ve.dolarapi.com/v1/dolares/oficial", { cache: "no-store" });
-    if (!response.ok) return;
-    const data = await response.json();
-    if (data && data.promedio && Number(data.promedio) > 0) {
-      const liveUsd = Number(data.promedio);
-      const isEuro = STORE_CONFIG.currencyCode === "EUR";
-      const factor = isEuro ? Number(STORE_CONFIG.euroMultiplier || 1.09) : 1;
-      STORE_CONFIG.exchangeRateBs = Number((liveUsd * factor).toFixed(2));
-
-      renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
-      if (STORE_CONFIG.arrivalFilters && STORE_CONFIG.arrivalFilters.length > 0) {
-        const activeCat = $("#filter-pills-container .filter-pill-btn.is-active").data("category") || STORE_CONFIG.arrivalFilters[0];
-        filterArrivalsByCategory(activeCat);
-      }
-      renderPromoReels();
-      renderCartUI();
-    }
-  } catch (err) {}
-}
-
 function sanitizeInput(str) {
   if (typeof str !== "string") return "";
   return _.escape(str.trim()).replace(/[<>/"'`;()]/g, "");
@@ -415,14 +493,17 @@ function getActiveSymbol() {
 }
 
 function formatCurrency(amount) {
-  return `${getActiveSymbol()} ${Number(amount).toLocaleString("es-VE", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  return `${getActiveSymbol()} ${Number(amount).toLocaleString("es-VE", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  })}`;
 }
 
 function formatBs(foreignAmount) {
   const rate = Number(STORE_CONFIG.exchangeRateBs || 0);
   if (!rate || rate <= 0) return "";
   const bs = Number(foreignAmount) * rate;
-  return `Bs. ${bs.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `Bs. ${formatearBs(bs)}`;
 }
 
 function applyDynamicTheme() {
@@ -437,7 +518,7 @@ function applyDynamicTheme() {
 }
 
 /* ============================================================================
-   4. HISTORIAL DEL BOTÓN "ATRÁS" DEL CELULAR / TABLET
+   5. HISTORIAL DEL BOTÓN "ATRÁS" DEL CELULAR / TABLET
    ============================================================================ */
 let isOverlayOpenInHistory = false;
 
@@ -467,7 +548,7 @@ window.addEventListener("popstate", function () {
 });
 
 /* ============================================================================
-   5. ACCESO SECRETO AL PANEL ADMIN CON 3 TOQUES EN EL NOMBRE
+   6. ACCESO SECRETO AL PANEL ADMIN CON 3 TOQUES EN EL NOMBRE
    ============================================================================ */
 function initSecretAdminTrigger() {
   let tapCount = 0;
@@ -495,7 +576,7 @@ function initSecretAdminTrigger() {
 }
 
 /* ============================================================================
-   6. DESPIECE / DESARMADO DEL MODELO 3D Y AUTO-CENTRADO
+   7. DESPIECE / DESARMADO DEL MODELO 3D Y AUTO-CENTRADO
    ============================================================================ */
 let is3DExploded = false;
 
@@ -600,7 +681,7 @@ function init3DAutoRecenterOnScroll() {
 }
 
 /* ============================================================================
-   7. ESTADO DEL CARRITO, REFERIDOS VIP, DOMICILIO Y GPS
+   8. ESTADO DEL CARRITO, REFERIDOS VIP, DOMICILIO Y GPS
    ============================================================================ */
 let cartState = [];
 let deliveryMode = "estudio";
@@ -712,7 +793,7 @@ function renderCartUI() {
 }
 
 /* ============================================================================
-   8. CLUB VIP SEGURO
+   9. CLUB VIP SEGURO
    ============================================================================ */
 function checkUrlReferralParam() {
   try {
@@ -768,9 +849,11 @@ function initVipAuthListener() {
 }
 
 /* ============================================================================
-   9. LECTURA INICIAL HÍBRIDA SIN AUTO-RESET (RESPETA SIEMPRE TUS CAMBIOS)
+   10. LECTURA MULTI-NUBE (FIRESTORE + REALTIME DB + LOCALSTORAGE)
+   Funciona incluso en Modo Incógnito o dispositivos nuevos
    ============================================================================ */
 async function loadInitialConfigBeforePreloader() {
+  // 1. Espejo Local
   try {
     const mirror = localStorage.getItem("kalon_cloud_mirror_config");
     if (mirror) {
@@ -778,42 +861,92 @@ async function loadInitialConfigBeforePreloader() {
     }
   } catch (e) {}
 
+  // 2. Consulta simultánea a Cloud Firestore y Realtime Database REST (máximo 1.8s)
+  const cloudReads = [];
+
+  if (dbFirestore) {
+    const fsPromise = dbFirestore
+      .collection("configuracion_sistema")
+      .doc("store_config")
+      .get()
+      .then((doc) => (doc.exists ? doc.data() : null))
+      .catch(() => null);
+    cloudReads.push(fsPromise);
+  }
+
+  const rtdbPromise = (async () => {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 1600);
+      const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json?t=${Date.now()}`, {
+        signal: controller.signal,
+        cache: "no-store"
+      });
+      clearTimeout(timer);
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return null;
+  })();
+  cloudReads.push(rtdbPromise);
+
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 1400);
-    const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json?t=${Date.now()}`, {
-      signal: controller.signal,
-      cache: "no-store"
-    });
-    clearTimeout(timer);
-    if (res.ok) {
-      const restData = await res.json();
-      if (restData && typeof restData === "object") {
-        applyCloudConfigObject(restData);
-      }
+    const timeoutGuard = new Promise((resolve) => setTimeout(() => resolve([]), 1800));
+    const results = await Promise.race([Promise.all(cloudReads), timeoutGuard]);
+    if (Array.isArray(results)) {
+      results.forEach((cfg) => {
+        if (cfg && typeof cfg === "object") {
+          applyCloudConfigObject(cfg);
+        }
+      });
     }
   } catch (e) {}
 }
 
 function syncStoreWithFirebase() {
+  // A. Escucha en tiempo real en Cloud Firestore (Funciona en incógnito y cualquier red)
+  if (dbFirestore) {
+    dbFirestore
+      .collection("configuracion_sistema")
+      .doc("store_config")
+      .onSnapshot(
+        (doc) => {
+          if (doc.exists) {
+            const fsData = doc.data();
+            if (applyCloudConfigObject(fsData)) {
+              applyDynamicTheme();
+              initStorefrontContent();
+              initD3LookbookHotspots();
+              if (STORE_CONFIG.autoSyncDolarApi !== false) {
+                actualizarPantallaTasas();
+              }
+              renderCartUI();
+            }
+          }
+        },
+        () => {}
+      );
+  }
+
+  // B. Escucha en tiempo real en Realtime Database
   if (dbRealtime) {
     const configRef = dbRealtime.ref("store_config");
     configRef.on("value", (snapshot) => {
       const cloudData = snapshot.val();
-      // Solo actualiza si existen datos en la nube y su fecha es igual o más nueva que la local
       if (cloudData && typeof cloudData === "object") {
-        const updated = applyCloudConfigObject(cloudData);
-        if (updated) {
+        if (applyCloudConfigObject(cloudData)) {
           applyDynamicTheme();
           initStorefrontContent();
           initD3LookbookHotspots();
-          syncOfficialExchangeRate();
+          if (STORE_CONFIG.autoSyncDolarApi !== false) {
+            actualizarPantallaTasas();
+          }
           renderCartUI();
         }
       }
     });
   }
 
+  // C. Escucha cambios inmediatos entre pestañas del mismo navegador
   window.addEventListener("storage", function (e) {
     if (e.key === "kalon_cloud_mirror_config" && e.newValue) {
       try {
@@ -826,6 +959,7 @@ function syncStoreWithFirebase() {
     }
   });
 
+  // D. Escucha reseñas en vivo
   if (dbFirestore) {
     dbFirestore
       .collection("resenas_clientas")
@@ -845,7 +979,7 @@ function syncStoreWithFirebase() {
 }
 
 /* ============================================================================
-   10. RENDERIZADO DE CONTENIDO, REDES, VIDEOS REELS Y MODO DE NEGOCIO
+   11. RENDERIZADO DE CONTENIDO, REDES, VIDEOS REELS Y MODO DE NEGOCIO
    ============================================================================ */
 function initStorefrontContent() {
   applyDynamicTheme();
@@ -1229,7 +1363,7 @@ function updatePaymentInstructionsUI() {
 }
 
 /* ============================================================================
-   11. ESCAPARATE INTERACTIVO CON D3.JS
+   12. ESCAPARATE INTERACTIVO CON D3.JS
    ============================================================================ */
 function initD3LookbookHotspots() {
   $("#lookbook-img").attr("src", STORE_CONFIG.lookbook.image);
@@ -1273,7 +1407,7 @@ function initD3LookbookHotspots() {
 }
 
 /* ============================================================================
-   12. PRELOADER CONFIGURABLE CON ANIME.JS Y COTIZADOR REACT
+   13. PRELOADER CONFIGURABLE CON ANIME.JS Y COTIZADOR REACT
    ============================================================================ */
 function runPreloaderAnimation() {
   if (STORE_CONFIG.preloader && STORE_CONFIG.preloader.enabled === false) {
@@ -1434,7 +1568,7 @@ function mountReactCustomKitBuilder() {
 }
 
 /* ============================================================================
-   13. ARRANQUE COORDINADO Y EVENTOS DE INTERFAZ
+   14. ARRANQUE COORDINADO Y EVENTOS DE INTERFAZ
    ============================================================================ */
 $(document).ready(async function () {
   loadCartFromStorage();
@@ -1450,7 +1584,10 @@ $(document).ready(async function () {
   initSecretAdminTrigger();
   init3DAutoRecenterOnScroll();
   syncStoreWithFirebase();
-  syncOfficialExchangeRate();
+
+  // Ejecuta tu función de tasas BCV al abrir y refresca cada 2 minutos
+  actualizarPantallaTasas();
+  setInterval(actualizarPantallaTasas, 120000);
 
   $("#open-menu-btn").on("click", function () {
     pushOverlayHistoryState("menu");
