@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
+  <!-- Seguridad CSP: Autoriza rates.dolarvzla.com, ve.dolarapi.com y Firebase -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://rates.dolarvzla.com https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
   <meta name="robots" content="noindex, nofollow">
 
   <title>El Baile de Control | Panel Maestro SaaS — Kalon</title>
@@ -210,6 +211,26 @@
       display: block;
     }
 
+    .bcv-live-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .bcv-pill-box {
+      background: #1a1a1a;
+      border: 1px solid var(--border-gold);
+      border-radius: 6px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.78rem;
+    }
+
+    .bcv-pill-box strong {
+      color: var(--accent-gold);
+      margin-left: 0.3rem;
+    }
+
     .admin-tabs {
       display: flex;
       flex-wrap: wrap;
@@ -354,7 +375,7 @@
       display: none;
       z-index: 9999;
       text-align: center;
-      min-width: 280px;
+      min-width: 290px;
     }
   </style>
 </head>
@@ -394,7 +415,7 @@
       <div class="admin-brand">
         <h2>El Baile de Control • SaaS Admin</h2>
         <span id="admin-user-label">Sincronizando tus cambios guardados...</span>
-        <span id="last-sync-badge" style="color: var(--accent-gold); font-size: 0.7rem;"></span>
+        <span id="last-sync-badge" style="color: var(--accent-gold); font-size: 0.72rem; font-weight:600;"></span>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 0.55rem;">
         <a href="index.html" class="btn-outline">
@@ -409,7 +430,7 @@
 
     <nav class="admin-tabs">
       <button type="button" class="tab-btn is-active" data-tab="tab-ajustes">
-        <i class="ri-equalizer-line"></i> 1. Moneda ($/€), Preloader, Redes & Pagos
+        <i class="ri-equalizer-line"></i> 1. Moneda BCV ($/€), Preloader & Redes
       </button>
       <button type="button" class="tab-btn" data-tab="tab-citas">
         <i class="ri-calendar-check-line"></i> 2. Citas & Pedidos GPS
@@ -428,14 +449,25 @@
       </button>
     </nav>
 
-    <!-- PESTAÑA 1: MONEDA ($/€ + DOLARAPI), PRELOADER, REDES Y PAGOS -->
+    <!-- PESTAÑA 1: MONEDA BCV EN TIEMPO REAL, PRELOADER, REDES Y PAGOS -->
     <section class="tab-panel is-active" id="tab-ajustes">
       
       <div class="panel-card">
-        <h3>Moneda Base ($ USD / € EUR) y Conexión con DolarApi Oficial</h3>
-        <div class="grid-3">
+        <h3>Moneda Base ($ USD / € EUR) y Tasas Oficiales BCV en Tiempo Real</h3>
+
+        <!-- Indicadores en vivo de tu función obtenerTasasOficialesBCV() -->
+        <div class="bcv-live-pills">
+          <div class="bcv-pill-box">
+            🇺🇸 Dólar BCV Hoy: <strong id="precio-bcv-usd">-- Bs</strong>
+          </div>
+          <div class="bcv-pill-box">
+            🇪🇺 Euro BCV Hoy: <strong id="precio-bcv-eur">-- Bs</strong>
+          </div>
+        </div>
+
+        <div class="grid-2">
           <div class="form-group">
-            <label>Moneda de los Precios</label>
+            <label>Moneda de los Precios en la Tienda</label>
             <select id="cfg-currency-code" class="admin-select">
               <option value="USD">Dólar Estadounidense ($ USD)</option>
               <option value="EUR">Euro Europeo (€ EUR)</option>
@@ -445,18 +477,15 @@
             <label>Tasa Activa en Bs. (Por 1 $ o €)</label>
             <input type="number" step="0.01" id="cfg-exchange-rate" class="admin-input">
           </div>
-          <div class="form-group">
-            <label>Multiplicador Euro frente al Dólar</label>
-            <input type="number" step="0.01" id="cfg-euro-mult" class="admin-input">
-          </div>
         </div>
+
         <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.8rem; margin-top:0.4rem;">
           <label style="font-size:0.8rem; color:var(--text-light); display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
             <input type="checkbox" id="cfg-autosync-dolarapi">
-            <span>Sincronizar automáticamente con <strong>ve.dolarapi.com/v1/dolares/oficial</strong> <em style="color:var(--accent-gold);">(Se desactiva sola al escribir tasa manual)</em></span>
+            <span>Sincronizar automáticamente Dólar BCV y Euro BCV en tiempo real <em style="color:var(--accent-gold);">(Se desactiva sola si escribes una tasa manual arriba)</em></span>
           </label>
           <button type="button" class="btn-outline" id="fetch-dolarapi-now-btn">
-            <i class="ri-refresh-line"></i> Obtener Tasa BCV de DolarApi Ahora
+            <i class="ri-refresh-line"></i> Actualizar Tasa BCV ($ / €) Ahora
           </button>
         </div>
       </div>
@@ -747,15 +776,102 @@
     const dbRealtime = firebase.database();
     const dbFirestore = firebase.firestore();
 
-    // Plantilla base únicamente por si tanto el teléfono como Firebase están 100% vacíos la primera vez
+    /* ========================================================================
+       TU FUNCIÓN OFICIAL PARA OBTENER DÓLAR BCV Y EURO BCV EN TIEMPO REAL
+       ======================================================================== */
+    async function obtenerTasasOficialesBCV() {
+      let tasaUSD = null;
+      let tasaEUR = null;
+
+      // 1. Servidor Principal (Trae Dólar BCV y Euro BCV juntos)
+      try {
+        const respuesta = await fetch('https://rates.dolarvzla.com/bcv/current.json?t=' + Date.now(), {
+          cache: 'no-store'
+        });
+        if (respuesta.ok) {
+          const datos = await respuesta.json();
+          if (datos && datos.current) {
+            tasaUSD = parseFloat(datos.current.usd) || null;
+            tasaEUR = parseFloat(datos.current.eur) || null;
+          }
+        }
+      } catch (error) {
+        console.warn('Servidor principal BCV no disponible, intentando respaldo...');
+      }
+
+      // 2. Servidor de Respaldo para Dólar BCV (Si el principal tarda o falla)
+      if (!tasaUSD) {
+        try {
+          const respBackup = await fetch('https://ve.dolarapi.com/v1/dolares/oficial?t=' + Date.now(), {
+            cache: 'no-store'
+          });
+          if (respBackup.ok) {
+            const datosBackup = await respBackup.json();
+            if (datosBackup && datosBackup.promedio) {
+              tasaUSD = parseFloat(datosBackup.promedio) || null;
+            }
+          }
+        } catch (errorBackup) {
+          console.warn('Servidor de respaldo BCV sin conexión.');
+        }
+      }
+
+      // 3. Guardar o recuperar del almacenamiento local (Modo Offline)
+      if (tasaUSD && tasaEUR) {
+        localStorage.setItem('respaldo_tasas_bcv', JSON.stringify({
+          usd: tasaUSD,
+          eur: tasaEUR,
+          fecha: new Date().toISOString()
+        }));
+      } else {
+        const guardado = JSON.parse(localStorage.getItem('respaldo_tasas_bcv') || '{}');
+        if (!tasaUSD && guardado.usd) tasaUSD = parseFloat(guardado.usd);
+        if (!tasaEUR && guardado.eur) tasaEUR = parseFloat(guardado.eur);
+      }
+
+      return {
+        usd: tasaUSD || 0,
+        eur: tasaEUR || 0
+      };
+    }
+
+    function formatearBs(monto) {
+      return Number(monto || 0).toLocaleString('es-VE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    async function actualizarPantallaTasas(forzarInput = false) {
+      const tasas = await obtenerTasasOficialesBCV();
+
+      const elDolar = document.getElementById('precio-bcv-usd');
+      const elEuro = document.getElementById('precio-bcv-eur');
+
+      if (elDolar && tasas.usd > 0) elDolar.textContent = formatearBs(tasas.usd) + ' Bs';
+      if (elEuro && tasas.eur > 0) elEuro.textContent = formatearBs(tasas.eur) + ' Bs';
+
+      if (forzarInput || $("#cfg-autosync-dolarapi").is(":checked")) {
+        const monedaElegida = $("#cfg-currency-code").val() || "USD";
+        const tasaAplicar = monedaElegida === "EUR" ? tasas.eur : tasas.usd;
+        if (tasaAplicar > 0) {
+          $("#cfg-exchange-rate").val(Number(tasaAplicar.toFixed(2)));
+        }
+      }
+      return tasas;
+    }
+
+    // Ejecuta al abrir y refresca cada 2 minutos
+    actualizarPantallaTasas(false);
+    setInterval(() => actualizarPantallaTasas(false), 120000);
+
     const FALLBACK_BASE_CONFIG = {
       businessMode: "services",
       brandName: "kalon nails",
       brandSpaced: "K A L O N",
       currencyCode: "USD",
       currencySymbol: "$",
-      autoSyncDolarApi: false,
-      euroMultiplier: 1.09,
+      autoSyncDolarApi: true,
       exchangeRateBs: 45.50,
       preloader: {
         enabled: true,
@@ -808,7 +924,6 @@
     };
 
     let currentConfig = {};
-    let isConfigLoaded = false;
 
     function sanitize(str) {
       if (typeof str !== "string") return "";
@@ -822,7 +937,7 @@
         color: isError ? "#ffffff" : "#090909"
       });
       $t.text(msg).fadeIn(200);
-      setTimeout(() => $t.fadeOut(350), 3400);
+      setTimeout(() => $t.fadeOut(350), 3600);
     }
 
     // 1. AUTENTICACIÓN SEGURA
@@ -878,118 +993,94 @@
       $(`#${$(this).data("tab")}`).addClass("is-active");
     });
 
-    // 2. DESMARCADO AUTOMÁTICO CUANDO ESCRIBES TASA MANUAL
+    // 2. DESMARCADO AUTOMÁTICO CUANDO ESCRIBES TASA MANUAL Y BOTÓN BCV
     $("#cfg-exchange-rate").on("input", function () {
       $("#cfg-autosync-dolarapi").prop("checked", false);
     });
 
-    async function fetchOfficialRateFromDolarApi() {
-      try {
-        showToast("Consultando ve.dolarapi.com/v1/dolares/oficial...");
-        const res = await fetch("https://ve.dolarapi.com/v1/dolares/oficial", { cache: "no-store" });
-        if (!res.ok) throw new Error("Error de red");
-        const data = await res.json();
-        if (data && data.promedio) {
-          const usdOfficial = Number(data.promedio);
-          const isEuro = $("#cfg-currency-code").val() === "EUR";
-          const mult = isEuro ? Number($("#cfg-euro-mult").val() || 1.09) : 1;
-          const finalRate = (usdOfficial * mult).toFixed(2);
-          $("#cfg-exchange-rate").val(finalRate);
-          showToast(`✓ Tasa oficial obtenida: Bs. ${finalRate} por 1 ${isEuro ? "€" : "$"}`);
-        }
-      } catch (err) {
-        showToast("No se pudo conectar con DolarApi en este momento.", true);
-      }
-    }
-
-    $("#fetch-dolarapi-now-btn").on("click", fetchOfficialRateFromDolarApi);
-    $("#cfg-currency-code").on("change", function () {
-      if ($("#cfg-autosync-dolarapi").is(":checked")) {
-        fetchOfficialRateFromDolarApi();
+    $("#fetch-dolarapi-now-btn").on("click", async function () {
+      showToast("Consultando tasas oficiales BCV ($ y €)...");
+      const tasas = await actualizarPantallaTasas(true);
+      const isEuro = $("#cfg-currency-code").val() === "EUR";
+      const valor = isEuro ? tasas.eur : tasas.usd;
+      if (valor > 0) {
+        showToast(`✓ Tasa oficial BCV cargada: ${formatearBs(valor)} Bs por 1 ${isEuro ? "€" : "$"}`);
+      } else {
+        showToast("No se pudo obtener la tasa BCV en este momento.", true);
       }
     });
 
-    // 3. LECTURA INTELIGENTE SIN CACHÉ (COMPARA FECHA LOCAL VS NUBE PARA NO VOLVER A PREDETERMINADO NUNCA)
-    async function loadStoreConfigForAdmin(user) {
-      let localParsed = null;
-      let cloudParsed = null;
+    $("#cfg-currency-code").on("change", function () {
+      if ($("#cfg-autosync-dolarapi").is(":checked")) {
+        actualizarPantallaTasas(true);
+      }
+    });
 
+    // 3. LECTURA INTELIGENTE MULTI-NUBE (FIRESTORE + REALTIME DB + LOCALSTORAGE)
+    async function loadStoreConfigForAdmin(user) {
+      let candidates = [];
+
+      // A. Lee LocalStorage
       try {
         const rawLocal = localStorage.getItem("kalon_cloud_mirror_config");
-        if (rawLocal) localParsed = JSON.parse(rawLocal);
+        if (rawLocal) {
+          const parsed = JSON.parse(rawLocal);
+          if (parsed && typeof parsed === "object") candidates.push({ source: "Local", data: parsed });
+        }
       } catch (e) {}
 
-      // Si ya hay datos guardados en el dispositivo, los muestra de inmediato sin esperar red
-      if (localParsed) {
-        currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, localParsed);
-        isConfigLoaded = true;
-        populateAdminFields();
-        $("#last-sync-badge").text(`✓ Tus modificaciones están cargadas (${localParsed.updatedAt ? new Date(localParsed.updatedAt).toLocaleTimeString() : "Local"})`);
-      }
-
-      // Consulta Firebase enviando Token Auth + timestamp anti-caché (?t=...)
+      // B. Lee Cloud Firestore (El que nunca se cuelga en tu teléfono)
       try {
-        const token = user ? await user.getIdToken() : "";
-        const nocacheUrl = `${firebaseConfig.databaseURL}/store_config.json?t=${Date.now()}${token ? `&auth=${token}` : ""}`;
-        const res = await fetch(nocacheUrl, { cache: "no-store" });
+        const fsDoc = await dbFirestore.collection("configuracion_sistema").doc("store_config").get();
+        if (fsDoc.exists && fsDoc.data()) {
+          candidates.push({ source: "Firestore Cloud", data: fsDoc.data() });
+        }
+      } catch (e) {}
+
+      // C. Lee Realtime Database con Timeout de 2.5s para que jamás bloquee la pantalla
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2500);
+        const token = user ? await user.getIdToken(false) : "";
+        const rtdbUrl = `${firebaseConfig.databaseURL}/store_config.json?t=${Date.now()}${token ? `&auth=${token}` : ""}`;
+        const res = await fetch(rtdbUrl, { signal: controller.signal, cache: "no-store" });
+        clearTimeout(timer);
         if (res.ok) {
-          const data = await res.json();
-          if (data && typeof data === "object") {
-            cloudParsed = data;
+          const rtData = await res.json();
+          if (rtData && typeof rtData === "object") {
+            candidates.push({ source: "Realtime DB", data: rtData });
           }
         }
-      } catch (err) {
-        console.warn("Error leyendo REST:", err);
-      }
+      } catch (e) {}
 
-      // Decide cuál versión es más reciente (la del teléfono o la de Firebase) para jamás pisar tus cambios con datos viejos
-      if (cloudParsed && localParsed) {
-        const cloudTime = cloudParsed.updatedAt ? new Date(cloudParsed.updatedAt).getTime() : 0;
-        const localTime = localParsed.updatedAt ? new Date(localParsed.updatedAt).getTime() : 0;
-
-        if (localTime > cloudTime) {
-          // Tu teléfono tiene cambios más recientes que aún no subieron a Firebase: los conserva y los sube en segundo plano
-          currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, localParsed);
-          pushConfigToCloudSilently(currentConfig, user);
-        } else {
-          currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, cloudParsed);
-          try {
-            localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
-          } catch (e) {}
-        }
-      } else if (cloudParsed) {
-        currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, cloudParsed);
+      // Elige la versión con fecha updatedAt más reciente entre las 3 fuentes
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => {
+          const timeA = a.data.updatedAt ? new Date(a.data.updatedAt).getTime() : 0;
+          const timeB = b.data.updatedAt ? new Date(b.data.updatedAt).getTime() : 0;
+          return timeB - timeA;
+        });
+        const winner = candidates[0];
+        currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, winner.data);
         try {
           localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
         } catch (e) {}
-      } else if (!localParsed) {
+        $("#last-sync-badge").text(
+          `✓ Sincronizado (${winner.source}: ${currentConfig.updatedAt ? new Date(currentConfig.updatedAt).toLocaleTimeString() : "Activo"})`
+        );
+      } else {
         currentConfig = _.cloneDeep(FALLBACK_BASE_CONFIG);
       }
 
-      isConfigLoaded = true;
       populateAdminFields();
-      if (currentConfig.updatedAt) {
-        $("#last-sync-badge").text(`✓ Última modificación cargada: ${new Date(currentConfig.updatedAt).toLocaleString()}`);
+      if (currentConfig.autoSyncDolarApi) {
+        actualizarPantallaTasas(true);
       }
-    }
-
-    async function pushConfigToCloudSilently(cfg, user) {
-      try {
-        const token = user ? await user.getIdToken() : "";
-        const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
-        await fetch(restUrl, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cfg),
-          cache: "no-store"
-        });
-      } catch (e) {}
     }
 
     function populateAdminFields() {
       $("#cfg-currency-code").val(currentConfig.currencyCode || "USD");
       $("#cfg-exchange-rate").val(currentConfig.exchangeRateBs !== undefined ? currentConfig.exchangeRateBs : 45.50);
-      $("#cfg-euro-mult").val(currentConfig.euroMultiplier || 1.09);
       $("#cfg-autosync-dolarapi").prop("checked", currentConfig.autoSyncDolarApi === true);
 
       const pre = currentConfig.preloader || {};
@@ -1352,189 +1443,215 @@
       `);
     });
 
-    // 7. GUARDADO CON SELLO DE TIEMPO Y PRIORIDAD ABSOLUTA
+    // 7. GUARDADO CON CORTE DE SEGURIDAD DE 4 SEGUNDOS (NUNCA SE QUEDA COLGADO EN "GUARDANDO CAMBIOS...")
     $("#save-all-cloud-btn").on("click", async function () {
       const $btn = $(this);
       const originalHtml = $btn.html();
-      $btn.prop("disabled", true).html('<i class="ri-loader-4-line"></i> GUARDANDO CAMBIOS...');
+      $btn.prop("disabled", true).html('<i class="ri-loader-4-line"></i> GUARDANDO...');
 
-      const chosenCurrency = $("#cfg-currency-code").val() || "USD";
-      currentConfig.currencyCode = chosenCurrency;
-      currentConfig.currencySymbol = chosenCurrency === "EUR" ? "€" : "$";
-      currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val() || 45.5);
-      currentConfig.euroMultiplier = Number($("#cfg-euro-mult").val() || 1.09);
-      currentConfig.autoSyncDolarApi = $("#cfg-autosync-dolarapi").is(":checked");
+      try {
+        const chosenCurrency = $("#cfg-currency-code").val() || "USD";
+        currentConfig.currencyCode = chosenCurrency;
+        currentConfig.currencySymbol = chosenCurrency === "EUR" ? "€" : "$";
+        currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val() || 45.5);
+        currentConfig.autoSyncDolarApi = $("#cfg-autosync-dolarapi").is(":checked");
 
-      currentConfig.preloader = {
-        enabled: $("#cfg-preloader-enabled").val() === "true",
-        subtitle: $("#cfg-preloader-sub").val().trim(),
-        durationSeconds: Number($("#cfg-preloader-duration").val() || 2.2)
-      };
-
-      currentConfig.businessMode = $("#cfg-business-mode").val() || "services";
-      currentConfig.brandName = $("#cfg-brand-name").val().trim() || "kalon nails";
-      currentConfig.brandSpaced = $("#cfg-brand-spaced").val().trim() || "K A L O N";
-      currentConfig.whatsappNumber = $("#cfg-whatsapp").val().trim() || "584120000000";
-      currentConfig.referralDiscountPercent = Number($("#cfg-referral-discount").val() || 10);
-
-      currentConfig.theme = {
-        accentColor: $("#cfg-theme-accent").val() || "#c9a86a",
-        bgDark: "#0a0a0a"
-      };
-
-      currentConfig.socials = {
-        instagram: $("#cfg-soc-instagram").val().trim(),
-        tiktok: $("#cfg-soc-tiktok").val().trim(),
-        facebook: $("#cfg-soc-facebook").val().trim(),
-        youtube: $("#cfg-soc-youtube").val().trim(),
-        whatsapp: `https://wa.me/${currentConfig.whatsappNumber}`
-      };
-
-      currentConfig.paymentMethodsInfo = Object.assign({}, currentConfig.paymentMethodsInfo, {
-        "Pago Móvil": $("#cfg-pay-pagomovil").val().trim(),
-        "Zelle / Binance": $("#cfg-pay-zelle").val().trim()
-      });
-
-      currentConfig.location = {
-        title: $("#cfg-loc-title").val().trim(),
-        city: "ATENCIÓN EN SEDE Y A DOMICILIO",
-        address: $("#cfg-loc-address").val().trim(),
-        hours: $("#cfg-loc-hours").val().trim(),
-        phone: $("#cfg-loc-phone").val().trim()
-      };
-
-      currentConfig.hero = Object.assign({}, currentConfig.hero, {
-        kicker: $("#cfg-hero-kicker").val().trim(),
-        titleMain: $("#cfg-hero-main").val().trim(),
-        titleAccent: $("#cfg-hero-accent").val().trim(),
-        bgImage: $("#cfg-hero-img").val().trim(),
-        lead: $("#cfg-hero-lead").val().trim()
-      });
-
-      if ($("#hotspots-editor-list .hs-edit-row").length > 0) {
-        const updatedHotspots = [];
-        $("#hotspots-editor-list .hs-edit-row").each(function (i) {
-          updatedHotspots.push({
-            id: `hs-${i}-${Date.now()}`,
-            title: $(this).find(".hs-title").val().trim(),
-            price: Number($(this).find(".hs-price").val() || 0),
-            x: Number($(this).find(".hs-x").val() || 50),
-            y: Number($(this).find(".hs-y").val() || 50)
-          });
-        });
-        currentConfig.lookbook = {
-          image: $("#cfg-lookbook-img").val().trim(),
-          hotspots: updatedHotspots
+        currentConfig.preloader = {
+          enabled: $("#cfg-preloader-enabled").val() === "true",
+          subtitle: $("#cfg-preloader-sub").val().trim() || "BIENVENIDA A MI ESTUDIO",
+          durationSeconds: Number($("#cfg-preloader-duration").val() || 2.2)
         };
-      }
 
-      if ($("#tech-specs-editor-list .spec-edit-row").length > 0) {
-        const updatedSpecs = [];
-        $("#tech-specs-editor-list .spec-edit-row").each(function () {
-          updatedSpecs.push({
-            layer: $(this).find(".spec-layer").val().trim(),
-            name: $(this).find(".spec-name").val().trim(),
-            detail: $(this).find(".spec-detail").val().trim(),
-            orbit: $(this).find(".spec-orbit").val().trim() || "-20deg 65deg 70%"
+        currentConfig.businessMode = $("#cfg-business-mode").val() || "services";
+        currentConfig.brandName = $("#cfg-brand-name").val().trim() || "kalon nails";
+        currentConfig.brandSpaced = $("#cfg-brand-spaced").val().trim() || "K A L O N";
+        currentConfig.whatsappNumber = $("#cfg-whatsapp").val().trim() || "584120000000";
+        currentConfig.referralDiscountPercent = Number($("#cfg-referral-discount").val() || 10);
+
+        currentConfig.theme = {
+          accentColor: $("#cfg-theme-accent").val() || "#c9a86a",
+          bgDark: "#0a0a0a"
+        };
+
+        currentConfig.socials = {
+          instagram: $("#cfg-soc-instagram").val().trim(),
+          tiktok: $("#cfg-soc-tiktok").val().trim(),
+          facebook: $("#cfg-soc-facebook").val().trim(),
+          youtube: $("#cfg-soc-youtube").val().trim(),
+          whatsapp: `https://wa.me/${currentConfig.whatsappNumber}`
+        };
+
+        currentConfig.paymentMethodsInfo = Object.assign({}, currentConfig.paymentMethodsInfo, {
+          "Pago Móvil": $("#cfg-pay-pagomovil").val().trim(),
+          "Zelle / Binance": $("#cfg-pay-zelle").val().trim()
+        });
+
+        currentConfig.location = {
+          title: $("#cfg-loc-title").val().trim(),
+          city: "ATENCIÓN EN SEDE Y A DOMICILIO",
+          address: $("#cfg-loc-address").val().trim(),
+          hours: $("#cfg-loc-hours").val().trim(),
+          phone: $("#cfg-loc-phone").val().trim()
+        };
+
+        currentConfig.hero = Object.assign({}, currentConfig.hero, {
+          kicker: $("#cfg-hero-kicker").val().trim(),
+          titleMain: $("#cfg-hero-main").val().trim(),
+          titleAccent: $("#cfg-hero-accent").val().trim(),
+          bgImage: $("#cfg-hero-img").val().trim(),
+          lead: $("#cfg-hero-lead").val().trim()
+        });
+
+        if ($("#hotspots-editor-list .hs-edit-row").length > 0) {
+          const updatedHotspots = [];
+          $("#hotspots-editor-list .hs-edit-row").each(function (i) {
+            updatedHotspots.push({
+              id: `hs-${i}-${Date.now()}`,
+              title: $(this).find(".hs-title").val().trim(),
+              price: Number($(this).find(".hs-price").val() || 0),
+              x: Number($(this).find(".hs-x").val() || 50),
+              y: Number($(this).find(".hs-y").val() || 50)
+            });
           });
-        });
-        currentConfig.model3D = Object.assign({}, currentConfig.model3D, {
-          glbUrl: $("#cfg-3d-url").val().trim() || "./unas-demo.glb",
-          systemPrice: Number($("#cfg-3d-price").val() || 25),
-          systemTitle: $("#cfg-3d-sys-title").val().trim(),
-          title: $("#cfg-3d-title").val().trim(),
-          techSpecs: updatedSpecs
-        });
-      }
-
-      if ($("#reels-editor-container .reel-edit-row").length > 0) {
-        const updatedReels = [];
-        $("#reels-editor-container .reel-edit-row").each(function (i) {
-          updatedReels.push({
-            id: `reel-${i}-${Date.now()}`,
-            tag: $(this).find(".reel-tag").val().trim(),
-            title: $(this).find(".reel-title").val().trim(),
-            price: Number($(this).find(".reel-price").val() || 0),
-            videoUrl: $(this).find(".reel-video").val().trim(),
-            poster: $(this).find(".reel-poster").val().trim()
-          });
-        });
-        currentConfig.promoReels = updatedReels;
-      }
-
-      if ($("#sets-editor-container .service-edit-item").length > 0) {
-        const updatedSets = [];
-        $("#sets-editor-container .service-edit-item").each(function (i) {
-          updatedSets.push({
-            id: `set-${i}-${Date.now()}`,
-            title: $(this).find(".srv-title").val().trim(),
-            price: Number($(this).find(".srv-price").val() || 0),
-            oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
-            image: $(this).find(".srv-img").val().trim(),
-            inStock: $(this).find(".srv-stock").is(":checked"),
-            isOffer: true
-          });
-        });
-        currentConfig.setsProducts = updatedSets;
-      }
-
-      if ($("#arrivals-editor-container .service-edit-item").length > 0) {
-        const updatedArrivals = [];
-        $("#arrivals-editor-container .service-edit-item").each(function (i) {
-          updatedArrivals.push({
-            id: `arr-${i}-${Date.now()}`,
-            title: $(this).find(".srv-title").val().trim(),
-            price: Number($(this).find(".srv-price").val() || 0),
-            oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
-            image: $(this).find(".srv-img").val().trim(),
-            category: ($(this).find(".srv-cat").val() || "POLYGEL").trim().toUpperCase(),
-            inStock: $(this).find(".srv-stock").is(":checked")
-          });
-        });
-        currentConfig.arrivalsProducts = updatedArrivals;
-
-        const categoriesSet = _.uniq(updatedArrivals.map((a) => a.category));
-        if (categoriesSet.length > 0) {
-          currentConfig.arrivalFilters = categoriesSet;
+          currentConfig.lookbook = {
+            image: $("#cfg-lookbook-img").val().trim(),
+            hotspots: updatedHotspots
+          };
         }
-      }
 
-      currentConfig.updatedAt = new Date().toISOString();
-
-      // Guarda primero en localStorage con la marca de tiempo nueva
-      try {
-        localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
-      } catch (e) {}
-
-      let cloudSuccess = false;
-      try {
-        const currentUser = auth.currentUser;
-        const token = currentUser ? await currentUser.getIdToken(true) : "";
-        const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
-
-        const response = await fetch(restUrl, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(currentConfig),
-          cache: "no-store"
-        });
-
-        if (response.ok) {
-          cloudSuccess = true;
+        if ($("#tech-specs-editor-list .spec-edit-row").length > 0) {
+          const updatedSpecs = [];
+          $("#tech-specs-editor-list .spec-edit-row").each(function () {
+            updatedSpecs.push({
+              layer: $(this).find(".spec-layer").val().trim(),
+              name: $(this).find(".spec-name").val().trim(),
+              detail: $(this).find(".spec-detail").val().trim(),
+              orbit: $(this).find(".spec-orbit").val().trim() || "-20deg 65deg 70%"
+            });
+          });
+          currentConfig.model3D = Object.assign({}, currentConfig.model3D, {
+            glbUrl: $("#cfg-3d-url").val().trim() || "./unas-demo.glb",
+            systemPrice: Number($("#cfg-3d-price").val() || 25),
+            systemTitle: $("#cfg-3d-sys-title").val().trim(),
+            title: $("#cfg-3d-title").val().trim(),
+            techSpecs: updatedSpecs
+          });
         }
-      } catch (restErr) {
-        console.warn("Error REST:", restErr);
-      }
 
-      dbRealtime.ref("store_config").set(currentConfig).catch(() => {});
+        if ($("#reels-editor-container .reel-edit-row").length > 0) {
+          const updatedReels = [];
+          $("#reels-editor-container .reel-edit-row").each(function (i) {
+            updatedReels.push({
+              id: `reel-${i}-${Date.now()}`,
+              tag: $(this).find(".reel-tag").val().trim(),
+              title: $(this).find(".reel-title").val().trim(),
+              price: Number($(this).find(".reel-price").val() || 0),
+              videoUrl: $(this).find(".reel-video").val().trim(),
+              poster: $(this).find(".reel-poster").val().trim()
+            });
+          });
+          currentConfig.promoReels = updatedReels;
+        }
 
-      $btn.prop("disabled", false).html(originalHtml);
-      $("#last-sync-badge").text(`✓ Guardado a las ${new Date(currentConfig.updatedAt).toLocaleTimeString()}`);
+        if ($("#sets-editor-container .service-edit-item").length > 0) {
+          const updatedSets = [];
+          $("#sets-editor-container .service-edit-item").each(function (i) {
+            updatedSets.push({
+              id: `set-${i}-${Date.now()}`,
+              title: $(this).find(".srv-title").val().trim(),
+              price: Number($(this).find(".srv-price").val() || 0),
+              oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
+              image: $(this).find(".srv-img").val().trim(),
+              inStock: $(this).find(".srv-stock").is(":checked"),
+              isOffer: true
+            });
+          });
+          currentConfig.setsProducts = updatedSets;
+        }
 
-      if (cloudSuccess) {
-        showToast("✓ ¡CAMBIOS GUARDADOS Y SINCRONIZADOS EN VIVO!");
-      } else {
-        showToast("✓ Cambios guardados y fijados en este dispositivo");
+        if ($("#arrivals-editor-container .service-edit-item").length > 0) {
+          const updatedArrivals = [];
+          $("#arrivals-editor-container .service-edit-item").each(function (i) {
+            updatedArrivals.push({
+              id: `arr-${i}-${Date.now()}`,
+              title: $(this).find(".srv-title").val().trim(),
+              price: Number($(this).find(".srv-price").val() || 0),
+              oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
+              image: $(this).find(".srv-img").val().trim(),
+              category: ($(this).find(".srv-cat").val() || "POLYGEL").trim().toUpperCase(),
+              inStock: $(this).find(".srv-stock").is(":checked")
+            });
+          });
+          currentConfig.arrivalsProducts = updatedArrivals;
+
+          const categoriesSet = _.uniq(updatedArrivals.map((a) => a.category));
+          if (categoriesSet.length > 0) {
+            currentConfig.arrivalFilters = categoriesSet;
+          }
+        }
+
+        currentConfig.updatedAt = new Date().toISOString();
+
+        // 1. Guarda en LocalStorage inmediatamente
+        try {
+          localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
+        } catch (e) {}
+
+        // 2. Guarda en paralelo en Cloud Firestore y Realtime Database con límite máximo de 3.5 segundos
+        const saveTasks = [];
+
+        // Tarea A: Cloud Firestore
+        const firestorePromise = dbFirestore
+          .collection("configuracion_sistema")
+          .doc("store_config")
+          .set(currentConfig)
+          .then(() => "FIRESTORE_OK")
+          .catch(() => null);
+        saveTasks.push(firestorePromise);
+
+        // Tarea B: Realtime Database vía REST con AbortController de 3.5s
+        const rtdbRestPromise = (async () => {
+          try {
+            const currentUser = auth.currentUser;
+            const token = currentUser ? await currentUser.getIdToken(false) : "";
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 3500);
+            const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
+            const response = await fetch(restUrl, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(currentConfig),
+              signal: controller.signal,
+              cache: "no-store"
+            });
+            clearTimeout(timer);
+            return response.ok ? "RTDB_OK" : null;
+          } catch (e) {
+            return null;
+          }
+        })();
+        saveTasks.push(rtdbRestPromise);
+
+        // Tarea C: SDK Realtime Database en segundo plano
+        dbRealtime.ref("store_config").set(currentConfig).catch(() => {});
+
+        // Espera máximo 3.8 segundos a cualquiera de las nubes para jamás colgar el botón
+        const timeoutGuard = new Promise((resolve) => setTimeout(() => resolve(["TIMEOUT"]), 3800));
+        const results = await Promise.race([Promise.all(saveTasks), timeoutGuard]);
+
+        const savedInCloud = Array.isArray(results) && (results.includes("FIRESTORE_OK") || results.includes("RTDB_OK"));
+
+        $("#last-sync-badge").text(`✓ Publicado a las ${new Date(currentConfig.updatedAt).toLocaleTimeString()}`);
+        if (savedInCloud) {
+          showToast("✓ ¡CAMBIOS GUARDADOS EN LA NUBE Y EN VIVO!");
+        } else {
+          showToast("✓ Guardado completado (Verifica haber publicado las Reglas en Firebase)");
+        }
+      } catch (err) {
+        console.error("Error al guardar:", err);
+        showToast("Error al procesar el guardado", true);
+      } finally {
+        $btn.prop("disabled", false).html(originalHtml);
       }
     });
 
