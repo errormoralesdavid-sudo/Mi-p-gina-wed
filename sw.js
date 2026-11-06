@@ -1,4 +1,4 @@
-const CACHE_NAME = "kalon-saas-v3";
+const CACHE_NAME = "kalon-saas-v4";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -35,6 +35,7 @@ self.addEventListener("fetch", (event) => {
     url.includes("firebaseio.com") ||
     url.includes("googleapis.com") ||
     url.includes("dolarapi.com") ||
+    url.includes("dolarvzla.com") ||
     url.includes("admin.html") ||
     url.includes("app.js")
   ) {
