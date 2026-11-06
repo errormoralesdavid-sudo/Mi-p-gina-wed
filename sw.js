@@ -7,7 +7,7 @@
 "use strict";
 
 // Cambia "v1" a "v2", "v3", etc. cada vez que actualices precios o diseño en GitHub
-const CACHE_NAME = "kalon-store-cache-v2";
+const CACHE_NAME = "kalon-store-cache-v3";
 
 // Archivos locales y librerías principales que se guardarán para carga instantánea
 const INITIAL_ASSETS = [
