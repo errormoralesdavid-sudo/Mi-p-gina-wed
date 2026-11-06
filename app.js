@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO + DOLARAPI + 3D DESPIECE
+ * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (LECTURA HÍBRIDA INSTANTÁNEA)
  * ============================================================================
  */
 
@@ -20,7 +20,6 @@ const firebaseConfig = {
   measurementId: "G-968MQ61PQ6"
 };
 
-// Lista blanca de correos administradores que jamás serán tratados como clientes normales
 const MASTER_ADMIN_EMAILS = ["yakuzafadeco@gmail.com"];
 
 let dbRealtime = null;
@@ -39,21 +38,19 @@ try {
 }
 
 /* ============================================================================
-   2. CONFIGURACIÓN MAESTRA ESCALABLE (REGLA 6)
+   2. CONFIGURACIÓN MAESTRA ESCALABLE
    ============================================================================ */
 let STORE_CONFIG = {
-  businessMode: "services", // "services" (Citas/Uñas/Barbería) o "products" (Tienda/Ropa/Comida)
+  businessMode: "services",
   brandName: "kalon nails",
   brandSpaced: "K A L O N",
   
-  // Punto 1: Moneda ($ o €) y sincronización con https://ve.dolarapi.com/v1/dolares/oficial
-  currencyCode: "USD", // "USD" o "EUR"
-  currencySymbol: "$", // "$" o "€"
+  currencyCode: "USD",
+  currencySymbol: "$",
   autoSyncDolarApi: true,
-  euroMultiplier: 1.09, // Factor de conversión cuando se selecciona Euro (€)
+  euroMultiplier: 1.09,
   exchangeRateBs: 45.50,
   
-  // Punto 2: Configuración de duración y textos del Preloader inicial
   preloader: {
     enabled: true,
     subtitle: "ESTUDIO DE UÑAS & ARTE 3D",
@@ -77,7 +74,7 @@ let STORE_CONFIG = {
   },
 
   paymentMethodsInfo: {
-    "Pago Móvil": "Banco: Mercantil (0105) • Tel: 0412-0000000 • CI: V-00.000.000 (Calculado a tasa oficial BCV)",
+    "Pago Móvil": "Banco: Mercantil (0105) • Tel: 0412-0000000 • CI: V-00.000.000 (Calculado a tasa activa)",
     "Efectivo Divisas": "Pago en efectivo ($ / €) directamente al momento de tu atención en Panorama o a domicilio.",
     "Zelle / Binance": "Correo Zelle / Binance Pay: pagos@kalonnails.com (Titular: Kalon Studio)",
     "Transferencia / Punto": "Coordinamos los datos de transferencia directamente al abrir tu chat de WhatsApp."
@@ -122,7 +119,6 @@ let STORE_CONFIG = {
     ]
   },
 
-  // Punto 8: Visor 3D con ángulos de cámara por capa para efecto Desarmado y Auto-Centrado
   model3D: {
     subtitle: "INTERACCIÓN 360° • DESPIECE TÉCNICO",
     title: "Escultura & Materiales en 3D",
@@ -354,23 +350,40 @@ let STORE_CONFIG = {
 };
 
 /* ============================================================================
-   3. SINCRONIZACIÓN CON DOLARAPI OFICIAL ($ / €) Y FORMATEO (PUNTO 1)
+   3. FUSIÓN DE DATOS EN NUBE Y SINCRONIZACIÓN CON DOLARAPI
    ============================================================================ */
-let liveUsdOfficialRate = 0;
+function applyCloudConfigObject(cloudData) {
+  if (!cloudData || typeof cloudData !== "object") return;
+  STORE_CONFIG = _.merge({}, STORE_CONFIG, cloudData);
+
+  if (Array.isArray(cloudData.setsProducts)) STORE_CONFIG.setsProducts = cloudData.setsProducts;
+  if (Array.isArray(cloudData.arrivalsProducts)) STORE_CONFIG.arrivalsProducts = cloudData.arrivalsProducts;
+  if (Array.isArray(cloudData.promoReels)) STORE_CONFIG.promoReels = cloudData.promoReels;
+  if (cloudData.lookbook && Array.isArray(cloudData.lookbook.hotspots)) {
+    STORE_CONFIG.lookbook.hotspots = cloudData.lookbook.hotspots;
+  }
+  if (cloudData.model3D && Array.isArray(cloudData.model3D.techSpecs)) {
+    STORE_CONFIG.model3D.techSpecs = cloudData.model3D.techSpecs;
+  }
+
+  try {
+    localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(STORE_CONFIG));
+  } catch (e) {}
+}
 
 async function syncOfficialExchangeRate() {
-  if (STORE_CONFIG.autoSyncDolarApi === false) return;
+  // Solo sincroniza con DolarApi si el administrador dejó activado el modo automático
+  if (STORE_CONFIG.autoSyncDolarApi !== true) return;
   try {
     const response = await fetch("https://ve.dolarapi.com/v1/dolares/oficial");
     if (!response.ok) return;
     const data = await response.json();
     if (data && data.promedio && Number(data.promedio) > 0) {
-      liveUsdOfficialRate = Number(data.promedio);
+      const liveUsd = Number(data.promedio);
       const isEuro = STORE_CONFIG.currencyCode === "EUR";
       const factor = isEuro ? Number(STORE_CONFIG.euroMultiplier || 1.09) : 1;
-      STORE_CONFIG.exchangeRateBs = Number((liveUsdOfficialRate * factor).toFixed(2));
+      STORE_CONFIG.exchangeRateBs = Number((liveUsd * factor).toFixed(2));
 
-      // Refresca precios en las tarjetas y el carrito con la tasa oficial recién descargada
       renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
       if (STORE_CONFIG.arrivalFilters && STORE_CONFIG.arrivalFilters.length > 0) {
         const activeCat = $("#filter-pills-container .filter-pill-btn.is-active").data("category") || STORE_CONFIG.arrivalFilters[0];
@@ -379,9 +392,7 @@ async function syncOfficialExchangeRate() {
       renderPromoReels();
       renderCartUI();
     }
-  } catch (err) {
-    console.warn("Usando tasa guardada en configuración:", err);
-  }
+  } catch (err) {}
 }
 
 function sanitizeInput(str) {
@@ -416,7 +427,7 @@ function applyDynamicTheme() {
 }
 
 /* ============================================================================
-   4. HISTORIAL DEL BOTÓN "ATRÁS" DEL CELULAR / TABLET (PUNTO 5)
+   4. HISTORIAL DEL BOTÓN "ATRÁS" DEL CELULAR / TABLET
    ============================================================================ */
 let isOverlayOpenInHistory = false;
 
@@ -446,7 +457,7 @@ window.addEventListener("popstate", function () {
 });
 
 /* ============================================================================
-   5. ACCESO SECRETO AL PANEL ADMIN CON 3 TOQUES EN EL NOMBRE (PUNTO 6)
+   5. ACCESO SECRETO AL PANEL ADMIN CON 3 TOQUES EN EL NOMBRE
    ============================================================================ */
 function initSecretAdminTrigger() {
   let tapCount = 0;
@@ -474,7 +485,7 @@ function initSecretAdminTrigger() {
 }
 
 /* ============================================================================
-   6. DESPIECE / DESARMADO DEL MODELO 3D Y AUTO-CENTRADO (PUNTO 8)
+   6. DESPIECE / DESARMADO DEL MODELO 3D Y AUTO-CENTRADO
    ============================================================================ */
 let is3DExploded = false;
 
@@ -493,17 +504,14 @@ function toggleExplode3DModel(forceState, targetOrbit) {
     $btn.html('<i class="ri-stack-fill"></i> Unir Capas');
     viewer.removeAttribute("auto-rotate");
 
-    // Si el archivo .glb incluye animación de separación, la reproduce
     if (viewer.availableAnimations && viewer.availableAnimations.length > 0) {
       viewer.animationName = viewer.availableAnimations[0];
       viewer.play({ repetitions: 1 });
     }
 
-    // Mueve la cámara al ángulo de inspección de las capas
     viewer.cameraOrbit = targetOrbit || "-25deg 62deg 72%";
     viewer.fieldOfView = "22deg";
 
-    // Construye y anima las etiquetas flotantes de despiece con Anime.js
     const specs = (STORE_CONFIG.model3D && STORE_CONFIG.model3D.techSpecs) || [];
     const chipsHtml = specs
       .map(
@@ -571,7 +579,6 @@ function init3DAutoRecenterOnScroll() {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        // Cuando el usuario baja o sube y sale de la sección 3D, vuelve a centrar el objeto automáticamente
         if (!entry.isIntersecting && is3DExploded) {
           reset3DModelToCenter();
         }
@@ -695,7 +702,7 @@ function renderCartUI() {
 }
 
 /* ============================================================================
-   8. CLUB VIP SEGURO (NO CONVIERTE CUENTAS DE ADMIN EN CLIENTES - PUNTO 4)
+   8. CLUB VIP SEGURO
    ============================================================================ */
 function checkUrlReferralParam() {
   try {
@@ -730,8 +737,6 @@ function initVipAuthListener() {
     const docRef = dbFirestore.collection("usuarios_vip").doc(user.uid);
     const snap = await docRef.get().catch(() => null);
 
-    // IMPORTANTE (Punto 4): Solo lee el perfil si ya existe en usuarios_vip; NO crea un documento automático
-    // al recargar la página para no degradar cuentas de Administrador a Cliente VIP.
     if (snap && snap.exists) {
       currentVipProfile = snap.data();
       $("#vip-auth-view").hide();
@@ -753,34 +758,61 @@ function initVipAuthListener() {
 }
 
 /* ============================================================================
-   9. SINCRONIZACIÓN EN VIVO CON FIREBASE
+   9. LECTURA INICIAL HÍBRIDA (ESPEJO LOCAL + REST + SDK) ANTES DEL PRELOADER
    ============================================================================ */
+async function loadInitialConfigBeforePreloader() {
+  // 1. Lee al instante el espejo local si acabas de guardar cambios desde admin.html
+  try {
+    const mirror = localStorage.getItem("kalon_cloud_mirror_config");
+    if (mirror) {
+      applyCloudConfigObject(JSON.parse(mirror));
+    }
+  } catch (e) {}
+
+  // 2. Consulta por HTTP REST (con timeout rápido de 1.2s) para traer cambios frescos de Firebase
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1200);
+    const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json`, {
+      signal: controller.signal,
+      cache: "no-store"
+    });
+    clearTimeout(timer);
+    if (res.ok) {
+      const restData = await res.json();
+      if (restData) {
+        applyCloudConfigObject(restData);
+      }
+    }
+  } catch (e) {}
+}
+
 function syncStoreWithFirebase() {
-  if (!dbRealtime) return;
-
-  const configRef = dbRealtime.ref("store_config");
-  configRef.on("value", (snapshot) => {
-    const cloudData = snapshot.val();
-    if (cloudData) {
-      STORE_CONFIG = _.merge({}, STORE_CONFIG, cloudData);
-      if (cloudData.setsProducts) STORE_CONFIG.setsProducts = cloudData.setsProducts;
-      if (cloudData.arrivalsProducts) STORE_CONFIG.arrivalsProducts = cloudData.arrivalsProducts;
-      if (cloudData.promoReels) STORE_CONFIG.promoReels = cloudData.promoReels;
-      if (cloudData.lookbook && cloudData.lookbook.hotspots) {
-        STORE_CONFIG.lookbook.hotspots = cloudData.lookbook.hotspots;
+  if (dbRealtime) {
+    const configRef = dbRealtime.ref("store_config");
+    configRef.on("value", (snapshot) => {
+      const cloudData = snapshot.val();
+      if (cloudData) {
+        applyCloudConfigObject(cloudData);
+        applyDynamicTheme();
+        initStorefrontContent();
+        initD3LookbookHotspots();
+        syncOfficialExchangeRate();
+        renderCartUI();
       }
-      if (cloudData.model3D && cloudData.model3D.techSpecs) {
-        STORE_CONFIG.model3D.techSpecs = cloudData.model3D.techSpecs;
-      }
+    });
+  }
 
-      applyDynamicTheme();
-      initStorefrontContent();
-      initD3LookbookHotspots();
-      syncOfficialExchangeRate();
-      renderCartUI();
-    } else {
-      configRef.set(STORE_CONFIG).catch(() => {});
-      syncOfficialExchangeRate();
+  // También sincroniza al instante si tienes admin.html abierto en otra pestaña
+  window.addEventListener("storage", function (e) {
+    if (e.key === "kalon_cloud_mirror_config" && e.newValue) {
+      try {
+        applyCloudConfigObject(JSON.parse(e.newValue));
+        applyDynamicTheme();
+        initStorefrontContent();
+        initD3LookbookHotspots();
+        renderCartUI();
+      } catch (err) {}
     }
   });
 
@@ -833,13 +865,11 @@ function initStorefrontContent() {
   $("#header-logo").text(STORE_CONFIG.brandName);
   $("#footer-brand-name").text(STORE_CONFIG.brandName.toUpperCase());
 
-  // 1. Marquee Superior
   const marqueeItems = [...STORE_CONFIG.marqueeMessages, ...STORE_CONFIG.marqueeMessages]
     .map((msg) => `<span>${sanitizeInput(msg)}</span><span class="dot">•</span>`)
     .join("");
   $("#marquee-track").html(marqueeItems);
 
-  // 2. Navegación y Redes Sociales Dinámicas
   const navHtml = (STORE_CONFIG.navigation || [])
     .map(
       (item) => `
@@ -856,7 +886,6 @@ function initStorefrontContent() {
 
   renderDynamicSocialLinks();
 
-  // 3. Zonas de Domicilio e Instrucciones de Pago
   const sym = getActiveSymbol();
   const zonesHtml = [
     '<option value="0">Selecciona tu zona de domicilio...</option>',
@@ -867,7 +896,6 @@ function initStorefrontContent() {
   $("#booking-zone-select").html(zonesHtml);
   updatePaymentInstructionsUI();
 
-  // 4. Portada Hero
   $("#hero-bg-media").css("background-image", `url('${STORE_CONFIG.hero.bgImage}')`);
   $("#hero-kicker").text(STORE_CONFIG.hero.kicker);
   $("#hero-title-main").text(STORE_CONFIG.hero.titleMain);
@@ -887,7 +915,6 @@ function initStorefrontContent() {
     .join("");
   $("#hero-badges").html(badgesHtml);
 
-  // 5. Visor 3D + Ficha Técnica de Materiales
   $("#3d-subtitle").text(STORE_CONFIG.model3D.subtitle);
   $("#3d-title").text(STORE_CONFIG.model3D.title);
   $("#3d-desc").text(STORE_CONFIG.model3D.desc);
@@ -924,10 +951,8 @@ function initStorefrontContent() {
     .join("");
   $("#nail-tech-specs").html(specsHtml);
 
-  // 6. Videos Cortos Publicitarios / Shoppable Reels
   renderPromoReels();
 
-  // 7. Carrusel Principal y Especialidades
   renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
   renderCarouselDots((STORE_CONFIG.setsProducts || []).length, "#sets-dots");
 
@@ -946,7 +971,6 @@ function initStorefrontContent() {
     .join("");
   $("#categories-grid").html(catsHtml);
 
-  // 8. Filtros de Catálogo
   const pillsHtml = (STORE_CONFIG.arrivalFilters || [])
     .map(
       (filterName, idx) => `
@@ -961,7 +985,6 @@ function initStorefrontContent() {
     filterArrivalsByCategory(STORE_CONFIG.arrivalFilters[0]);
   }
 
-  // 9. Garantías, Testimonios, Ubicación y Footer
   $("#care-kicker").text(STORE_CONFIG.carePromo.kicker);
   $("#care-title").text(STORE_CONFIG.carePromo.title);
   $("#care-desc").text(STORE_CONFIG.carePromo.desc);
@@ -1240,13 +1263,18 @@ function initD3LookbookHotspots() {
 }
 
 /* ============================================================================
-   12. PRELOADER CONFIGURABLE CON ANIME.JS (PUNTO 2) Y COTIZADOR REACT
+   12. PRELOADER CONFIGURABLE CON ANIME.JS Y COTIZADOR REACT
    ============================================================================ */
 function runPreloaderAnimation() {
   if (STORE_CONFIG.preloader && STORE_CONFIG.preloader.enabled === false) {
     $("#preloader").hide();
     return;
   }
+
+  if (STORE_CONFIG.preloader && STORE_CONFIG.preloader.subtitle) {
+    $("#preloader-sub").text(STORE_CONFIG.preloader.subtitle);
+  }
+  $("#preloader-brand").text(STORE_CONFIG.brandSpaced);
 
   const totalSec = Number((STORE_CONFIG.preloader && STORE_CONFIG.preloader.durationSeconds) || 2.2);
   const stepMs = Math.max(250, Math.round((totalSec * 1000) / 3.2));
@@ -1396,10 +1424,14 @@ function mountReactCustomKitBuilder() {
 }
 
 /* ============================================================================
-   13. EVENTOS DE INTERFAZ, DESPIECE 3D, VIP, REELS, GPS Y CHECKOUT
+   13. ARRANQUE COORDINADO Y EVENTOS DE INTERFAZ
    ============================================================================ */
-$(document).ready(function () {
+$(document).ready(async function () {
   loadCartFromStorage();
+
+  // Primero carga los cambios guardados en el espejo o en REST antes de lanzar la animación
+  await loadInitialConfigBeforePreloader();
+
   initStorefrontContent();
   initD3LookbookHotspots();
   checkUrlReferralParam();
@@ -1412,7 +1444,6 @@ $(document).ready(function () {
   syncStoreWithFirebase();
   syncOfficialExchangeRate();
 
-  // Abrir Menú Lateral, Carrito y Modales registrando en Historial para el botón "Atrás" (Punto 5)
   $("#open-menu-btn").on("click", function () {
     pushOverlayHistoryState("menu");
     $("#side-drawer").addClass("is-open").attr("aria-hidden", "false");
@@ -1448,7 +1479,6 @@ $(document).ready(function () {
     }
   });
 
-  // Botones de Desarmar / Capas 3D y Centrar (Punto 8)
   $("#explode-3d-btn").on("click", function () {
     toggleExplode3DModel();
   });
@@ -1457,7 +1487,6 @@ $(document).ready(function () {
     reset3DModelToCenter();
   });
 
-  // Al tocar una etapa de material o una etiqueta flotante, enfoca esa capa en el 3D
   $(document).on("click", ".spec-header-btn", function () {
     const $parent = $(this).closest(".spec-item");
     $(".spec-item").removeClass("is-active");
@@ -1480,7 +1509,6 @@ $(document).ready(function () {
     }
   });
 
-  // Registro voluntario de Cuenta VIP (Con protección para correos Admin - Punto 4)
   $("#vip-auth-form").on("submit", async function (e) {
     e.preventDefault();
     if (!authFirebase) return;
@@ -1599,7 +1627,6 @@ $(document).ready(function () {
     renderCartUI();
   });
 
-  // Sonido y Compra desde Videos Cortos (Reels)
   $(document).on("click", ".reel-sound-btn", function () {
     const videoEl = $(this).siblings("video")[0];
     if (!videoEl) return;
@@ -1836,7 +1863,7 @@ $(document).ready(function () {
         `\n${locationLines}\n\n` +
         `🛍️ *Detalle:*\n${itemsLines}\n\n` +
         `*Total (${STORE_CONFIG.currencyCode || "USD"}): ${formatCurrency(grandTotal)}*\n` +
-        `*Equivalente BCV: ${formatBs(grandTotal)}*`
+        `*Equivalente en Bs.: ${formatBs(grandTotal)}*`
     );
 
     window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${whatsappMsg}`, "_blank", "noopener,noreferrer");
