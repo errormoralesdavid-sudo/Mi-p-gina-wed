@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- REGLA 5: Seguridad CSP con permiso explícito para REST API de Firebase y DolarApi -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
   <meta name="robots" content="noindex, nofollow">
 
@@ -208,6 +207,7 @@
     .admin-brand span {
       font-size: 0.74rem;
       color: var(--text-muted);
+      display: block;
     }
 
     .admin-tabs {
@@ -393,7 +393,8 @@
     <header class="admin-topbar">
       <div class="admin-brand">
         <h2>El Baile de Control • SaaS Admin</h2>
-        <span id="admin-user-label">Sincronizado con Firebase (mipaginawed-519fd)</span>
+        <span id="admin-user-label">Sincronizando tus cambios guardados...</span>
+        <span id="last-sync-badge" style="color: var(--accent-gold); font-size: 0.7rem;"></span>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 0.55rem;">
         <a href="index.html" class="btn-outline">
@@ -406,7 +407,6 @@
       </div>
     </header>
 
-    <!-- PESTAÑAS -->
     <nav class="admin-tabs">
       <button type="button" class="tab-btn is-active" data-tab="tab-ajustes">
         <i class="ri-equalizer-line"></i> 1. Moneda ($/€), Preloader, Redes & Pagos
@@ -428,9 +428,7 @@
       </button>
     </nav>
 
-    <!-- ======================================================================
-         PESTAÑA 1: MONEDA ($/€ + DOLARAPI), PRELOADER, REDES Y PAGOS
-         ====================================================================== -->
+    <!-- PESTAÑA 1: MONEDA ($/€ + DOLARAPI), PRELOADER, REDES Y PAGOS -->
     <section class="tab-panel is-active" id="tab-ajustes">
       
       <div class="panel-card">
@@ -445,17 +443,17 @@
           </div>
           <div class="form-group">
             <label>Tasa Activa en Bs. (Por 1 $ o €)</label>
-            <input type="number" step="0.01" id="cfg-exchange-rate" class="admin-input" placeholder="45.50">
+            <input type="number" step="0.01" id="cfg-exchange-rate" class="admin-input">
           </div>
           <div class="form-group">
             <label>Multiplicador Euro frente al Dólar</label>
-            <input type="number" step="0.01" id="cfg-euro-mult" class="admin-input" value="1.09">
+            <input type="number" step="0.01" id="cfg-euro-mult" class="admin-input">
           </div>
         </div>
         <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.8rem; margin-top:0.4rem;">
           <label style="font-size:0.8rem; color:var(--text-light); display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
-            <input type="checkbox" id="cfg-autosync-dolarapi" checked>
-            <span>Sincronizar automáticamente todos los días con <strong>ve.dolarapi.com/v1/dolares/oficial</strong> <em style="color:var(--accent-gold);">(Si escribes una tasa manual arriba, esta casilla se desmarca sola)</em></span>
+            <input type="checkbox" id="cfg-autosync-dolarapi">
+            <span>Sincronizar automáticamente con <strong>ve.dolarapi.com/v1/dolares/oficial</strong> <em style="color:var(--accent-gold);">(Se desactiva sola al escribir tasa manual)</em></span>
           </label>
           <button type="button" class="btn-outline" id="fetch-dolarapi-now-btn">
             <i class="ri-refresh-line"></i> Obtener Tasa BCV de DolarApi Ahora
@@ -475,11 +473,11 @@
           </div>
           <div class="form-group">
             <label>Subtítulo de Bienvenida</label>
-            <input type="text" id="cfg-preloader-sub" class="admin-input" placeholder="BIENVENIDA A MI ESTUDIO">
+            <input type="text" id="cfg-preloader-sub" class="admin-input">
           </div>
           <div class="form-group">
             <label>Duración de la Animación (Segundos)</label>
-            <input type="number" step="0.2" min="0.8" max="10" id="cfg-preloader-duration" class="admin-input" value="2.2">
+            <input type="number" step="0.2" min="0.8" max="10" id="cfg-preloader-duration" class="admin-input">
           </div>
         </div>
       </div>
@@ -496,19 +494,19 @@
           </div>
           <div class="form-group">
             <label>Nombre de la Marca (Cabecera)</label>
-            <input type="text" id="cfg-brand-name" class="admin-input" placeholder="Ej: kalon nails">
+            <input type="text" id="cfg-brand-name" class="admin-input">
           </div>
           <div class="form-group">
             <label>Nombre Espaciado (En el Preloader)</label>
-            <input type="text" id="cfg-brand-spaced" class="admin-input" placeholder="K A L O N">
+            <input type="text" id="cfg-brand-spaced" class="admin-input">
           </div>
           <div class="form-group">
             <label>WhatsApp Oficial de Pedidos (Con código 58)</label>
-            <input type="text" id="cfg-whatsapp" class="admin-input" placeholder="584120000000">
+            <input type="text" id="cfg-whatsapp" class="admin-input">
           </div>
           <div class="form-group">
             <label>% Descuento por Código de Referido VIP</label>
-            <input type="number" id="cfg-referral-discount" class="admin-input" placeholder="10">
+            <input type="number" id="cfg-referral-discount" class="admin-input">
           </div>
           <div class="form-group">
             <label>Color Principal de la Marca (Acento)</label>
@@ -522,19 +520,19 @@
         <div class="grid-2">
           <div class="form-group">
             <label><i class="ri-instagram-line"></i> Enlace de Instagram</label>
-            <input type="url" id="cfg-soc-instagram" class="admin-input" placeholder="https://instagram.com/tumarca">
+            <input type="url" id="cfg-soc-instagram" class="admin-input">
           </div>
           <div class="form-group">
             <label><i class="ri-tiktok-fill"></i> Enlace de TikTok</label>
-            <input type="url" id="cfg-soc-tiktok" class="admin-input" placeholder="https://tiktok.com/@tumarca">
+            <input type="url" id="cfg-soc-tiktok" class="admin-input">
           </div>
           <div class="form-group">
             <label><i class="ri-facebook-circle-fill"></i> Enlace de Facebook</label>
-            <input type="url" id="cfg-soc-facebook" class="admin-input" placeholder="https://facebook.com/tumarca">
+            <input type="url" id="cfg-soc-facebook" class="admin-input">
           </div>
           <div class="form-group">
             <label><i class="ri-youtube-fill"></i> Enlace de YouTube / Shorts</label>
-            <input type="url" id="cfg-soc-youtube" class="admin-input" placeholder="https://youtube.com/@tumarca">
+            <input type="url" id="cfg-soc-youtube" class="admin-input">
           </div>
         </div>
       </div>
@@ -596,9 +594,7 @@
       </div>
     </section>
 
-    <!-- ======================================================================
-         PESTAÑA 2: CITAS, PEDIDOS Y UBICACIONES GPS EN TIEMPO REAL
-         ====================================================================== -->
+    <!-- PESTAÑA 2: CITAS, PEDIDOS Y UBICACIONES GPS -->
     <section class="tab-panel" id="tab-citas">
       <div class="panel-card">
         <h3>Solicitudes Recibidas, Métodos de Pago y Enlaces GPS</h3>
@@ -608,9 +604,7 @@
       </div>
     </section>
 
-    <!-- ======================================================================
-         PESTAÑA 3: EDITOR VISUAL DE PUNTOS D3.JS Y DESPIECE 3D
-         ====================================================================== -->
+    <!-- PESTAÑA 3: EDITOR VISUAL DE PUNTOS D3.JS Y DESPIECE 3D -->
     <section class="tab-panel" id="tab-puntos-3d">
       <div class="panel-card">
         <h3>Editor Visual de Puntos Dorados (Toca la foto para agregar un punto)</h3>
@@ -645,7 +639,7 @@
         <div class="grid-2">
           <div class="form-group">
             <label>Archivo o URL del Modelo 3D (.GLB)</label>
-            <input type="text" id="cfg-3d-url" class="admin-input" placeholder="./unas-demo.glb">
+            <input type="text" id="cfg-3d-url" class="admin-input">
           </div>
           <div class="form-group">
             <label>Precio del Diseño 3D Mostrado</label>
@@ -669,9 +663,7 @@
       </div>
     </section>
 
-    <!-- ======================================================================
-         PESTAÑA 4: VIDEOS CORTOS PUBLICITARIOS / REELS
-         ====================================================================== -->
+    <!-- PESTAÑA 4: VIDEOS CORTOS PUBLICITARIOS / REELS -->
     <section class="tab-panel" id="tab-reels">
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -685,9 +677,7 @@
       </div>
     </section>
 
-    <!-- ======================================================================
-         PESTAÑA 5: CATÁLOGO DE SERVICIOS / PRODUCTOS Y PRECIOS
-         ====================================================================== -->
+    <!-- PESTAÑA 5: CATÁLOGO DE SERVICIOS / PRODUCTOS Y PRECIOS -->
     <section class="tab-panel" id="tab-servicios">
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -706,9 +696,7 @@
       </div>
     </section>
 
-    <!-- ======================================================================
-         PESTAÑA 6: MIEMBROS DEL CLUB VIP, ADMINS Y RESEÑAS
-         ====================================================================== -->
+    <!-- PESTAÑA 6: MIEMBROS DEL CLUB VIP, ADMINS Y RESEÑAS -->
     <section class="tab-panel" id="tab-vip">
       <div class="panel-card">
         <h3>Miembros Registrados en el Club VIP & Permisos de Administrador</h3>
@@ -729,7 +717,6 @@
 
   <div class="toast-bar" id="toast-bar">✓ Cambios publicados en vivo</div>
 
-  <!-- LIBRERÍAS Y FIREBASE SDK -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -760,7 +747,68 @@
     const dbRealtime = firebase.database();
     const dbFirestore = firebase.firestore();
 
+    // Plantilla base únicamente por si tanto el teléfono como Firebase están 100% vacíos la primera vez
+    const FALLBACK_BASE_CONFIG = {
+      businessMode: "services",
+      brandName: "kalon nails",
+      brandSpaced: "K A L O N",
+      currencyCode: "USD",
+      currencySymbol: "$",
+      autoSyncDolarApi: false,
+      euroMultiplier: 1.09,
+      exchangeRateBs: 45.50,
+      preloader: {
+        enabled: true,
+        subtitle: "BIENVENIDA A MI ESTUDIO",
+        durationSeconds: 2.2
+      },
+      referralDiscountPercent: 10,
+      whatsappNumber: "584120000000",
+      theme: { accentColor: "#c9a86a", bgDark: "#0a0a0a" },
+      socials: { instagram: "https://instagram.com/", tiktok: "https://tiktok.com/", facebook: "", youtube: "", whatsapp: "https://wa.me/584120000000" },
+      paymentMethodsInfo: {
+        "Pago Móvil": "Banco: Mercantil (0105) • Tel: 0412-0000000 • CI: V-00.000.000",
+        "Zelle / Binance": "Correo Zelle / Binance Pay: pagos@kalonnails.com"
+      },
+      location: {
+        title: "El Junquito — Sector Panorama",
+        city: "ATENCIÓN EN ESTUDIO PRIVADO Y A DOMICILIO",
+        address: "El Junquito, Sector Panorama",
+        hours: "Lunes a Sábado • 9:00 AM – 6:00 PM",
+        phone: "+58 412-0000000"
+      },
+      hero: {
+        kicker: "ARTE Y PRECISIÓN EN TUS MANOS",
+        titleMain: "DISEÑOS EXCLUSIVOS EN CADA",
+        titleAccent: "detalle",
+        lead: "Estructuras en Polygel, Soft Gel y Manicura Rusa de alta durabilidad.",
+        ctaText: "EXPLORAR EN 3D",
+        bgImage: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80"
+      },
+      lookbook: {
+        image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
+        hotspots: [
+          { id: "hs-1", x: 34, y: 32, title: "Limpieza de Cutícula Rusa", price: 12 },
+          { id: "hs-2", x: 52, y: 48, title: "Esculpido en Polygel", price: 22 }
+        ]
+      },
+      model3D: {
+        glbUrl: "./unas-demo.glb",
+        systemPrice: 25,
+        systemTitle: "SISTEMA ESCULPIDO AZUL COBALTO 3D",
+        title: "Escultura & Materiales en 3D",
+        techSpecs: [
+          { layer: "1. PREPARACIÓN", name: "Manicura Rusa Combinada", detail: "Limpieza profunda libre de ácido.", orbit: "-35deg 65deg 75%" },
+          { layer: "2. ESTRUCTURA", name: "Polygel Alta Densidad", detail: "Curvatura C estilizada y duración +21 días.", orbit: "-15deg 55deg 68%" }
+        ]
+      },
+      promoReels: [],
+      setsProducts: [],
+      arrivalsProducts: []
+    };
+
     let currentConfig = {};
+    let isConfigLoaded = false;
 
     function sanitize(str) {
       if (typeof str !== "string") return "";
@@ -804,7 +852,7 @@
       $("#login-screen").hide();
       $("#dashboard-wrap").fadeIn(250);
       $("#admin-user-label").text(`Administrador activo: ${user.email}`);
-      loadStoreConfigForAdmin();
+      await loadStoreConfigForAdmin(user);
       listenBookingsRealtime();
       listenVipUsersRealtime();
       listenReviewsRealtime();
@@ -830,7 +878,7 @@
       $(`#${$(this).data("tab")}`).addClass("is-active");
     });
 
-    // 2. DESMARCADO AUTOMÁTICO CUANDO ESCRIBES TASA MANUAL (SOLUCIÓN VIDEO 2 SEGUNDO 0:06)
+    // 2. DESMARCADO AUTOMÁTICO CUANDO ESCRIBES TASA MANUAL
     $("#cfg-exchange-rate").on("input", function () {
       $("#cfg-autosync-dolarapi").prop("checked", false);
     });
@@ -838,7 +886,7 @@
     async function fetchOfficialRateFromDolarApi() {
       try {
         showToast("Consultando ve.dolarapi.com/v1/dolares/oficial...");
-        const res = await fetch("https://ve.dolarapi.com/v1/dolares/oficial");
+        const res = await fetch("https://ve.dolarapi.com/v1/dolares/oficial", { cache: "no-store" });
         if (!res.ok) throw new Error("Error de red");
         const data = await res.json();
         if (data && data.promedio) {
@@ -861,7 +909,148 @@
       }
     });
 
-    // 3. CITAS Y PEDIDOS CON GPS
+    // 3. LECTURA INTELIGENTE SIN CACHÉ (COMPARA FECHA LOCAL VS NUBE PARA NO VOLVER A PREDETERMINADO NUNCA)
+    async function loadStoreConfigForAdmin(user) {
+      let localParsed = null;
+      let cloudParsed = null;
+
+      try {
+        const rawLocal = localStorage.getItem("kalon_cloud_mirror_config");
+        if (rawLocal) localParsed = JSON.parse(rawLocal);
+      } catch (e) {}
+
+      // Si ya hay datos guardados en el dispositivo, los muestra de inmediato sin esperar red
+      if (localParsed) {
+        currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, localParsed);
+        isConfigLoaded = true;
+        populateAdminFields();
+        $("#last-sync-badge").text(`✓ Tus modificaciones están cargadas (${localParsed.updatedAt ? new Date(localParsed.updatedAt).toLocaleTimeString() : "Local"})`);
+      }
+
+      // Consulta Firebase enviando Token Auth + timestamp anti-caché (?t=...)
+      try {
+        const token = user ? await user.getIdToken() : "";
+        const nocacheUrl = `${firebaseConfig.databaseURL}/store_config.json?t=${Date.now()}${token ? `&auth=${token}` : ""}`;
+        const res = await fetch(nocacheUrl, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === "object") {
+            cloudParsed = data;
+          }
+        }
+      } catch (err) {
+        console.warn("Error leyendo REST:", err);
+      }
+
+      // Decide cuál versión es más reciente (la del teléfono o la de Firebase) para jamás pisar tus cambios con datos viejos
+      if (cloudParsed && localParsed) {
+        const cloudTime = cloudParsed.updatedAt ? new Date(cloudParsed.updatedAt).getTime() : 0;
+        const localTime = localParsed.updatedAt ? new Date(localParsed.updatedAt).getTime() : 0;
+
+        if (localTime > cloudTime) {
+          // Tu teléfono tiene cambios más recientes que aún no subieron a Firebase: los conserva y los sube en segundo plano
+          currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, localParsed);
+          pushConfigToCloudSilently(currentConfig, user);
+        } else {
+          currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, cloudParsed);
+          try {
+            localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
+          } catch (e) {}
+        }
+      } else if (cloudParsed) {
+        currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, cloudParsed);
+        try {
+          localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
+        } catch (e) {}
+      } else if (!localParsed) {
+        currentConfig = _.cloneDeep(FALLBACK_BASE_CONFIG);
+      }
+
+      isConfigLoaded = true;
+      populateAdminFields();
+      if (currentConfig.updatedAt) {
+        $("#last-sync-badge").text(`✓ Última modificación cargada: ${new Date(currentConfig.updatedAt).toLocaleString()}`);
+      }
+    }
+
+    async function pushConfigToCloudSilently(cfg, user) {
+      try {
+        const token = user ? await user.getIdToken() : "";
+        const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
+        await fetch(restUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cfg),
+          cache: "no-store"
+        });
+      } catch (e) {}
+    }
+
+    function populateAdminFields() {
+      $("#cfg-currency-code").val(currentConfig.currencyCode || "USD");
+      $("#cfg-exchange-rate").val(currentConfig.exchangeRateBs !== undefined ? currentConfig.exchangeRateBs : 45.50);
+      $("#cfg-euro-mult").val(currentConfig.euroMultiplier || 1.09);
+      $("#cfg-autosync-dolarapi").prop("checked", currentConfig.autoSyncDolarApi === true);
+
+      const pre = currentConfig.preloader || {};
+      $("#cfg-preloader-enabled").val(pre.enabled === false ? "false" : "true");
+      $("#cfg-preloader-sub").val(pre.subtitle !== undefined ? pre.subtitle : "BIENVENIDA A MI ESTUDIO");
+      $("#cfg-preloader-duration").val(pre.durationSeconds || 2.2);
+
+      $("#cfg-business-mode").val(currentConfig.businessMode || "services");
+      $("#cfg-brand-name").val(currentConfig.brandName !== undefined ? currentConfig.brandName : "kalon nails");
+      $("#cfg-brand-spaced").val(currentConfig.brandSpaced !== undefined ? currentConfig.brandSpaced : "K A L O N");
+      $("#cfg-whatsapp").val(currentConfig.whatsappNumber || "584120000000");
+      $("#cfg-referral-discount").val(currentConfig.referralDiscountPercent !== undefined ? currentConfig.referralDiscountPercent : 10);
+
+      if (currentConfig.theme && currentConfig.theme.accentColor) {
+        $("#cfg-theme-accent").val(currentConfig.theme.accentColor);
+      }
+
+      const soc = currentConfig.socials || {};
+      $("#cfg-soc-instagram").val(soc.instagram || "");
+      $("#cfg-soc-tiktok").val(soc.tiktok || "");
+      $("#cfg-soc-facebook").val(soc.facebook || "");
+      $("#cfg-soc-youtube").val(soc.youtube || "");
+
+      const pay = currentConfig.paymentMethodsInfo || {};
+      $("#cfg-pay-pagomovil").val(pay["Pago Móvil"] || "");
+      $("#cfg-pay-zelle").val(pay["Zelle / Binance"] || "");
+
+      if (currentConfig.location) {
+        $("#cfg-loc-title").val(currentConfig.location.title || "");
+        $("#cfg-loc-address").val(currentConfig.location.address || "");
+        $("#cfg-loc-hours").val(currentConfig.location.hours || "");
+        $("#cfg-loc-phone").val(currentConfig.location.phone || "");
+      }
+
+      if (currentConfig.hero) {
+        $("#cfg-hero-kicker").val(currentConfig.hero.kicker || "");
+        $("#cfg-hero-main").val(currentConfig.hero.titleMain || "");
+        $("#cfg-hero-accent").val(currentConfig.hero.titleAccent || "");
+        $("#cfg-hero-img").val(currentConfig.hero.bgImage || "");
+        $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
+      }
+
+      const lbImg = (currentConfig.lookbook && currentConfig.lookbook.image) || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80";
+      $("#cfg-lookbook-img").val(lbImg);
+      $("#admin-lookbook-preview").attr("src", lbImg);
+      renderHotspotsEditor((currentConfig.lookbook && currentConfig.lookbook.hotspots) || []);
+
+      if (currentConfig.model3D) {
+        $("#cfg-3d-url").val(currentConfig.model3D.glbUrl || "./unas-demo.glb");
+        $("#cfg-3d-price").val(currentConfig.model3D.systemPrice || 25);
+        $("#cfg-3d-sys-title").val(currentConfig.model3D.systemTitle || "");
+        $("#cfg-3d-title").val(currentConfig.model3D.title || "");
+        renderTechSpecsEditor(currentConfig.model3D.techSpecs || []);
+      }
+
+      renderReelsEditor(currentConfig.promoReels || []);
+      renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
+      renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
+    }
+
+    // 4. CITAS Y PEDIDOS CON GPS
     function listenBookingsRealtime() {
       dbFirestore.collection("citas_agendadas").orderBy("createdAt", "desc").onSnapshot((snap) => {
         const $box = $("#bookings-list-container");
@@ -922,103 +1111,6 @@
         dbFirestore.collection("citas_agendadas").doc($(this).data("id")).delete();
       }
     });
-
-    // 4. CARGAR CONFIGURACIÓN (DESDE REST + SDK + LOCALSTORAGE)
-    async function loadStoreConfigForAdmin() {
-      // Primero lee respaldo inmediato de localStorage si existe
-      try {
-        const localBackup = localStorage.getItem("kalon_cloud_mirror_config");
-        if (localBackup) {
-          currentConfig = JSON.parse(localBackup);
-          populateAdminFields();
-        }
-      } catch (e) {}
-
-      // Luego consulta el servidor de Firebase por HTTP REST para no depender de WebSocket lento
-      try {
-        const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data) {
-            currentConfig = data;
-            localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
-            populateAdminFields();
-            return;
-          }
-        }
-      } catch (err) {}
-
-      dbRealtime.ref("store_config").once("value", (snap) => {
-        if (snap.val()) {
-          currentConfig = snap.val();
-          populateAdminFields();
-        }
-      });
-    }
-
-    function populateAdminFields() {
-      $("#cfg-currency-code").val(currentConfig.currencyCode || "USD");
-      $("#cfg-exchange-rate").val(currentConfig.exchangeRateBs || 45.50);
-      $("#cfg-euro-mult").val(currentConfig.euroMultiplier || 1.09);
-      $("#cfg-autosync-dolarapi").prop("checked", currentConfig.autoSyncDolarApi === true);
-
-      const pre = currentConfig.preloader || {};
-      $("#cfg-preloader-enabled").val(pre.enabled === false ? "false" : "true");
-      $("#cfg-preloader-sub").val(pre.subtitle || "ESTUDIO DE UÑAS & ARTE 3D");
-      $("#cfg-preloader-duration").val(pre.durationSeconds || 2.2);
-
-      $("#cfg-business-mode").val(currentConfig.businessMode || "services");
-      $("#cfg-brand-name").val(currentConfig.brandName || "kalon nails");
-      $("#cfg-brand-spaced").val(currentConfig.brandSpaced || "K A L O N");
-      $("#cfg-whatsapp").val(currentConfig.whatsappNumber || "584120000000");
-      $("#cfg-referral-discount").val(currentConfig.referralDiscountPercent || 10);
-
-      if (currentConfig.theme && currentConfig.theme.accentColor) {
-        $("#cfg-theme-accent").val(currentConfig.theme.accentColor);
-      }
-
-      const soc = currentConfig.socials || {};
-      $("#cfg-soc-instagram").val(soc.instagram || "");
-      $("#cfg-soc-tiktok").val(soc.tiktok || "");
-      $("#cfg-soc-facebook").val(soc.facebook || "");
-      $("#cfg-soc-youtube").val(soc.youtube || "");
-
-      const pay = currentConfig.paymentMethodsInfo || {};
-      $("#cfg-pay-pagomovil").val(pay["Pago Móvil"] || "");
-      $("#cfg-pay-zelle").val(pay["Zelle / Binance"] || "");
-
-      if (currentConfig.location) {
-        $("#cfg-loc-title").val(currentConfig.location.title || "");
-        $("#cfg-loc-address").val(currentConfig.location.address || "");
-        $("#cfg-loc-hours").val(currentConfig.location.hours || "");
-        $("#cfg-loc-phone").val(currentConfig.location.phone || "");
-      }
-
-      if (currentConfig.hero) {
-        $("#cfg-hero-kicker").val(currentConfig.hero.kicker || "");
-        $("#cfg-hero-main").val(currentConfig.hero.titleMain || "");
-        $("#cfg-hero-accent").val(currentConfig.hero.titleAccent || "");
-        $("#cfg-hero-img").val(currentConfig.hero.bgImage || "");
-        $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
-      }
-
-      const lbImg = (currentConfig.lookbook && currentConfig.lookbook.image) || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80";
-      $("#cfg-lookbook-img").val(lbImg);
-      $("#admin-lookbook-preview").attr("src", lbImg);
-      renderHotspotsEditor((currentConfig.lookbook && currentConfig.lookbook.hotspots) || []);
-
-      if (currentConfig.model3D) {
-        $("#cfg-3d-url").val(currentConfig.model3D.glbUrl || "./unas-demo.glb");
-        $("#cfg-3d-price").val(currentConfig.model3D.systemPrice || 25);
-        $("#cfg-3d-sys-title").val(currentConfig.model3D.systemTitle || "");
-        $("#cfg-3d-title").val(currentConfig.model3D.title || "");
-        renderTechSpecsEditor(currentConfig.model3D.techSpecs || []);
-      }
-
-      renderReelsEditor(currentConfig.promoReels || []);
-      renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
-      renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
-    }
 
     // 5. EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS Y DESPIECE 3D
     $("#cfg-lookbook-img").on("input", function () {
@@ -1260,7 +1352,7 @@
       `);
     });
 
-    // 7. GUARDADO HÍBRIDO INFALIBLE (REST API + SDK + ESPEJO LOCAL - SOLUCIÓN VIDEO 2)
+    // 7. GUARDADO CON SELLO DE TIEMPO Y PRIORIDAD ABSOLUTA
     $("#save-all-cloud-btn").on("click", async function () {
       const $btn = $(this);
       const originalHtml = $btn.html();
@@ -1275,7 +1367,7 @@
 
       currentConfig.preloader = {
         enabled: $("#cfg-preloader-enabled").val() === "true",
-        subtitle: $("#cfg-preloader-sub").val().trim() || "BIENVENIDA A MI ESTUDIO",
+        subtitle: $("#cfg-preloader-sub").val().trim(),
         durationSeconds: Number($("#cfg-preloader-duration").val() || 2.2)
       };
 
@@ -1303,25 +1395,21 @@
         "Zelle / Binance": $("#cfg-pay-zelle").val().trim()
       });
 
-      if ($("#cfg-loc-title").val().trim()) {
-        currentConfig.location = {
-          title: $("#cfg-loc-title").val().trim(),
-          city: "ATENCIÓN EN SEDE Y A DOMICILIO",
-          address: $("#cfg-loc-address").val().trim(),
-          hours: $("#cfg-loc-hours").val().trim(),
-          phone: $("#cfg-loc-phone").val().trim()
-        };
-      }
+      currentConfig.location = {
+        title: $("#cfg-loc-title").val().trim(),
+        city: "ATENCIÓN EN SEDE Y A DOMICILIO",
+        address: $("#cfg-loc-address").val().trim(),
+        hours: $("#cfg-loc-hours").val().trim(),
+        phone: $("#cfg-loc-phone").val().trim()
+      };
 
-      if ($("#cfg-hero-main").val().trim()) {
-        currentConfig.hero = Object.assign({}, currentConfig.hero, {
-          kicker: $("#cfg-hero-kicker").val().trim(),
-          titleMain: $("#cfg-hero-main").val().trim(),
-          titleAccent: $("#cfg-hero-accent").val().trim(),
-          bgImage: $("#cfg-hero-img").val().trim(),
-          lead: $("#cfg-hero-lead").val().trim()
-        });
-      }
+      currentConfig.hero = Object.assign({}, currentConfig.hero, {
+        kicker: $("#cfg-hero-kicker").val().trim(),
+        titleMain: $("#cfg-hero-main").val().trim(),
+        titleAccent: $("#cfg-hero-accent").val().trim(),
+        bgImage: $("#cfg-hero-img").val().trim(),
+        lead: $("#cfg-hero-lead").val().trim()
+      });
 
       if ($("#hotspots-editor-list .hs-edit-row").length > 0) {
         const updatedHotspots = [];
@@ -1413,43 +1501,40 @@
 
       currentConfig.updatedAt = new Date().toISOString();
 
-      // PASO A: Guarda instantáneamente en el espejo local del navegador (para que la tienda lo vea en 0ms)
+      // Guarda primero en localStorage con la marca de tiempo nueva
       try {
         localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
       } catch (e) {}
 
-      // PASO B: Guarda en Firebase Realtime Database vía HTTPS REST directa con tu Token Auth
       let cloudSuccess = false;
       try {
         const currentUser = auth.currentUser;
-        const token = currentUser ? await currentUser.getIdToken() : "";
+        const token = currentUser ? await currentUser.getIdToken(true) : "";
         const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
 
         const response = await fetch(restUrl, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(currentConfig)
+          body: JSON.stringify(currentConfig),
+          cache: "no-store"
         });
 
         if (response.ok) {
           cloudSuccess = true;
-        } else {
-          const errJson = await response.json().catch(() => ({}));
-          console.warn("Respuesta REST Firebase:", errJson);
         }
       } catch (restErr) {
         console.warn("Error REST:", restErr);
       }
 
-      // PASO C: También dispara la actualización del SDK por si hay clientes con WebSocket abierto
       dbRealtime.ref("store_config").set(currentConfig).catch(() => {});
 
       $btn.prop("disabled", false).html(originalHtml);
+      $("#last-sync-badge").text(`✓ Guardado a las ${new Date(currentConfig.updatedAt).toLocaleTimeString()}`);
 
       if (cloudSuccess) {
-        showToast("✓ ¡CAMBIOS GUARDADOS Y PUBLICADOS EN VIVO!");
+        showToast("✓ ¡CAMBIOS GUARDADOS Y SINCRONIZADOS EN VIVO!");
       } else {
-        showToast("✓ Guardado en este dispositivo (Publica las Reglas en tu consola Firebase para sincronizar la nube)", false);
+        showToast("✓ Cambios guardados y fijados en este dispositivo");
       }
     });
 
