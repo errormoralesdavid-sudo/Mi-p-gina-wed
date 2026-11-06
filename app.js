@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (LECTURA HÍBRIDA INSTANTÁNEA)
+ * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (CON PROTECCIÓN ANTI-RESET)
  * ============================================================================
  */
 
@@ -38,7 +38,7 @@ try {
 }
 
 /* ============================================================================
-   2. CONFIGURACIÓN MAESTRA ESCALABLE
+   2. CONFIGURACIÓN BASE (SOLO SE USA SI AÚN NO HAY CAMBIOS GUARDADOS)
    ============================================================================ */
 let STORE_CONFIG = {
   businessMode: "services",
@@ -47,7 +47,7 @@ let STORE_CONFIG = {
   
   currencyCode: "USD",
   currencySymbol: "$",
-  autoSyncDolarApi: true,
+  autoSyncDolarApi: false,
   euroMultiplier: 1.09,
   exchangeRateBs: 45.50,
   
@@ -350,32 +350,42 @@ let STORE_CONFIG = {
 };
 
 /* ============================================================================
-   3. FUSIÓN DE DATOS EN NUBE Y SINCRONIZACIÓN CON DOLARAPI
+   3. PROTECCIÓN DE SELLO DE TIEMPO (NUNCA REEMPLAZA CAMBIOS NUEVOS POR VIEJOS)
    ============================================================================ */
-function applyCloudConfigObject(cloudData) {
-  if (!cloudData || typeof cloudData !== "object") return;
-  STORE_CONFIG = _.merge({}, STORE_CONFIG, cloudData);
+function applyCloudConfigObject(incomingData) {
+  if (!incomingData || typeof incomingData !== "object") return false;
 
-  if (Array.isArray(cloudData.setsProducts)) STORE_CONFIG.setsProducts = cloudData.setsProducts;
-  if (Array.isArray(cloudData.arrivalsProducts)) STORE_CONFIG.arrivalsProducts = cloudData.arrivalsProducts;
-  if (Array.isArray(cloudData.promoReels)) STORE_CONFIG.promoReels = cloudData.promoReels;
-  if (cloudData.lookbook && Array.isArray(cloudData.lookbook.hotspots)) {
-    STORE_CONFIG.lookbook.hotspots = cloudData.lookbook.hotspots;
+  const currentTs = STORE_CONFIG.updatedAt ? new Date(STORE_CONFIG.updatedAt).getTime() : 0;
+  const incomingTs = incomingData.updatedAt ? new Date(incomingData.updatedAt).getTime() : 0;
+
+  // Si la memoria ya tiene una modificación más reciente que lo que viene llegando, no permite que se pise
+  if (currentTs > 0 && incomingTs > 0 && incomingTs < currentTs) {
+    return false;
   }
-  if (cloudData.model3D && Array.isArray(cloudData.model3D.techSpecs)) {
-    STORE_CONFIG.model3D.techSpecs = cloudData.model3D.techSpecs;
+
+  STORE_CONFIG = _.merge({}, STORE_CONFIG, incomingData);
+
+  if (Array.isArray(incomingData.setsProducts)) STORE_CONFIG.setsProducts = incomingData.setsProducts;
+  if (Array.isArray(incomingData.arrivalsProducts)) STORE_CONFIG.arrivalsProducts = incomingData.arrivalsProducts;
+  if (Array.isArray(incomingData.promoReels)) STORE_CONFIG.promoReels = incomingData.promoReels;
+  if (incomingData.lookbook && Array.isArray(incomingData.lookbook.hotspots)) {
+    STORE_CONFIG.lookbook.hotspots = incomingData.lookbook.hotspots;
+  }
+  if (incomingData.model3D && Array.isArray(incomingData.model3D.techSpecs)) {
+    STORE_CONFIG.model3D.techSpecs = incomingData.model3D.techSpecs;
   }
 
   try {
     localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(STORE_CONFIG));
   } catch (e) {}
+
+  return true;
 }
 
 async function syncOfficialExchangeRate() {
-  // Solo sincroniza con DolarApi si el administrador dejó activado el modo automático
   if (STORE_CONFIG.autoSyncDolarApi !== true) return;
   try {
-    const response = await fetch("https://ve.dolarapi.com/v1/dolares/oficial");
+    const response = await fetch("https://ve.dolarapi.com/v1/dolares/oficial", { cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json();
     if (data && data.promedio && Number(data.promedio) > 0) {
@@ -758,10 +768,9 @@ function initVipAuthListener() {
 }
 
 /* ============================================================================
-   9. LECTURA INICIAL HÍBRIDA (ESPEJO LOCAL + REST + SDK) ANTES DEL PRELOADER
+   9. LECTURA INICIAL HÍBRIDA SIN AUTO-RESET (RESPETA SIEMPRE TUS CAMBIOS)
    ============================================================================ */
 async function loadInitialConfigBeforePreloader() {
-  // 1. Lee al instante el espejo local si acabas de guardar cambios desde admin.html
   try {
     const mirror = localStorage.getItem("kalon_cloud_mirror_config");
     if (mirror) {
@@ -769,18 +778,17 @@ async function loadInitialConfigBeforePreloader() {
     }
   } catch (e) {}
 
-  // 2. Consulta por HTTP REST (con timeout rápido de 1.2s) para traer cambios frescos de Firebase
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 1200);
-    const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json`, {
+    const timer = setTimeout(() => controller.abort(), 1400);
+    const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json?t=${Date.now()}`, {
       signal: controller.signal,
       cache: "no-store"
     });
     clearTimeout(timer);
     if (res.ok) {
       const restData = await res.json();
-      if (restData) {
+      if (restData && typeof restData === "object") {
         applyCloudConfigObject(restData);
       }
     }
@@ -792,18 +800,20 @@ function syncStoreWithFirebase() {
     const configRef = dbRealtime.ref("store_config");
     configRef.on("value", (snapshot) => {
       const cloudData = snapshot.val();
-      if (cloudData) {
-        applyCloudConfigObject(cloudData);
-        applyDynamicTheme();
-        initStorefrontContent();
-        initD3LookbookHotspots();
-        syncOfficialExchangeRate();
-        renderCartUI();
+      // Solo actualiza si existen datos en la nube y su fecha es igual o más nueva que la local
+      if (cloudData && typeof cloudData === "object") {
+        const updated = applyCloudConfigObject(cloudData);
+        if (updated) {
+          applyDynamicTheme();
+          initStorefrontContent();
+          initD3LookbookHotspots();
+          syncOfficialExchangeRate();
+          renderCartUI();
+        }
       }
     });
   }
 
-  // También sincroniza al instante si tienes admin.html abierto en otra pestaña
   window.addEventListener("storage", function (e) {
     if (e.key === "kalon_cloud_mirror_config" && e.newValue) {
       try {
@@ -1428,8 +1438,6 @@ function mountReactCustomKitBuilder() {
    ============================================================================ */
 $(document).ready(async function () {
   loadCartFromStorage();
-
-  // Primero carga los cambios guardados en el espejo o en REST antes de lanzar la animación
   await loadInitialConfigBeforePreloader();
 
   initStorefrontContent();
