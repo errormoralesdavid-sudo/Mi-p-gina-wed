@@ -467,7 +467,7 @@
 
     <nav class="admin-tabs">
       <button type="button" class="tab-btn is-active" data-tab="tab-ajustes">
-        <i class="ri-equalizer-line"></i> 1. Moneda BCV ($/€), Portada & Bioseguridad
+        <i class="ri-equalizer-line"></i> 1. Moneda BCV ($/€), Portada & Redes
       </button>
       <button type="button" class="tab-btn" data-tab="tab-citas">
         <i class="ri-calendar-check-line"></i> 2. Citas & Pedidos GPS
@@ -479,14 +479,14 @@
         <i class="ri-movie-line"></i> 4. Videos Cortos (Reels)
       </button>
       <button type="button" class="tab-btn" data-tab="tab-servicios">
-        <i class="ri-price-tag-3-line"></i> 5. Especialidades, Catálogo & Precios
+        <i class="ri-price-tag-3-line"></i> 5. Catálogo & Precios
       </button>
       <button type="button" class="tab-btn" data-tab="tab-vip">
         <i class="ri-vip-crown-line"></i> 6. Club VIP, Admins & Reseñas
       </button>
     </nav>
 
-    <!-- PESTAÑA 1: MONEDA BCV EN TIEMPO REAL, PORTADA, BIOSEGURIDAD, PRELOADER, REDES Y PAGOS -->
+    <!-- PESTAÑA 1: MONEDA BCV EN TIEMPO REAL, PORTADA, PRELOADER, REDES Y PAGOS -->
     <section class="tab-panel is-active" id="tab-ajustes">
       
       <div class="panel-card">
@@ -549,31 +549,6 @@
         <div class="form-group">
           <label>Descripción de Portada</label>
           <textarea id="cfg-hero-lead" rows="2" class="admin-textarea"></textarea>
-        </div>
-      </div>
-
-      <!-- SECCIÓN DE BIOSEGURIDAD Y GARANTÍA CON VISTA PREVIA DE IMAGEN EN VIVO -->
-      <div class="panel-card">
-        <h3>Sección de Bioseguridad, Salud Ungueal e Imagen de Garantía</h3>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Subtítulo Superior (Kicker)</label>
-            <input type="text" id="cfg-care-kicker" class="admin-input" placeholder="BIOSEGURIDAD Y SALUD UNGUEAL">
-          </div>
-          <div class="form-group">
-            <label>Título de Bioseguridad</label>
-            <input type="text" id="cfg-care-title" class="admin-input" placeholder="Tus uñas naturales sanas y fuertes.">
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>URL de Foto de Bioseguridad / Cuidado</label>
-            <input type="text" id="cfg-care-img" class="admin-input has-img-preview" placeholder="https://files.catbox.moe/...">
-          </div>
-          <div class="form-group">
-            <label>Descripción de Bioseguridad y Materiales</label>
-            <textarea id="cfg-care-desc" rows="3" class="admin-textarea"></textarea>
-          </div>
         </div>
       </div>
 
@@ -767,21 +742,8 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 5: TARJETAS DE ESPECIALIDADES, DESTACADOS Y CATÁLOGO -->
+    <!-- PESTAÑA 5: CATÁLOGO DE SERVICIOS / PRODUCTOS Y PRECIOS -->
     <section class="tab-panel" id="tab-servicios">
-      
-      <!-- TARJETAS GRANDES DE ESPECIALIDADES / CATEGORÍAS CON VISTA PREVIA EN VIVO -->
-      <div class="panel-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-          <div>
-            <h3 style="margin:0; border:none;">Tarjetas Grandes de Especialidades (Categorías Visuales)</h3>
-            <p style="font-size:0.78rem; color:var(--text-muted);">Cambia las fotos y nombres de las tarjetas grandes (Ej: Sistemas en Polygel, Soft Gel & Kapping, Manicura Rusa).</p>
-          </div>
-          <button type="button" class="btn-outline" id="add-new-category-btn">+ Agregar Especialidad</button>
-        </div>
-        <div id="categories-editor-container"></div>
-      </div>
-
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
           <h3 style="margin:0; border:none;">Destacados / Promociones (Carrusel Principal)</h3>
@@ -860,10 +822,9 @@
 
     /* ========================================================================
        MOTOR UNIVERSAL DE VISTA PREVIA EN VIVO PARA TODAS LAS IMÁGENES DEL PANEL
-       Incluye: Portada, Bioseguridad, Escaparate D3, Especialidades, Reels y Catálogo
        ======================================================================== */
     function attachUniversalImagePreviews() {
-      $(".has-img-preview, .srv-img, .reel-poster, .cat-img").each(function () {
+      $(".has-img-preview, .srv-img, .reel-poster").each(function () {
         const $input = $(this);
         let $box = $input.next(".universal-img-preview-box");
 
@@ -905,7 +866,8 @@
       });
     }
 
-    $(document).on("input change", ".has-img-preview, .srv-img, .reel-poster, .cat-img", function () {
+    // Escucha en vivo cualquier cambio en cualquier casilla de imagen del panel
+    $(document).on("input change", ".has-img-preview, .srv-img, .reel-poster", function () {
       const $input = $(this);
       attachUniversalImagePreviews();
       const url = ($input.val() || "").trim();
@@ -1046,38 +1008,6 @@
           { icon: "ri-e-bike-2-line", text: "Estudio en Panorama + Servicio a Domicilio" }
         ]
       },
-      carePromo: {
-        kicker: "BIOSEGURIDAD Y SALUD UNGUEAL",
-        title: "Tus uñas naturales sanas y fuertes.",
-        desc: "Usamos preparadores libres de ácidos agresivos, limas personalizadas y esterilización grado médico en estudio y a domicilio.",
-        image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80",
-        benefits: [
-          { icon: "ri-shield-star-line", text: "Esterilización en cada cita" },
-          { icon: "ri-award-line", text: "Polygel y geles certificados" },
-          { icon: "ri-e-bike-2-line", text: "Maletín completo a domicilio" },
-          { icon: "ri-sparkling-line", text: "Brillo intacto por +21 días" }
-        ]
-      },
-      categories: [
-        {
-          id: "cat-polygel",
-          name: "Sistemas en Polygel",
-          image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=80",
-          filterTarget: "POLYGEL"
-        },
-        {
-          id: "cat-softgel",
-          name: "Soft Gel & Kapping",
-          image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=700&q=80",
-          filterTarget: "SOFT GEL"
-        },
-        {
-          id: "cat-rusa",
-          name: "Manicura Rusa & Spa",
-          image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=700&q=80",
-          filterTarget: "MANICURA RUSA"
-        }
-      ],
       lookbook: {
         image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
         hotspots: [
@@ -1234,11 +1164,6 @@
         });
         const winner = candidates[0];
         currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, winner.data);
-        if (Array.isArray(winner.data.categories)) currentConfig.categories = winner.data.categories;
-        if (Array.isArray(winner.data.setsProducts)) currentConfig.setsProducts = winner.data.setsProducts;
-        if (Array.isArray(winner.data.arrivalsProducts)) currentConfig.arrivalsProducts = winner.data.arrivalsProducts;
-        if (Array.isArray(winner.data.promoReels)) currentConfig.promoReels = winner.data.promoReels;
-
         try {
           localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
         } catch (e) {}
@@ -1301,12 +1226,6 @@
         $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
       }
 
-      const care = currentConfig.carePromo || FALLBACK_BASE_CONFIG.carePromo;
-      $("#cfg-care-kicker").val(care.kicker || "BIOSEGURIDAD Y SALUD UNGUEAL");
-      $("#cfg-care-title").val(care.title || "Tus uñas naturales sanas y fuertes.");
-      $("#cfg-care-img").val(care.image || "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80");
-      $("#cfg-care-desc").val(care.desc || "");
-
       const lbImg = (currentConfig.lookbook && currentConfig.lookbook.image) || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80";
       $("#cfg-lookbook-img").val(lbImg);
       $("#admin-lookbook-preview").attr("src", lbImg);
@@ -1320,11 +1239,11 @@
         renderTechSpecsEditor(currentConfig.model3D.techSpecs || []);
       }
 
-      renderCategoriesEditor(currentConfig.categories || FALLBACK_BASE_CONFIG.categories);
       renderReelsEditor(currentConfig.promoReels || []);
       renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
       renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
 
+      // Activa las vistas previas en vivo en todas las imágenes cargadas
       attachUniversalImagePreviews();
     }
 
@@ -1486,47 +1405,7 @@
       appendTechSpecRow("NUEVA CAPA TÉCNICA", "Nombre del Material", "Descripción de calidad y durabilidad.", "20deg 65deg 70%")
     );
 
-    // 6. EDITOR DE ESPECIALIDADES, VIDEOS REELS Y CATÁLOGO (TODOS CON VISTA PREVIA EN VIVO)
-    function renderCategoriesEditor(cats) {
-      const $box = $("#categories-editor-container");
-      $box.empty();
-      cats.forEach((c) => appendCategoryRow(c.name, c.image, c.filterTarget));
-      attachUniversalImagePreviews();
-    }
-
-    function appendCategoryRow(name, image, filterTarget) {
-      $("#categories-editor-container").append(`
-        <div class="service-edit-item cat-edit-row">
-          <div class="grid-3">
-            <div class="form-group">
-              <label>Título de la Especialidad</label>
-              <input type="text" class="admin-input cat-name" value="${sanitize(name)}">
-            </div>
-            <div class="form-group">
-              <label>Filtro del Catálogo al Tocar</label>
-              <input type="text" class="admin-input cat-filter" value="${sanitize(filterTarget || "POLYGEL")}">
-            </div>
-            <div class="form-group">
-              <label>URL de Imagen de la Tarjeta</label>
-              <input type="text" class="admin-input cat-img has-img-preview" value="${sanitize(image)}">
-            </div>
-          </div>
-          <div style="text-align:right;">
-            <button type="button" class="btn-danger remove-srv-row">Quitar Especialidad</button>
-          </div>
-        </div>
-      `);
-      attachUniversalImagePreviews();
-    }
-
-    $("#add-new-category-btn").on("click", () =>
-      appendCategoryRow(
-        "Nueva Especialidad",
-        "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=80",
-        "POLYGEL"
-      )
-    );
-
+    // 6. EDITOR DE VIDEOS CORTOS / REELS Y CATÁLOGO (CON PREVIEW EN CADA IMAGEN)
     function renderReelsEditor(reels) {
       const $box = $("#reels-editor-container");
       $box.empty();
@@ -1737,29 +1616,6 @@
           badges: (currentConfig.hero && currentConfig.hero.badges) || FALLBACK_BASE_CONFIG.hero.badges
         };
 
-        // Guardar Bioseguridad / Cuidado
-        currentConfig.carePromo = {
-          kicker: ($("#cfg-care-kicker").val() || "").trim() || "BIOSEGURIDAD Y SALUD UNGUEAL",
-          title: ($("#cfg-care-title").val() || "").trim() || "Tus uñas naturales sanas y fuertes.",
-          desc: ($("#cfg-care-desc").val() || "").trim(),
-          image: ($("#cfg-care-img").val() || "").trim() || "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80",
-          benefits: (currentConfig.carePromo && currentConfig.carePromo.benefits) || FALLBACK_BASE_CONFIG.carePromo.benefits
-        };
-
-        // Guardar Especialidades (Tarjetas Grandes de Categorías)
-        if ($("#categories-editor-container .cat-edit-row").length > 0) {
-          const updatedCats = [];
-          $("#categories-editor-container .cat-edit-row").each(function (i) {
-            updatedCats.push({
-              id: `cat-${i}-${Date.now()}`,
-              name: ($(this).find(".cat-name").val() || "").trim(),
-              filterTarget: (($(this).find(".cat-filter").val() || "POLYGEL").trim()).toUpperCase(),
-              image: ($(this).find(".cat-img").val() || "").trim()
-            });
-          });
-          currentConfig.categories = updatedCats;
-        }
-
         if ($("#hotspots-editor-list .hs-edit-row").length > 0) {
           const updatedHotspots = [];
           $("#hotspots-editor-list .hs-edit-row").each(function (i) {
@@ -1903,7 +1759,7 @@
 
         attachUniversalImagePreviews();
         $("#last-sync-badge").text(`✓ Publicado a las ${new Date(safeConfig.updatedAt).toLocaleTimeString()}`);
-        showToast("✓ ¡TODAS LAS IMÁGENES Y CAMBIOS PUBLICADOS EN VIVO!");
+        showToast("✓ ¡IMÁGENES Y CAMBIOS PUBLICADOS EN VIVO!");
       } catch (err) {
         console.error("Detalle técnico:", err);
         showToast("✓ Guardado aplicado en memoria local");
