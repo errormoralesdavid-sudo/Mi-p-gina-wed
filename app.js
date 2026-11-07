@@ -1,10 +1,22 @@
 /**
  * ============================================================================
- * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (BLINDADO CONTRA DATOS VIEJOS)
+ * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (100% ÍNTEGRO + ANTI-BLOQUEO)
  * ============================================================================
  */
 
 "use strict";
+
+// SEGURO ANTI-PANTALLA NEGRA: Garantiza que el preloader siempre se quite aunque falle la red
+setTimeout(function () {
+  var pre = document.getElementById("preloader");
+  if (pre) {
+    pre.style.transition = "opacity 0.4s ease";
+    pre.style.opacity = "0";
+    setTimeout(function () {
+      pre.style.display = "none";
+    }, 450);
+  }
+}, 3500);
 
 /* ============================================================================
    1. CONEXIÓN OFICIAL A TU PROYECTO FIREBASE (mipaginawed-519fd)
@@ -27,18 +39,20 @@ let dbFirestore = null;
 let authFirebase = null;
 
 try {
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+  if (typeof firebase !== "undefined") {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    dbRealtime = firebase.database();
+    dbFirestore = firebase.firestore();
+    authFirebase = firebase.auth();
   }
-  dbRealtime = firebase.database();
-  dbFirestore = firebase.firestore();
-  authFirebase = firebase.auth();
 } catch (err) {
   console.warn("Modo local de respaldo activo:", err);
 }
 
 /* ============================================================================
-   2. CONFIGURACIÓN BASE (SOLO SE USA SI NO EXISTEN CAMBIOS CON FECHA RECIENTE)
+   2. CONFIGURACIÓN BASE
    ============================================================================ */
 let STORE_CONFIG = {
   businessMode: "services",
@@ -122,7 +136,7 @@ let STORE_CONFIG = {
   model3D: {
     subtitle: "INTERACCIÓN 360° • DESPIECE TÉCNICO",
     title: "Escultura & Materiales en 3D",
-    desc: "Gira el modelo con tu dedo o presiona 'Desarmar Capas' para ver cada material por separado y vuelve a centrarlo cuando quieras.",
+    desc: "Gira las manos con tu dedo o presiona 'Desarmar Capas' para ver cada material por separado y vuelve a centrarlo cuando quieras.",
     glbUrl: "./nail-polish.glb",
     systemPrice: 25,
     systemTitle: "SISTEMA ESCULPIDO AZUL COBALTO 3D (POLYGEL)",
@@ -446,549 +460,6 @@ async function actualizarPantallaTasas() {
 }
 
 /* ============================================================================
-   4. FUSIÓN BLINDADA POR SELLO DE TIEMPO (BLOQUEA DATOS VIEJOS SIN updatedAt)
-   ============================================================================ */
-function applyCloudConfigObject(incomingData) {
-  if (!incomingData || typeof incomingData !== "object") return false;
-
-  const currentTs = STORE_CONFIG.updatedAt ? new Date(STORE_CONFIG.updatedAt).getTime() : 0;
-  const incomingTs = incomingData.updatedAt ? new Date(incomingData.updatedAt).getTime() : 0;
-
-  // BLINDAJE CLAVE: Si ya tenemos un cambio con fecha (updatedAt), jamás permitimos que
-  // un objeto viejo sin fecha (incomingTs === 0) o con fecha más antigua lo pise.
-  if (currentTs > 0 && (incomingTs === 0 || incomingTs < currentTs)) {
-    return false;
-  }
-
-  STORE_CONFIG = _.merge({}, STORE_CONFIG, incomingData);
-
-  if (Array.isArray(incomingData.setsProducts)) STORE_CONFIG.setsProducts = incomingData.setsProducts;
-  if (Array.isArray(incomingData.categories)) STORE_CONFIG.categories = incomingData.categories;
-  if (Array.isArray(incomingData.arrivalsProducts)) STORE_CONFIG.arrivalsProducts = incomingData.arrivalsProducts;
-  if (Array.isArray(incomingData.promoReels)) STORE_CONFIG.promoReels = incomingData.promoReels;
-  if (incomingData.lookbook && Array.isArray(incomingData.lookbook.hotspots)) {
-    STORE_CONFIG.lookbook.hotspots = incomingData.lookbook.hotspots;
-  }
-  if (incomingData.model3D && Array.isArray(incomingData.model3D.techSpecs)) {
-    STORE_CONFIG.model3D.techSpecs = incomingData.model3D.techSpecs;
-  }
-
-  try {
-    localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(STORE_CONFIG));
-  } catch (e) {}
-
-  return true;
-}
-
-function sanitizeInput(str) {
-  if (typeof str !== "string") return "";
-  return _.escape(str.trim()).replace(/[<>/"'`;()]/g, "");
-}
-
-function getActiveSymbol() {
-  return STORE_CONFIG.currencyCode === "EUR" ? "€" : (STORE_CONFIG.currencySymbol || "$");
-}
-
-function formatCurrency(amount) {
-  return `${getActiveSymbol()} ${Number(amount).toLocaleString("es-VE", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  })}`;
-}
-
-function formatBs(foreignAmount) {
-  const rate = Number(STORE_CONFIG.exchangeRateBs || 0);
-  if (!rate || rate <= 0) return "";
-  const bs = Number(foreignAmount) * rate;
-  return `Bs. ${formatearBs(bs)}`;
-}
-
-function applyDynamicTheme() {
-  if (!STORE_CONFIG.theme) return;
-  const root = document.documentElement;
-  if (STORE_CONFIG.theme.accentColor) {
-    root.style.setProperty("--accent-gold", STORE_CONFIG.theme.accentColor);
-  }
-  if (STORE_CONFIG.theme.bgDark) {
-    root.style.setProperty("--bg-dark", STORE_CONFIG.theme.bgDark);
-  }
-}
-
-/* ============================================================================
-   5. HISTORIAL DEL BOTÓN "ATRÁS" DEL CELULAR / TABLET
-   ============================================================================ */
-let isOverlayOpenInHistory = false;
-
-function pushOverlayHistoryState(overlayName) {
-  if (!isOverlayOpenInHistory) {
-    window.history.pushState({ overlay: overlayName }, "");
-    isOverlayOpenInHistory = true;
-  }
-}
-
-function closeAllOverlaysUI() {
-  $("#side-drawer, #side-cart").removeClass("is-open").attr("aria-hidden", "true");
-  $("#drawer-backdrop").removeClass("is-active");
-  $("#vip-El tercer archivo actualizado es **`app.js`**.
-
-**Qué corrige e incluye esta versión:**
-* **Bloqueo total contra datos viejos sin fecha (`updatedAt`):** Si tu configuración guardada en el teléfono o en Firestore ya tiene fecha reciente (`currentTs > 0`) y Realtime Database devuelve aquel objeto viejo del primer día que no tenía sello `updatedAt` (`incomingTs === 0`), `app.js` lo rechaza de inmediato (`return false;`) para que jamás vuelva a pisar tu foto de portada `catbox.moe`[span_3](start_span)[span_3](end_span)[span_4](start_span)[span_4](end_span) ni tus textos personalizados.
-* **Ruta 3D conectada a `./nail-polish.glb`:** Apunta de fábrica al archivo `nail-polish.glb` que tienes en tu repositorio de GitHub[span_5](start_span)[span_5](end_span).
-* **Sincronización completa de Especialidades (`categories`) y Bioseguridad (`carePromo`):** Actualiza en vivo las tarjetas grandes de categorías[span_6](start_span)[span_6](end_span) y la sección de cuidados cuando las editas desde el panel.
-
-Copia y pega este código completo en tu archivo **`app.js`**:
-
-```javascript
-/**
- * ============================================================================
- * ARCHIVO 3: app.js - MOTOR MAESTRO MULTIRUBRO (BLINDADO CONTRA DATOS VIEJOS)
- * ============================================================================
- */
-
-"use strict";
-
-/* ============================================================================
-   1. CONEXIÓN OFICIAL A TU PROYECTO FIREBASE (mipaginawed-519fd)
-   ============================================================================ */
-const firebaseConfig = {
-  apiKey: "AIzaSyBJ_cmnwIqaE_2WW5tJVOGgebsquSLKBxs",
-  authDomain: "mipaginawed-519fd.firebaseapp.com",
-  databaseURL: "[https://mipaginawed-519fd-default-rtdb.firebaseio.com](https://mipaginawed-519fd-default-rtdb.firebaseio.com)",
-  projectId: "mipaginawed-519fd",
-  storageBucket: "mipaginawed-519fd.firebasestorage.app",
-  messagingSenderId: "1024677348695",
-  appId: "1:1024677348695:web:51d9c155ad9389c6ae2a12",
-  measurementId: "G-968MQ61PQ6"
-};
-
-const MASTER_ADMIN_EMAILS = ["yakuzafadeco@gmail.com"];
-
-let dbRealtime = null;
-let dbFirestore = null;
-let authFirebase = null;
-
-try {
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  dbRealtime = firebase.database();
-  dbFirestore = firebase.firestore();
-  authFirebase = firebase.auth();
-} catch (err) {
-  console.warn("Modo local de respaldo activo:", err);
-}
-
-/* ============================================================================
-   2. CONFIGURACIÓN BASE
-   ============================================================================ */
-let STORE_CONFIG = {
-  businessMode: "services",
-  brandName: "kalon nails",
-  brandSpaced: "K A L O N",
-  
-  currencyCode: "USD",
-  currencySymbol: "$",
-  autoSyncDolarApi: true,
-  euroMultiplier: 1.09,
-  exchangeRateBs: 45.50,
-  
-  preloader: {
-    enabled: true,
-    subtitle: "BIENVENIDA A MI ESTUDIO",
-    durationSeconds: 2.2
-  },
-
-  referralDiscountPercent: 10,
-  whatsappNumber: "584120000000",
-
-  theme: {
-    accentColor: "#c9a86a",
-    bgDark: "#0a0a0a"
-  },
-
-  socials: {
-    instagram: "[https://instagram.com/](https://instagram.com/)",
-    tiktok: "[https://tiktok.com/](https://tiktok.com/)",
-    facebook: "",
-    youtube: "",
-    whatsapp: "[https://wa.me/584120000000](https://wa.me/584120000000)"
-  },
-
-  paymentMethodsInfo: {
-    "Pago Móvil": "Banco: Mercantil (0105) • Tel: 0412-0000000 • CI: V-00.000.000 (Calculado a tasa activa)",
-    "Efectivo Divisas": "Pago en efectivo ($ / €) directamente al momento de tu atención en Panorama o a domicilio.",
-    "Zelle / Binance": "Correo Zelle / Binance Pay: pagos@kalonnails.com (Titular: Kalon Studio)",
-    "Transferencia / Punto": "Coordinamos los datos de transferencia directamente al abrir tu chat de WhatsApp."
-  },
-
-  deliveryZones: [
-    { label: "El Junquito - Sector Panorama / Km 11-13", fee: 3 },
-    { label: "El Junquito - Pueblo / Km 14 al Km 23", fee: 5 },
-    { label: "El Junquito - Km 4 al Km 10 / La Yaguara", fee: 5 },
-    { label: "Caracas - Zonas Céntricas / Oeste / Este", fee: 8 }
-  ],
-
-  marqueeMessages: [
-    "ESTUDIO EN EL JUNQUITO (SECTOR PANORAMA) Y SERVICIO VIP A DOMICILIO",
-    "ÚNETE AL CLUB VIP Y GANA 10% DE DESCUENTO INVITANDO AMIGAS",
-    "ESPECIALISTAS EN POLYGEL, SOFT GEL, KAPPING Y MANICURA RUSA",
-    "INSPECCIONA NUESTROS TRABAJOS EN 3D Y VIDEOS EN TIEMPO REAL"
-  ],
-
-  navigation: [
-    { label: "INICIO", href: "#main-content", hasSubmenu: false },
-    { label: "MODELO 3D & DESPIECE", href: "#showcase-3d", hasSubmenu: false },
-    { label: "VIDEOS & REELS", href: "#reels-section", hasSubmenu: false },
-    { label: "DESTACADOS & PROMOS", href: "#colecciones", hasSubmenu: true },
-    { label: "ESPECIALIDADES", href: "#categorias", hasSubmenu: true },
-    { label: "CATÁLOGO COMPLETO", href: "#novedades", hasSubmenu: true },
-    { label: "MAPA INTERACTIVO (PUNTOS)", href: "#lookbook", hasSubmenu: false },
-    { label: "RESEÑAS DE CLIENTES", href: "#testimonios", hasSubmenu: false },
-    { label: "UBICACIÓN & DOMICILIO", href: "#ubicacion", hasSubmenu: false }
-  ],
-
-  hero: {
-    kicker: "ARTE Y PRECISIÓN EN TUS MANOS",
-    titleMain: "DISEÑOS EXCLUSIVOS EN CADA",
-    titleAccent: "detalle",
-    lead: "Estructuras en Polygel, Soft Gel y Manicura Rusa de alta durabilidad. Atención en El Junquito (Panorama) o vamos hasta la comodidad de tu casa.",
-    ctaText: "EXPLORAR EN 3D",
-    bgImage: "[https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80)",
-    badges: [
-      { icon: "ri-shield-check-line", text: "Herramientas 100% Esterilizadas" },
-      { icon: "ri-e-bike-2-line", text: "Estudio en Panorama + Servicio a Domicilio" }
-    ]
-  },
-
-  model3D: {
-    subtitle: "INTERACCIÓN 360° • DESPIECE TÉCNICO",
-    title: "Escultura & Materiales en 3D",
-    desc: "Gira las manos con tu dedo o presiona 'Desarmar Capas' para ver cada material por separado y vuelve a centrarlo cuando quieras.",
-    glbUrl: "./nail-polish.glb",
-    systemPrice: 25,
-    systemTitle: "SISTEMA ESCULPIDO AZUL COBALTO 3D (POLYGEL)",
-    techSpecs: [
-      {
-        layer: "1. PREPARACIÓN & CUTÍCULA",
-        name: "Manicura Rusa Combinada + Deshidratador pH",
-        detail: "Limpieza profunda del bolsillo de la cutícula con brocas diamantadas suaves y nivelación de pH libre de ácido.",
-        orbit: "-35deg 65deg 75%"
-      },
-      {
-        layer: "2. BASE ADHERENTE & PROTECCIÓN",
-        name: "Rubber Base Gel Flexible (Capa Amortiguadora)",
-        detail: "Base elástica vitaminada que protege la uña natural y absorbe impactos sin quebrar la estructura.",
-        orbit: "25deg 70deg 72%"
-      },
-      {
-        layer: "3. ESTRUCTURA & ESCULPIDO",
-        name: "Polygel Acrigel de Alta Densidad (Grado Salón)",
-        detail: "Combina la fuerza del acrílico con la ligereza del gel. Curvatura C estilizada y duración de 21 a 30 días.",
-        orbit: "-15deg 55deg 68%"
-      },
-      {
-        layer: "4. COLOR, RELIEVE & BRILLO ESPEJO",
-        name: "Esmalte Gel Azul Cobalto + Top Coat Cristal UV",
-        detail: "Pigmento mineral de alta cobertura curado en lámpara LED/UV y sellado con Top Coat Diamond anti-rayaduras.",
-        orbit: "10deg 80deg 65%"
-      }
-    ]
-  },
-
-  promoReels: [
-    {
-      id: "reel-1",
-      tag: "POLYGEL EN VIVO",
-      title: "Acabado Espejo & Relieve",
-      price: 22,
-      videoUrl: "[https://assets.mixkit.co/videos/preview/mixkit-woman-showing-her-manicured-nails-42622-large.mp4](https://assets.mixkit.co/videos/preview/mixkit-woman-showing-her-manicured-nails-42622-large.mp4)",
-      poster: "[https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=500&q=80](https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=500&q=80)"
-    },
-    {
-      id: "reel-2",
-      tag: "MANICURA RUSA",
-      title: "Preparación & Brillo Gel",
-      price: 15,
-      videoUrl: "[https://assets.mixkit.co/videos/preview/mixkit-manicurist-painting-nails-with-pink-polish-41614-large.mp4](https://assets.mixkit.co/videos/preview/mixkit-manicurist-painting-nails-with-pink-polish-41614-large.mp4)",
-      poster: "[https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=500&q=80](https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=500&q=80)"
-    },
-    {
-      id: "reel-3",
-      tag: "SOFT GEL VIP",
-      title: "Diseño Francés & Cuidado",
-      price: 18,
-      videoUrl: "[https://assets.mixkit.co/videos/preview/mixkit-nail-technician-filing-a-clients-nails-41611-large.mp4](https://assets.mixkit.co/videos/preview/mixkit-nail-technician-filing-a-clients-nails-41611-large.mp4)",
-      poster: "[https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=500&q=80](https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=500&q=80)"
-    }
-  ],
-
-  setsProducts: [
-    {
-      id: "set-polygel-esculpido",
-      title: "SISTEMA EN POLYGEL + ESMALTADO GEL",
-      oldPrice: 30,
-      price: 22,
-      inStock: true,
-      isOffer: true,
-      image: "[https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      id: "set-softgel-press",
-      title: "SISTEMA SOFT GEL / EXTENSIONES TIPS GEL",
-      oldPrice: 25,
-      price: 18,
-      inStock: true,
-      isOffer: true,
-      image: "[https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      id: "set-kapping-rubber",
-      title: "KAPPING / NIVELACIÓN RUBBER EN UÑA NATURAL",
-      oldPrice: 20,
-      price: 15,
-      inStock: true,
-      isOffer: true,
-      image: "[https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      id: "set-duo-manos-pies",
-      title: "COMBO VIP: MANICURA RUSA + PEDISPA",
-      oldPrice: 32,
-      price: 25,
-      inStock: true,
-      isOffer: true,
-      image: "[https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80)"
-    }
-  ],
-
-  categories: [
-    {
-      id: "cat-polygel",
-      name: "Sistemas en Polygel",
-      image: "[https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=80](https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=80)",
-      filterTarget: "POLYGEL"
-    },
-    {
-      id: "cat-softgel",
-      name: "Soft Gel & Kapping",
-      image: "[https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=700&q=80](https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=700&q=80)",
-      filterTarget: "SOFT GEL"
-    },
-    {
-      id: "cat-rusa",
-      name: "Manicura Rusa & Spa",
-      image: "[https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=700&q=80](https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=700&q=80)",
-      filterTarget: "MANICURA RUSA"
-    }
-  ],
-
-  arrivalFilters: ["POLYGEL", "SOFT GEL", "MANICURA RUSA", "ADICIONALES"],
-  arrivalsProducts: [
-    {
-      id: "srv-polygel-natural",
-      title: "POLYGEL TONO COVER / BABY BOOMER",
-      category: "POLYGEL",
-      oldPrice: 28,
-      price: 22,
-      inStock: true,
-      image: "[https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      id: "srv-polygel-mantenimiento",
-      title: "MANTENIMIENTO DE POLYGEL (15-21 DÍAS)",
-      category: "POLYGEL",
-      oldPrice: 20,
-      price: 16,
-      inStock: true,
-      image: "[https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      id: "srv-softgel-decorado",
-      title: "SOFT GEL + EFECTO CHROME / OJO DE GATO",
-      category: "SOFT GEL",
-      oldPrice: 24,
-      price: 19,
-      inStock: true,
-      image: "[https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      id: "srv-rusa-semi",
-      title: "MANICURA RUSA + SEMIPERMANENTE",
-      category: "MANICURA RUSA",
-      oldPrice: 16,
-      price: 12,
-      inStock: true,
-      image: "[https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      id: "srv-retiro-seguro",
-      title: "RETIRO SEGURO + HIDRATACIÓN QUERATINA",
-      category: "ADICIONALES",
-      oldPrice: 8,
-      price: 5,
-      inStock: true,
-      image: "[https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80)"
-    }
-  ],
-
-  lookbook: {
-    image: "[https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80](https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80)",
-    hotspots: [
-      { id: "hs-cuticula", x: 34, y: 32, title: "Limpieza de Cutícula Rusa + Sellado", price: 12 },
-      { id: "hs-polygel", x: 52, y: 48, title: "Esculpido en Polygel + Ápice Balanceado", price: 22 },
-      { id: "hs-nailart", x: 66, y: 62, title: "Diseño Relieve 3D + Top Coat Cristal", price: 4 }
-    ]
-  },
-
-  carePromo: {
-    kicker: "BIOSEGURIDAD Y SALUD UNGUEAL",
-    title: "Tus uñas naturales sanas y fuertes.",
-    desc: "Usamos preparadores libres de ácidos agresivos, limas personalizadas y esterilización grado médico en estudio y a domicilio.",
-    image: "[https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80)",
-    benefits: [
-      { icon: "ri-shield-star-line", text: "Esterilización en cada cita" },
-      { icon: "ri-award-line", text: "Polygel y geles certificados" },
-      { icon: "ri-e-bike-2-line", text: "Maletín completo a domicilio" },
-      { icon: "ri-sparkling-line", text: "Brillo intacto por +21 días" }
-    ]
-  },
-
-  testimonials: [
-    {
-      name: "Mariana G. (Panorama)",
-      quote: "Me hizo el sistema en Polygel a domicilio aquí en Panorama y me duraron 25 días intactas sin levantarse nada.",
-      image: "[https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80)"
-    },
-    {
-      name: "Estefanía R. (El Junquito Km 12)",
-      quote: "Súper delicada con la cutícula, no lastima nada y lleva absolutamente todos los colores y lámpara a tu casa.",
-      image: "[https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80](https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80)"
-    }
-  ],
-
-  location: {
-    title: "El Junquito — Sector Panorama",
-    city: "ATENCIÓN EN ESTUDIO PRIVADO Y A DOMICILIO",
-    address: "El Junquito, Sector Panorama (también cubrimos todo El Junquito y Caracas a domicilio)",
-    hours: "Lunes a Sábado • 9:00 AM – 6:00 PM (Previa Cita)",
-    phone: "+58 412-0000000"
-  },
-
-  footerAccordions: [
-    {
-      title: "¿CÓMO FUNCIONA EL SERVICIO A DOMICILIO?",
-      content: "Seleccionas tus opciones en la web, eliges 'A Domicilio', adjuntas tu ubicación GPS y vamos directo hasta tu hogar."
-    },
-    {
-      title: "¿CÓMO GANAR DESCUENTOS CON EL CLUB VIP?",
-      content: "Toca el ícono de la corona arriba, crea tu cuenta gratis y comparte tu enlace de referido por WhatsApp. Tus amigas reciben 10% de descuento y tú sumas puntos canjeables."
-    },
-    {
-      title: "GARANTÍA Y BIOSEGURIDAD",
-      content: "Todos nuestros trabajos cuentan con garantía de aplicación de 5 días y materiales hipoalergénicos certificados."
-    }
-  ]
-};
-
-/* ============================================================================
-   3. TU FUNCIÓN OFICIAL PARA OBTENER DÓLAR BCV Y EURO BCV EN TIEMPO REAL
-   ============================================================================ */
-async function obtenerTasasOficialesBCV() {
-  let tasaUSD = null;
-  let tasaEUR = null;
-
-  try {
-    const respuesta = await fetch("[https://rates.dolarvzla.com/bcv/current.json?t=](https://rates.dolarvzla.com/bcv/current.json?t=)" + Date.now(), {
-      cache: "no-store"
-    });
-
-    if (respuesta.ok) {
-      const datos = await respuesta.json();
-      if (datos && datos.current) {
-        tasaUSD = parseFloat(datos.current.usd) || null;
-        tasaEUR = parseFloat(datos.current.eur) || null;
-      }
-    }
-  } catch (error) {
-    console.warn("Servidor principal BCV no disponible, intentando respaldo...");
-  }
-
-  if (!tasaUSD) {
-    try {
-      const respBackup = await fetch("[https://ve.dolarapi.com/v1/dolares/oficial?t=](https://ve.dolarapi.com/v1/dolares/oficial?t=)" + Date.now(), {
-        cache: "no-store"
-      });
-      if (respBackup.ok) {
-        const datosBackup = await respBackup.json();
-        if (datosBackup && datosBackup.promedio) {
-          tasaUSD = parseFloat(datosBackup.promedio) || null;
-        }
-      }
-    } catch (errorBackup) {
-      console.warn("Servidor de respaldo BCV sin conexión.");
-    }
-  }
-
-  if (tasaUSD && tasaEUR) {
-    try {
-      localStorage.setItem(
-        "respaldo_tasas_bcv",
-        JSON.stringify({
-          usd: tasaUSD,
-          eur: tasaEUR,
-          fecha: new Date().toISOString()
-        })
-      );
-    } catch (e) {}
-  } else {
-    try {
-      const guardado = JSON.parse(localStorage.getItem("respaldo_tasas_bcv") || "{}");
-      if (!tasaUSD && guardado.usd) tasaUSD = parseFloat(guardado.usd);
-      if (!tasaEUR && guardado.eur) tasaEUR = parseFloat(guardado.eur);
-    } catch (e) {}
-  }
-
-  return {
-    usd: tasaUSD || 0,
-    eur: tasaEUR || 0
-  };
-}
-
-function formatearBs(monto) {
-  return Number(monto || 0).toLocaleString("es-VE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-async function actualizarPantallaTasas() {
-  const tasas = await obtenerTasasOficialesBCV();
-
-  const elDolar = document.getElementById("precio-bcv-usd");
-  const elEuro = document.getElementById("precio-bcv-eur");
-
-  if (elDolar && tasas.usd > 0) elDolar.textContent = formatearBs(tasas.usd) + " Bs";
-  if (elEuro && tasas.eur > 0) elEuro.textContent = formatearBs(tasas.eur) + " Bs";
-
-  if (STORE_CONFIG.autoSyncDolarApi !== false) {
-    const isEuro = STORE_CONFIG.currencyCode === "EUR";
-    const chosenRate = isEuro ? tasas.eur : tasas.usd;
-    if (chosenRate > 0) {
-      STORE_CONFIG.exchangeRateBs = Number(chosenRate.toFixed(2));
-      renderProductCarousel(STORE_CONFIG.setsProducts, "#sets-carousel", true);
-      if (STORE_CONFIG.arrivalFilters && STORE_CONFIG.arrivalFilters.length > 0) {
-        const activeCat =
-          $("#filter-pills-container .filter-pill-btn.is-active").data("category") ||
-          STORE_CONFIG.arrivalFilters[0];
-        filterArrivalsByCategory(activeCat);
-      }
-      renderPromoReels();
-      renderCartUI();
-    }
-  }
-}
-
-/* ============================================================================
    4. FUSIÓN BLINDADA POR SELLO DE TIEMPO (RECHAZA OBJETOS VIEJOS SIN FECHA)
    ============================================================================ */
 function applyCloudConfigObject(incomingData) {
@@ -997,8 +468,6 @@ function applyCloudConfigObject(incomingData) {
   const currentTs = STORE_CONFIG.updatedAt ? new Date(STORE_CONFIG.updatedAt).getTime() : 0;
   const incomingTs = incomingData.updatedAt ? new Date(incomingData.updatedAt).getTime() : 0;
 
-  // BLINDAJE CLAVE: Si ya tenemos datos con fecha reciente (currentTs > 0) y llega un objeto viejo sin fecha
-  // o con fecha anterior, se bloquea para que jamás vuelva a pisar tus cambios ni tu portada nueva.
   if (currentTs > 0 && (incomingTs === 0 || incomingTs < currentTs)) {
     return false;
   }
@@ -1156,15 +625,17 @@ function toggleExplode3DModel(forceState, targetOrbit) {
       .join("");
     $overlay.html(chipsHtml).attr("aria-hidden", "false");
 
-    anime({
-      targets: "#exploded-layers-overlay .exploded-chip",
-      opacity: [0, 1],
-      translateX: (el, i) => (i % 2 === 0 ? [-28, 0] : [28, 0]),
-      scale: [0.88, 1],
-      delay: anime.stagger(110),
-      duration: 480,
-      easing: "easeOutCubic"
-    });
+    if (typeof anime !== "undefined") {
+      anime({
+        targets: "#exploded-layers-overlay .exploded-chip",
+        opacity: [0, 1],
+        translateX: (el, i) => (i % 2 === 0 ? [-28, 0] : [28, 0]),
+        scale: [0.88, 1],
+        delay: anime.stagger(110),
+        duration: 480,
+        easing: "easeOutCubic"
+      });
+    }
   } else {
     reset3DModelToCenter();
   }
@@ -1191,16 +662,20 @@ function reset3DModelToCenter() {
     viewer.setAttribute("auto-rotate", "");
   }
 
-  anime({
-    targets: "#exploded-layers-overlay .exploded-chip",
-    opacity: 0,
-    scale: 0.85,
-    duration: 240,
-    easing: "easeInQuad",
-    complete: function () {
-      $overlay.empty().attr("aria-hidden", "true");
-    }
-  });
+  if (typeof anime !== "undefined") {
+    anime({
+      targets: "#exploded-layers-overlay .exploded-chip",
+      opacity: 0,
+      scale: 0.85,
+      duration: 240,
+      easing: "easeInQuad",
+      complete: function () {
+        $overlay.empty().attr("aria-hidden", "true");
+      }
+    });
+  } else {
+    $overlay.empty().attr("aria-hidden", "true");
+  }
 }
 
 function init3DAutoRecenterOnScroll() {
@@ -1273,12 +748,14 @@ function addToCart(product) {
   saveCartToStorage();
   renderCartUI();
 
-  anime({
-    targets: "#cart-count",
-    scale: [1, 1.45, 1],
-    duration: 450,
-    easing: "easeOutElastic(1, .6)"
-  });
+  if (typeof anime !== "undefined") {
+    anime({
+      targets: "#cart-count",
+      scale: [1, 1.45, 1],
+      duration: 450,
+      easing: "easeOutElastic(1, .6)"
+    });
+  }
 }
 
 function removeFromCart(productId) {
@@ -1419,7 +896,7 @@ async function loadInitialConfigBeforePreloader() {
     (async () => {
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1600);
+        const timer = setTimeout(() => controller.abort(), 1400);
         const res = await fetch(`${firebaseConfig.databaseURL}/store_config.json?t=${Date.now()}`, {
           signal: controller.signal,
           cache: "no-store"
@@ -1432,7 +909,7 @@ async function loadInitialConfigBeforePreloader() {
   );
 
   try {
-    const timeoutGuard = new Promise((resolve) => setTimeout(() => resolve([]), 1800));
+    const timeoutGuard = new Promise((resolve) => setTimeout(() => resolve([]), 1600));
     const results = await Promise.race([Promise.all(cloudReads), timeoutGuard]);
     if (Array.isArray(results)) {
       results.forEach((cfg) => {
@@ -1442,7 +919,6 @@ async function loadInitialConfigBeforePreloader() {
   } catch (e) {}
 
   if (candidates.length > 0) {
-    // Ordena de más antiguo a más nuevo para que al final prevalezca siempre el cambio con fecha más reciente
     candidates.sort((a, b) => {
       const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
       const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
@@ -1885,14 +1361,16 @@ function filterArrivalsByCategory(categoryName) {
   const filtered = _.filter(STORE_CONFIG.arrivalsProducts, { category: categoryName });
   renderProductCarousel(filtered, "#arrivals-carousel", false);
 
-  anime({
-    targets: "#arrivals-carousel .product-card",
-    opacity: [0, 1],
-    translateY: [18, 0],
-    delay: anime.stagger(90),
-    duration: 500,
-    easing: "easeOutQuad"
-  });
+  if (typeof anime !== "undefined") {
+    anime({
+      targets: "#arrivals-carousel .product-card",
+      opacity: [0, 1],
+      translateY: [18, 0],
+      delay: anime.stagger(90),
+      duration: 500,
+      easing: "easeOutQuad"
+    });
+  }
 }
 
 function updatePaymentInstructionsUI() {
@@ -1907,6 +1385,7 @@ function updatePaymentInstructionsUI() {
    ============================================================================ */
 function initD3LookbookHotspots() {
   $("#lookbook-img").attr("src", STORE_CONFIG.lookbook.image);
+  if (typeof d3 === "undefined") return;
 
   const layer = d3.select("#hotspots-layer");
   layer.selectAll("*").remove();
@@ -1936,13 +1415,15 @@ function initD3LookbookHotspots() {
         .addClass("is-visible")
         .attr("aria-hidden", "false");
 
-      anime({
-        targets: "#hotspot-popover",
-        scale: [0.95, 1],
-        opacity: [0, 1],
-        duration: 300,
-        easing: "easeOutCubic"
-      });
+      if (typeof anime !== "undefined") {
+        anime({
+          targets: "#hotspot-popover",
+          scale: [0.95, 1],
+          opacity: [0, 1],
+          duration: 300,
+          easing: "easeOutCubic"
+        });
+      }
     });
 }
 
@@ -1959,6 +1440,11 @@ function runPreloaderAnimation() {
     $("#preloader-sub").text(STORE_CONFIG.preloader.subtitle);
   }
   $("#preloader-brand").text(STORE_CONFIG.brandSpaced);
+
+  if (typeof anime === "undefined") {
+    $("#preloader").fadeOut(400);
+    return;
+  }
 
   const totalSec = Number((STORE_CONFIG.preloader && STORE_CONFIG.preloader.durationSeconds) || 2.2);
   const stepMs = Math.max(250, Math.round((totalSec * 1000) / 3.2));
@@ -2295,7 +1781,7 @@ $(document).ready(async function () {
     const msg = encodeURIComponent(
       `✨ ¡Hola! Te regalo un *${STORE_CONFIG.referralDiscountPercent || 10}% de descuento* en *${STORE_CONFIG.brandName.toUpperCase()}* usando mi código VIP *${code}* o entrando directo a este enlace:\n\n👉 ${shareLink}`
     );
-    window.open(`[https://wa.me/?text=$](https://wa.me/?text=$){msg}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/?text=${msg}`, "_blank", "noopener,noreferrer");
   });
 
   $("#apply-referral-btn").on("click", function () {
@@ -2382,7 +1868,7 @@ $(document).ready(async function () {
       function (pos) {
         const lat = pos.coords.latitude.toFixed(6);
         const lng = pos.coords.longitude.toFixed(6);
-        clientGpsUrl = `[https://maps.google.com/?q=$](https://maps.google.com/?q=$){lat},${lng}`;
+        clientGpsUrl = `https://maps.google.com/?q=${lat},${lng}`;
         $status.html('<i class="ri-checkbox-circle-fill"></i> Ubicación GPS exacta adjuntada.');
       },
       function () {
@@ -2550,7 +2036,7 @@ $(document).ready(async function () {
         `*Equivalente en Bs.: ${formatBs(grandTotal)}*`
     );
 
-    window.open(`[https://wa.me/$](https://wa.me/$){STORE_CONFIG.whatsappNumber}?text=${whatsappMsg}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${whatsappMsg}`, "_blank", "noopener,noreferrer");
   });
 
   $("#client-review-form").on("submit", async function (e) {
