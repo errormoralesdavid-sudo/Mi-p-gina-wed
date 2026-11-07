@@ -466,7 +466,7 @@ function applyCloudConfigObject(incomingData) {
 
   STORE_CONFIG = _.merge({}, STORE_CONFIG, incomingData);
 
-  if (Array.isArray(incomingData.setsProducts)) STORE_CONFIG.setsProducts = incomingData.setsProducts;
+  if (Array.isArray(incomingData.setsProducts)) STORE_CONFIG.setsProducts = incomingData.setsProducts;if (Array.isArray(incomingData.categories)) STORE_CONFIG.categories = incomingData.categories;
   if (Array.isArray(incomingData.arrivalsProducts)) STORE_CONFIG.arrivalsProducts = incomingData.arrivalsProducts;
   if (Array.isArray(incomingData.promoReels)) STORE_CONFIG.promoReels = incomingData.promoReels;
   if (incomingData.lookbook && Array.isArray(incomingData.lookbook.hotspots)) {
