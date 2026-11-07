@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Seguridad CSP: Autoriza catbox.moe, cualquier servidor https de imágenes, rates.dolarvzla.com, ve.dolarapi.com y Firebase -->
+  <!-- Seguridad CSP: Autoriza catbox.moe, cualquier servidor https de imágenes/videos, rates.dolarvzla.com, ve.dolarapi.com y Firebase -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://rates.dolarvzla.com https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: http: data: blob:; media-src 'self' https: http: data: blob:;">
   <meta name="robots" content="noindex, nofollow">
 
@@ -115,23 +115,42 @@
       padding: 2px;
     }
 
-    .hero-img-preview-box {
+    /* VISTA PREVIA UNIVERSAL PARA TODAS LAS IMÁGENES Y VIDEOS */
+    .universal-img-preview-box {
       margin-top: 0.5rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
       background: #111;
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 0.45rem;
+      border: 1px solid rgba(255,255,255,0.09);
+      padding: 0.45rem 0.6rem;
       border-radius: 6px;
+      transition: border-color 0.25s ease;
     }
 
-    .hero-img-preview-box img {
-      width: 64px;
+    .universal-img-preview-box.is-valid {
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+
+    .universal-img-preview-box.is-error {
+      border-color: rgba(239, 68, 68, 0.55);
+    }
+
+    .universal-img-preview-box img,
+    .universal-img-preview-box video {
+      width: 62px;
       height: 48px;
       object-fit: cover;
       border-radius: 4px;
       border: 1px solid var(--accent-gold);
+      background: #050505;
+      flex-shrink: 0;
+    }
+
+    .universal-img-status {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.3;
     }
 
     .btn-gold {
@@ -387,14 +406,15 @@
       background: var(--accent-gold);
       color: #090909;
       font-weight: 700;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       padding: 0.95rem 1.4rem;
       border-radius: 8px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.85);
       display: none;
       z-index: 9999;
       text-align: center;
-      min-width: 290px;
+      min-width: 295px;
+      max-width: 92vw;
     }
   </style>
 </head>
@@ -449,7 +469,7 @@
 
     <nav class="admin-tabs">
       <button type="button" class="tab-btn is-active" data-tab="tab-ajustes">
-        <i class="ri-equalizer-line"></i> 1. Moneda BCV ($/€), Portada & Redes
+        <i class="ri-equalizer-line"></i> 1. Moneda BCV ($/€), Portada & Bioseguridad
       </button>
       <button type="button" class="tab-btn" data-tab="tab-citas">
         <i class="ri-calendar-check-line"></i> 2. Citas & Pedidos GPS
@@ -461,14 +481,14 @@
         <i class="ri-movie-line"></i> 4. Videos Cortos (Reels)
       </button>
       <button type="button" class="tab-btn" data-tab="tab-servicios">
-        <i class="ri-price-tag-3-line"></i> 5. Catálogo & Precios
+        <i class="ri-price-tag-3-line"></i> 5. Especialidades, Catálogo & Precios
       </button>
       <button type="button" class="tab-btn" data-tab="tab-vip">
         <i class="ri-vip-crown-line"></i> 6. Club VIP, Admins & Reseñas
       </button>
     </nav>
 
-    <!-- PESTAÑA 1: MONEDA BCV EN TIEMPO REAL, PORTADA, PRELOADER, REDES Y PAGOS -->
+    <!-- PESTAÑA 1: MONEDA BCV EN TIEMPO REAL, PORTADA, BIOSEGURIDAD, PRELOADER, REDES Y PAGOS -->
     <section class="tab-panel is-active" id="tab-ajustes">
       
       <div class="panel-card">
@@ -525,16 +545,36 @@
           </div>
           <div class="form-group">
             <label>URL de Foto de Portada (Acepta catbox.moe, imgur, etc.)</label>
-            <input type="text" id="cfg-hero-img" class="admin-input" placeholder="https://files.catbox.moe/ymi223.jpg">
-            <div class="hero-img-preview-box">
-              <img id="cfg-hero-img-preview" src="" alt="Vista previa portada">
-              <span id="cfg-hero-img-status" style="font-size:0.72rem; color:var(--text-muted);">Vista previa de tu imagen de portada</span>
-            </div>
+            <input type="text" id="cfg-hero-img" class="admin-input has-img-preview" placeholder="https://files.catbox.moe/ymi223.jpg">
           </div>
         </div>
         <div class="form-group">
           <label>Descripción de Portada</label>
           <textarea id="cfg-hero-lead" rows="2" class="admin-textarea"></textarea>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Sección de Bioseguridad, Salud Ungueal e Imagen de Garantía</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Subtítulo Superior (Kicker)</label>
+            <input type="text" id="cfg-care-kicker" class="admin-input" placeholder="BIOSEGURIDAD Y SALUD UNGUEAL">
+          </div>
+          <div class="form-group">
+            <label>Título de Bioseguridad</label>
+            <input type="text" id="cfg-care-title" class="admin-input" placeholder="Tus uñas naturales sanas y fuertes.">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>URL de Foto de Bioseguridad / Cuidado</label>
+            <input type="text" id="cfg-care-img" class="admin-input has-img-preview" placeholder="https://files.catbox.moe/...">
+          </div>
+          <div class="form-group">
+            <label>Descripción de Bioseguridad y Materiales</label>
+            <textarea id="cfg-care-desc" rows="3" class="admin-textarea"></textarea>
+          </div>
         </div>
       </div>
 
@@ -661,7 +701,7 @@
         <h3>Editor Visual de Puntos Dorados (Toca la foto para agregar un punto)</h3>
         <div class="form-group">
           <label>URL de la Imagen del Escaparate ("Shop the Look")</label>
-          <input type="text" id="cfg-lookbook-img" class="admin-input">
+          <input type="text" id="cfg-lookbook-img" class="admin-input has-img-preview">
         </div>
 
         <div class="grid-2" style="align-items: start;">
@@ -689,8 +729,8 @@
         <h3>Visor 3D (.GLB), Despiece de Capas y Ángulos de Enfoque</h3>
         <div class="grid-2">
           <div class="form-group">
-            <label>Archivo o URL del Modelo 3D (.GLB)</label>
-            <input type="text" id="cfg-3d-url" class="admin-input">
+            <label>Archivo o URL del Modelo 3D (.GLB en tu GitHub)</label>
+            <input type="text" id="cfg-3d-url" class="admin-input" placeholder="./nail-polish.glb">
           </div>
           <div class="form-group">
             <label>Precio del Diseño 3D Mostrado</label>
@@ -728,8 +768,20 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 5: CATÁLOGO DE SERVICIOS / PRODUCTOS Y PRECIOS -->
+    <!-- PESTAÑA 5: TARJETAS DE ESPECIALIDADES, DESTACADOS Y CATÁLOGO -->
     <section class="tab-panel" id="tab-servicios">
+      
+      <div class="panel-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <div>
+            <h3 style="margin:0; border:none;">Tarjetas Grandes de Especialidades (Categorías Visuales)</h3>
+            <p style="font-size:0.78rem; color:var(--text-muted);">Cambia las fotos y nombres de las tarjetas grandes (Ej: Sistemas en Polygel, Soft Gel & Kapping, Manicura Rusa).</p>
+          </div>
+          <button type="button" class="btn-outline" id="add-new-category-btn">+ Agregar Especialidad</button>
+        </div>
+        <div id="categories-editor-container"></div>
+      </div>
+
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
           <h3 style="margin:0; border:none;">Destacados / Promociones (Carrusel Principal)</h3>
@@ -798,14 +850,122 @@
     const dbRealtime = firebase.database();
     const dbFirestore = firebase.firestore();
 
-    // Limpia cualquier propiedad undefined que haría fallar a Firestore
+    // Limpia cualquier valor undefined o NaN que pudiera rechazar Firebase
     function cleanObjectForFirebase(obj) {
-      return JSON.parse(
-        JSON.stringify(obj, function (key, value) {
-          return value === undefined ? "" : value;
-        })
-      );
+      try {
+        return JSON.parse(
+          JSON.stringify(obj, function (key, value) {
+            if (value === undefined || Number.isNaN(value)) return "";
+            return value;
+          })
+        );
+      } catch (e) {
+        return obj || {};
+      }
     }
+
+    /* ========================================================================
+       MOTOR UNIVERSAL DE VISTA PREVIA EN VIVO (IMÁGENES Y VIDEOS REELS)
+       ======================================================================== */
+    function attachUniversalImagePreviews() {
+      // 1. Previews de Imágenes
+      $(".has-img-preview, .srv-img, .reel-poster, .cat-img").each(function () {
+        const $input = $(this);
+        let $box = $input.next(".universal-img-preview-box");
+
+        if ($box.length === 0) {
+          $box = $(`
+            <div class="universal-img-preview-box">
+              <img src="" alt="Vista previa">
+              <span class="universal-img-status">Vista previa de la imagen</span>
+            </div>
+          `);
+          $input.after($box);
+
+          const $img = $box.find("img");
+          const $status = $box.find(".universal-img-status");
+
+          $img.on("load", function () {
+            $box.removeClass("is-error").addClass("is-valid");
+            $status.text("✓ Imagen cargada y lista para publicar").css("color", "#6ee7b7");
+          });
+
+          $img.on("error", function () {
+            const currentVal = ($input.val() || "").trim();
+            $box.removeClass("is-valid").addClass("is-error");
+            if (!currentVal) {
+              $status.text("Casilla vacía — pega un enlace de imagen").css("color", "#9e9a90");
+            } else {
+              $status.text("⚠️ Enlace inválido o no es imagen directa (.jpg / .png / .webp)").css("color", "#fca5a5");
+            }
+          });
+        }
+
+        const url = ($input.val() || "").trim();
+        const $img = $box.find("img");
+        if (url && $img.attr("src") !== url) {
+          $img.attr("src", url);
+        } else if (!url) {
+          $img.attr("src", "");
+        }
+      });
+
+      // 2. Previews de Videos (.mp4) en la pestaña de Reels
+      $(".reel-video").each(function () {
+        const $input = $(this);
+        let $box = $input.next(".universal-img-preview-box");
+
+        if ($box.length === 0) {
+          $box = $(`
+            <div class="universal-img-preview-box">
+              <video muted loop playsinline preload="metadata"></video>
+              <span class="universal-img-status">Vista previa del video (.mp4)</span>
+            </div>
+          `);
+          $input.after($box);
+
+          const $vid = $box.find("video");
+          const $status = $box.find(".universal-img-status");
+
+          $vid.on("loadeddata", function () {
+            $box.removeClass("is-error").addClass("is-valid");
+            $status.text("✓ Video .mp4 verificado y listo para publicar").css("color", "#6ee7b7");
+            this.play().catch(() => {});
+          });
+
+          $vid.on("error", function () {
+            const currentVal = ($input.val() || "").trim();
+            $box.removeClass("is-valid").addClass("is-error");
+            if (!currentVal) {
+              $status.text("Casilla vacía — pega un enlace .mp4").css("color", "#9e9a90");
+            } else {
+              $status.text("⚠️ Enlace de video inválido (Usa un enlace directo .mp4 / .webm)").css("color", "#fca5a5");
+            }
+          });
+        }
+
+        const url = ($input.val() || "").trim();
+        const $vid = $box.find("video");
+        if (url && $vid.attr("src") !== url) {
+          $vid.attr("src", url);
+        }
+      });
+    }
+
+    $(document).on("input change", ".has-img-preview, .srv-img, .reel-poster, .cat-img, .reel-video", function () {
+      const $input = $(this);
+      attachUniversalImagePreviews();
+      const url = ($input.val() || "").trim();
+      const $box = $input.next(".universal-img-preview-box");
+      if ($box.length) {
+        $box.find(".universal-img-status").text("Verificando enlace...").css("color", "#c9a86a");
+        const $media = $box.find("img, video");
+        $media.attr("src", url);
+      }
+      if ($input.attr("id") === "cfg-lookbook-img") {
+        $("#admin-lookbook-preview").attr("src", url);
+      }
+    });
 
     async function obtenerTasasOficialesBCV() {
       let tasaUSD = null;
@@ -822,9 +982,7 @@
             tasaEUR = parseFloat(datos.current.eur) || null;
           }
         }
-      } catch (error) {
-        console.warn("Servidor principal BCV no disponible, intentando respaldo...");
-      }
+      } catch (error) {}
 
       if (!tasaUSD) {
         try {
@@ -934,6 +1092,38 @@
           { icon: "ri-e-bike-2-line", text: "Estudio en Panorama + Servicio a Domicilio" }
         ]
       },
+      carePromo: {
+        kicker: "BIOSEGURIDAD Y SALUD UNGUEAL",
+        title: "Tus uñas naturales sanas y fuertes.",
+        desc: "Usamos preparadores libres de ácidos agresivos, limas personalizadas y esterilización grado médico en estudio y a domicilio.",
+        image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80",
+        benefits: [
+          { icon: "ri-shield-star-line", text: "Esterilización en cada cita" },
+          { icon: "ri-award-line", text: "Polygel y geles certificados" },
+          { icon: "ri-e-bike-2-line", text: "Maletín completo a domicilio" },
+          { icon: "ri-sparkling-line", text: "Brillo intacto por +21 días" }
+        ]
+      },
+      categories: [
+        {
+          id: "cat-polygel",
+          name: "Sistemas en Polygel",
+          image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=80",
+          filterTarget: "POLYGEL"
+        },
+        {
+          id: "cat-softgel",
+          name: "Soft Gel & Kapping",
+          image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=700&q=80",
+          filterTarget: "SOFT GEL"
+        },
+        {
+          id: "cat-rusa",
+          name: "Manicura Rusa & Spa",
+          image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=700&q=80",
+          filterTarget: "MANICURA RUSA"
+        }
+      ],
       lookbook: {
         image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
         hotspots: [
@@ -942,7 +1132,7 @@
         ]
       },
       model3D: {
-        glbUrl: "./unas-demo.glb",
+        glbUrl: "./nail-polish.glb",
         systemPrice: 25,
         systemTitle: "SISTEMA ESCULPIDO AZUL COBALTO 3D",
         title: "Escultura & Materiales en 3D",
@@ -970,21 +1160,8 @@
         color: isError ? "#ffffff" : "#090909"
       });
       $t.text(msg).fadeIn(200);
-      setTimeout(() => $t.fadeOut(350), 3600);
+      setTimeout(() => $t.fadeOut(350), 4000);
     }
-
-    // Vista previa en vivo de la imagen de portada al pegar cualquier enlace (ej: catbox.moe)
-    $("#cfg-hero-img").on("input", function () {
-      const url = $(this).val().trim();
-      if (url) {
-        $("#cfg-hero-img-preview").attr("src", url);
-        $("#cfg-hero-img-status").text("✓ Enlace de portada listo para publicar").css("color", "#6ee7b7");
-      }
-    });
-
-    $("#cfg-hero-img-preview").on("error", function () {
-      $("#cfg-hero-img-status").text("⚠️ Verifica que el enlace sea directo (.jpg / .png / .webp)").css("color", "#fca5a5");
-    });
 
     // 1. AUTENTICACIÓN SEGURA
     auth.onAuthStateChanged(async (user) => {
@@ -1061,7 +1238,7 @@
       }
     });
 
-    // 3. LECTURA INTELIGENTE MULTI-NUBE
+    // 3. LECTURA INTELIGENTE MULTI-NUBE (PRIORIZA SIEMPRE DATOS CON SELLO updatedAt RECIENTE)
     async function loadStoreConfigForAdmin(user) {
       let candidates = [];
 
@@ -1103,6 +1280,11 @@
         });
         const winner = candidates[0];
         currentConfig = _.merge({}, FALLBACK_BASE_CONFIG, winner.data);
+        if (Array.isArray(winner.data.categories)) currentConfig.categories = winner.data.categories;
+        if (Array.isArray(winner.data.setsProducts)) currentConfig.setsProducts = winner.data.setsProducts;
+        if (Array.isArray(winner.data.arrivalsProducts)) currentConfig.arrivalsProducts = winner.data.arrivalsProducts;
+        if (Array.isArray(winner.data.promoReels)) currentConfig.promoReels = winner.data.promoReels;
+
         try {
           localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(currentConfig));
         } catch (e) {}
@@ -1162,9 +1344,14 @@
         $("#cfg-hero-accent").val(currentConfig.hero.titleAccent || "");
         const heroBg = currentConfig.hero.bgImage || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80";
         $("#cfg-hero-img").val(heroBg);
-        $("#cfg-hero-img-preview").attr("src", heroBg);
         $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
       }
+
+      const care = currentConfig.carePromo || FALLBACK_BASE_CONFIG.carePromo;
+      $("#cfg-care-kicker").val(care.kicker || "BIOSEGURIDAD Y SALUD UNGUEAL");
+      $("#cfg-care-title").val(care.title || "Tus uñas naturales sanas y fuertes.");
+      $("#cfg-care-img").val(care.image || "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80");
+      $("#cfg-care-desc").val(care.desc || "");
 
       const lbImg = (currentConfig.lookbook && currentConfig.lookbook.image) || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80";
       $("#cfg-lookbook-img").val(lbImg);
@@ -1172,16 +1359,19 @@
       renderHotspotsEditor((currentConfig.lookbook && currentConfig.lookbook.hotspots) || []);
 
       if (currentConfig.model3D) {
-        $("#cfg-3d-url").val(currentConfig.model3D.glbUrl || "./unas-demo.glb");
+        $("#cfg-3d-url").val(currentConfig.model3D.glbUrl || "./nail-polish.glb");
         $("#cfg-3d-price").val(currentConfig.model3D.systemPrice || 25);
         $("#cfg-3d-sys-title").val(currentConfig.model3D.systemTitle || "");
         $("#cfg-3d-title").val(currentConfig.model3D.title || "");
         renderTechSpecsEditor(currentConfig.model3D.techSpecs || []);
       }
 
+      renderCategoriesEditor(currentConfig.categories || FALLBACK_BASE_CONFIG.categories);
       renderReelsEditor(currentConfig.promoReels || []);
       renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
       renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
+
+      attachUniversalImagePreviews();
     }
 
     // 4. CITAS Y PEDIDOS CON GPS
@@ -1247,10 +1437,6 @@
     });
 
     // 5. EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS Y DESPIECE 3D
-    $("#cfg-lookbook-img").on("input", function () {
-      $("#admin-lookbook-preview").attr("src", $(this).val().trim());
-    });
-
     function renderHotspotsEditor(hotspots) {
       const $list = $("#hotspots-editor-list");
       $list.empty();
@@ -1346,11 +1532,52 @@
       appendTechSpecRow("NUEVA CAPA TÉCNICA", "Nombre del Material", "Descripción de calidad y durabilidad.", "20deg 65deg 70%")
     );
 
-    // 6. EDITOR DE VIDEOS CORTOS / REELS Y CATÁLOGO
+    // 6. EDITOR DE ESPECIALIDADES, VIDEOS REELS Y CATÁLOGO
+    function renderCategoriesEditor(cats) {
+      const $box = $("#categories-editor-container");
+      $box.empty();
+      cats.forEach((c) => appendCategoryRow(c.name, c.image, c.filterTarget));
+      attachUniversalImagePreviews();
+    }
+
+    function appendCategoryRow(name, image, filterTarget) {
+      $("#categories-editor-container").append(`
+        <div class="service-edit-item cat-edit-row">
+          <div class="grid-3">
+            <div class="form-group">
+              <label>Título de la Especialidad</label>
+              <input type="text" class="admin-input cat-name" value="${sanitize(name)}">
+            </div>
+            <div class="form-group">
+              <label>Filtro del Catálogo al Tocar</label>
+              <input type="text" class="admin-input cat-filter" value="${sanitize(filterTarget || "POLYGEL")}">
+            </div>
+            <div class="form-group">
+              <label>URL de Imagen de la Tarjeta</label>
+              <input type="text" class="admin-input cat-img has-img-preview" value="${sanitize(image)}">
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <button type="button" class="btn-danger remove-srv-row">Quitar Especialidad</button>
+          </div>
+        </div>
+      `);
+      attachUniversalImagePreviews();
+    }
+
+    $("#add-new-category-btn").on("click", () =>
+      appendCategoryRow(
+        "Nueva Especialidad",
+        "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=80",
+        "POLYGEL"
+      )
+    );
+
     function renderReelsEditor(reels) {
       const $box = $("#reels-editor-container");
       $box.empty();
       reels.forEach((r) => appendReelRow(r.tag, r.title, r.price, r.videoUrl, r.poster));
+      attachUniversalImagePreviews();
     }
 
     function appendReelRow(tag, title, price, videoUrl, poster) {
@@ -1377,7 +1604,7 @@
             </div>
             <div class="form-group">
               <label>URL de Imagen de Portada</label>
-              <input type="text" class="admin-input reel-poster" value="${sanitize(poster)}">
+              <input type="text" class="admin-input reel-poster has-img-preview" value="${sanitize(poster)}">
             </div>
           </div>
           <div style="text-align:right;">
@@ -1385,6 +1612,7 @@
           </div>
         </div>
       `);
+      attachUniversalImagePreviews();
     }
 
     $("#add-new-reel-btn").on("click", () =>
@@ -1422,7 +1650,7 @@
             <div class="grid-2">
               <div class="form-group">
                 <label>URL de Imagen</label>
-                <input type="text" class="admin-input srv-img" value="${sanitize(item.image)}">
+                <input type="text" class="admin-input srv-img has-img-preview" value="${sanitize(item.image)}">
               </div>
               ${includeCategory ? `
               <div class="form-group">
@@ -1439,6 +1667,7 @@
           </div>
         `);
       });
+      attachUniversalImagePreviews();
     }
 
     $(document).on("click", ".remove-srv-row", function () {
@@ -1455,13 +1684,14 @@
               <div><label>Precio Antes</label><input type="number" class="admin-input srv-oldprice" value="25"></div>
             </div>
           </div>
-          <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
+          <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img has-img-preview" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Disponible</label>
             <button type="button" class="btn-danger remove-srv-row">Quitar</button>
           </div>
         </div>
       `);
+      attachUniversalImagePreviews();
     });
 
     $("#add-new-arrival-btn").on("click", function () {
@@ -1475,7 +1705,7 @@
             </div>
           </div>
           <div class="grid-2">
-            <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"></div>
+            <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img has-img-preview" value="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"></div>
             <div class="form-group"><label>Categoría</label><input type="text" class="admin-input srv-cat" value="POLYGEL"></div>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1484,36 +1714,39 @@
           </div>
         </div>
       `);
+      attachUniversalImagePreviews();
     });
 
-    // 7. GUARDADO LIMPIO ANTI-ERROR (LIMPIA UNDEFINED Y ACTUALIZA PORTADA AL INSTANTE)
+    // 7. GUARDADO AISLADO POR BLOQUES (GARANTIZA QUE NINGÚN CAMPO INTERRUMPA EL GUARDADO)
     $("#save-all-cloud-btn").on("click", async function () {
       const $btn = $(this);
       const originalHtml = $btn.html();
-      $btn.prop("disabled", true).html('<i class="ri-loader-4-line"></i> GUARDANDO...');
+      $btn.prop("disabled", true).html('<i class="ri-loader-4-line"></i> PUBLICANDO...');
 
+      // Base segura
+      if (!currentConfig || typeof currentConfig !== "object") {
+        currentConfig = _.cloneDeep(FALLBACK_BASE_CONFIG);
+      }
+
+      // Bloque 1: Moneda, Preloader, Marca y Portada
       try {
-        if (!currentConfig || typeof currentConfig !== "object") {
-          currentConfig = _.cloneDeep(FALLBACK_BASE_CONFIG);
-        }
-
         const chosenCurrency = $("#cfg-currency-code").val() || "USD";
         currentConfig.currencyCode = chosenCurrency;
         currentConfig.currencySymbol = chosenCurrency === "EUR" ? "€" : "$";
-        currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val() || 45.5);
+        currentConfig.exchangeRateBs = Number($("#cfg-exchange-rate").val()) || 45.5;
         currentConfig.autoSyncDolarApi = $("#cfg-autosync-dolarapi").is(":checked");
 
         currentConfig.preloader = {
           enabled: $("#cfg-preloader-enabled").val() === "true",
-          subtitle: ($("#cfg-preloader-sub").val() || "").trim() || "BIENVENIDA A MI ESTUDIO",
-          durationSeconds: Number($("#cfg-preloader-duration").val() || 2.2)
+          subtitle: String($("#cfg-preloader-sub").val() || "BIENVENIDA A MI ESTUDIO").trim(),
+          durationSeconds: Number($("#cfg-preloader-duration").val()) || 2.2
         };
 
         currentConfig.businessMode = $("#cfg-business-mode").val() || "services";
-        currentConfig.brandName = ($("#cfg-brand-name").val() || "").trim() || "kalon nails";
-        currentConfig.brandSpaced = ($("#cfg-brand-spaced").val() || "").trim() || "K A L O N";
-        currentConfig.whatsappNumber = ($("#cfg-whatsapp").val() || "").trim() || "584120000000";
-        currentConfig.referralDiscountPercent = Number($("#cfg-referral-discount").val() || 10);
+        currentConfig.brandName = String($("#cfg-brand-name").val() || "kalon nails").trim();
+        currentConfig.brandSpaced = String($("#cfg-brand-spaced").val() || "K A L O N").trim();
+        currentConfig.whatsappNumber = String($("#cfg-whatsapp").val() || "584120000000").trim();
+        currentConfig.referralDiscountPercent = Number($("#cfg-referral-discount").val()) || 10;
 
         currentConfig.theme = {
           accentColor: $("#cfg-theme-accent").val() || "#c9a86a",
@@ -1521,50 +1754,76 @@
         };
 
         currentConfig.socials = {
-          instagram: ($("#cfg-soc-instagram").val() || "").trim(),
-          tiktok: ($("#cfg-soc-tiktok").val() || "").trim(),
-          facebook: ($("#cfg-soc-facebook").val() || "").trim(),
-          youtube: ($("#cfg-soc-youtube").val() || "").trim(),
+          instagram: String($("#cfg-soc-instagram").val() || "").trim(),
+          tiktok: String($("#cfg-soc-tiktok").val() || "").trim(),
+          facebook: String($("#cfg-soc-facebook").val() || "").trim(),
+          youtube: String($("#cfg-soc-youtube").val() || "").trim(),
           whatsapp: `https://wa.me/${currentConfig.whatsappNumber}`
         };
 
         currentConfig.paymentMethodsInfo = Object.assign({}, currentConfig.paymentMethodsInfo || {}, {
-          "Pago Móvil": ($("#cfg-pay-pagomovil").val() || "").trim(),
-          "Zelle / Binance": ($("#cfg-pay-zelle").val() || "").trim()
+          "Pago Móvil": String($("#cfg-pay-pagomovil").val() || "").trim(),
+          "Zelle / Binance": String($("#cfg-pay-zelle").val() || "").trim()
         });
 
         currentConfig.location = {
-          title: ($("#cfg-loc-title").val() || "").trim() || "El Junquito — Sector Panorama",
+          title: String($("#cfg-loc-title").val() || "El Junquito — Sector Panorama").trim(),
           city: "ATENCIÓN EN SEDE Y A DOMICILIO",
-          address: ($("#cfg-loc-address").val() || "").trim(),
-          hours: ($("#cfg-loc-hours").val() || "").trim(),
-          phone: ($("#cfg-loc-phone").val() || "").trim()
+          address: String($("#cfg-loc-address").val() || "").trim(),
+          hours: String($("#cfg-loc-hours").val() || "").trim(),
+          phone: String($("#cfg-loc-phone").val() || "").trim()
         };
 
-        const newHeroImg = ($("#cfg-hero-img").val() || "").trim() || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80";
+        const newHeroImg = String($("#cfg-hero-img").val() || "").trim() || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80";
         currentConfig.hero = {
-          kicker: ($("#cfg-hero-kicker").val() || "").trim(),
-          titleMain: ($("#cfg-hero-main").val() || "").trim(),
-          titleAccent: ($("#cfg-hero-accent").val() || "").trim(),
+          kicker: String($("#cfg-hero-kicker").val() || "").trim(),
+          titleMain: String($("#cfg-hero-main").val() || "").trim(),
+          titleAccent: String($("#cfg-hero-accent").val() || "").trim(),
           bgImage: newHeroImg,
-          lead: ($("#cfg-hero-lead").val() || "").trim(),
-          ctaText: (currentConfig.hero && currentConfig.hero.ctaText) || "EXPLORAR EN 3D",
-          badges: (currentConfig.hero && currentConfig.hero.badges) || FALLBACK_BASE_CONFIG.hero.badges
+          lead: String($("#cfg-hero-lead").val() || "").trim(),
+          ctaText: "EXPLORAR EN 3D",
+          badges: FALLBACK_BASE_CONFIG.hero.badges
         };
+
+        currentConfig.carePromo = {
+          kicker: String($("#cfg-care-kicker").val() || "BIOSEGURIDAD Y SALUD UNGUEAL").trim(),
+          title: String($("#cfg-care-title").val() || "Tus uñas naturales sanas y fuertes.").trim(),
+          desc: String($("#cfg-care-desc").val() || "").trim(),
+          image: String($("#cfg-care-img").val() || "").trim() || "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80",
+          benefits: FALLBACK_BASE_CONFIG.carePromo.benefits
+        };
+      } catch (e1) {
+        console.warn("Aviso bloque 1:", e1);
+      }
+
+      // Bloque 2: Listas dinámicas (Especialidades, Puntos D3, 3D, Reels y Catálogo)
+      try {
+        if ($("#categories-editor-container .cat-edit-row").length > 0) {
+          const updatedCats = [];
+          $("#categories-editor-container .cat-edit-row").each(function (i) {
+            updatedCats.push({
+              id: `cat-${i}-${Date.now()}`,
+              name: String($(this).find(".cat-name").val() || "").trim(),
+              filterTarget: String($(this).find(".cat-filter").val() || "POLYGEL").trim().toUpperCase(),
+              image: String($(this).find(".cat-img").val() || "").trim()
+            });
+          });
+          currentConfig.categories = updatedCats;
+        }
 
         if ($("#hotspots-editor-list .hs-edit-row").length > 0) {
           const updatedHotspots = [];
           $("#hotspots-editor-list .hs-edit-row").each(function (i) {
             updatedHotspots.push({
               id: `hs-${i}-${Date.now()}`,
-              title: ($(this).find(".hs-title").val() || "").trim(),
-              price: Number($(this).find(".hs-price").val() || 0),
-              x: Number($(this).find(".hs-x").val() || 50),
-              y: Number($(this).find(".hs-y").val() || 50)
+              title: String($(this).find(".hs-title").val() || "").trim(),
+              price: Number($(this).find(".hs-price").val()) || 0,
+              x: Number($(this).find(".hs-x").val()) || 50,
+              y: Number($(this).find(".hs-y").val()) || 50
             });
           });
           currentConfig.lookbook = {
-            image: ($("#cfg-lookbook-img").val() || "").trim() || newHeroImg,
+            image: String($("#cfg-lookbook-img").val() || "").trim() || currentConfig.hero.bgImage,
             hotspots: updatedHotspots
           };
         }
@@ -1573,19 +1832,21 @@
           const updatedSpecs = [];
           $("#tech-specs-editor-list .spec-edit-row").each(function () {
             updatedSpecs.push({
-              layer: ($(this).find(".spec-layer").val() || "").trim(),
-              name: ($(this).find(".spec-name").val() || "").trim(),
-              detail: ($(this).find(".spec-detail").val() || "").trim(),
-              orbit: ($(this).find(".spec-orbit").val() || "").trim() || "-20deg 65deg 70%"
+              layer: String($(this).find(".spec-layer").val() || "").trim(),
+              name: String($(this).find(".spec-name").val() || "").trim(),
+              detail: String($(this).find(".spec-detail").val() || "").trim(),
+              orbit: String($(this).find(".spec-orbit").val() || "-20deg 65deg 70%").trim()
             });
           });
-          currentConfig.model3D = Object.assign({}, currentConfig.model3D || {}, {
-            glbUrl: ($("#cfg-3d-url").val() || "").trim() || "./unas-demo.glb",
-            systemPrice: Number($("#cfg-3d-price").val() || 25),
-            systemTitle: ($("#cfg-3d-sys-title").val() || "").trim(),
-            title: ($("#cfg-3d-title").val() || "").trim(),
+          currentConfig.model3D = {
+            subtitle: "INTERACCIÓN 360° • DESPIECE TÉCNICO",
+            desc: "Gira el modelo con tu dedo o presiona 'Desarmar Capas' para inspeccionar cada material.",
+            glbUrl: String($("#cfg-3d-url").val() || "./nail-polish.glb").trim(),
+            systemPrice: Number($("#cfg-3d-price").val()) || 25,
+            systemTitle: String($("#cfg-3d-sys-title").val() || "").trim(),
+            title: String($("#cfg-3d-title").val() || "").trim(),
             techSpecs: updatedSpecs
-          });
+          };
         }
 
         if ($("#reels-editor-container .reel-edit-row").length > 0) {
@@ -1593,11 +1854,11 @@
           $("#reels-editor-container .reel-edit-row").each(function (i) {
             updatedReels.push({
               id: `reel-${i}-${Date.now()}`,
-              tag: ($(this).find(".reel-tag").val() || "").trim(),
-              title: ($(this).find(".reel-title").val() || "").trim(),
-              price: Number($(this).find(".reel-price").val() || 0),
-              videoUrl: ($(this).find(".reel-video").val() || "").trim(),
-              poster: ($(this).find(".reel-poster").val() || "").trim()
+              tag: String($(this).find(".reel-tag").val() || "").trim(),
+              title: String($(this).find(".reel-title").val() || "").trim(),
+              price: Number($(this).find(".reel-price").val()) || 0,
+              videoUrl: String($(this).find(".reel-video").val() || "").trim(),
+              poster: String($(this).find(".reel-poster").val() || "").trim()
             });
           });
           currentConfig.promoReels = updatedReels;
@@ -1608,10 +1869,10 @@
           $("#sets-editor-container .service-edit-item").each(function (i) {
             updatedSets.push({
               id: `set-${i}-${Date.now()}`,
-              title: ($(this).find(".srv-title").val() || "").trim(),
-              price: Number($(this).find(".srv-price").val() || 0),
-              oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
-              image: ($(this).find(".srv-img").val() || "").trim(),
+              title: String($(this).find(".srv-title").val() || "").trim(),
+              price: Number($(this).find(".srv-price").val()) || 0,
+              oldPrice: Number($(this).find(".srv-oldprice").val()) || 0,
+              image: String($(this).find(".srv-img").val() || "").trim(),
               inStock: $(this).find(".srv-stock").is(":checked"),
               isOffer: true
             });
@@ -1621,88 +1882,89 @@
 
         if ($("#arrivals-editor-container .service-edit-item").length > 0) {
           const updatedArrivals = [];
+          const catFilterList = [];
           $("#arrivals-editor-container .service-edit-item").each(function (i) {
+            const catVal = String($(this).find(".srv-cat").val() || "POLYGEL").trim().toUpperCase();
+            if (catVal && !catFilterList.includes(catVal)) catFilterList.push(catVal);
             updatedArrivals.push({
               id: `arr-${i}-${Date.now()}`,
-              title: ($(this).find(".srv-title").val() || "").trim(),
-              price: Number($(this).find(".srv-price").val() || 0),
-              oldPrice: Number($(this).find(".srv-oldprice").val() || 0),
-              image: ($(this).find(".srv-img").val() || "").trim(),
-              category: (($(this).find(".srv-cat").val() || "POLYGEL").trim()).toUpperCase(),
+              title: String($(this).find(".srv-title").val() || "").trim(),
+              price: Number($(this).find(".srv-price").val()) || 0,
+              oldPrice: Number($(this).find(".srv-oldprice").val()) || 0,
+              image: String($(this).find(".srv-img").val() || "").trim(),
+              category: catVal,
               inStock: $(this).find(".srv-stock").is(":checked")
             });
           });
           currentConfig.arrivalsProducts = updatedArrivals;
-
-          const categoriesSet = _.uniq(updatedArrivals.map((a) => a.category));
-          if (categoriesSet.length > 0) {
-            currentConfig.arrivalFilters = categoriesSet;
+          if (catFilterList.length > 0) {
+            currentConfig.arrivalFilters = catFilterList;
           }
         }
+      } catch (e2) {
+        console.warn("Aviso bloque 2:", e2);
+      }
 
-        currentConfig.updatedAt = new Date().toISOString();
+      // Sello de tiempo nuevo obligatorio
+      currentConfig.updatedAt = new Date().toISOString();
+      const safeConfig = cleanObjectForFirebase(currentConfig);
+      currentConfig = safeConfig;
 
-        // Limpia cualquier undefined antes de guardar en LocalStorage, Firestore y Realtime DB
-        const safeConfig = cleanObjectForFirebase(currentConfig);
-        currentConfig = safeConfig;
+      // PASO 1 INMEDIATO: Guarda en LocalStorage sin importar qué pase con internet
+      try {
+        localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(safeConfig));
+      } catch (eLocal) {}
 
-        try {
-          localStorage.setItem("kalon_cloud_mirror_config", JSON.stringify(safeConfig));
-        } catch (e) {}
+      // PASO 2: Envía a Cloud Firestore y Realtime Database
+      const statusChannels = ["Local"];
 
-        const saveTasks = [];
+      try {
+        const cloudTasks = [];
 
         if (dbFirestore) {
-          const firestorePromise = dbFirestore
-            .collection("configuracion_sistema")
-            .doc("store_config")
-            .set(safeConfig)
-            .then(() => "FIRESTORE_OK")
-            .catch((e) => {
-              console.warn("Aviso Firestore:", e);
-              return null;
-            });
-          saveTasks.push(firestorePromise);
+          cloudTasks.push(
+            dbFirestore
+              .collection("configuracion_sistema")
+              .doc("store_config")
+              .set(safeConfig)
+              .then(() => statusChannels.push("Firestore"))
+              .catch(() => null)
+          );
         }
 
-        const rtdbRestPromise = (async () => {
-          try {
-            const currentUser = auth.currentUser;
-            const token = currentUser ? await currentUser.getIdToken(false) : "";
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 3500);
-            const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
-            const response = await fetch(restUrl, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(safeConfig),
-              signal: controller.signal,
-              cache: "no-store"
-            });
-            clearTimeout(timer);
-            return response.ok ? "RTDB_OK" : null;
-          } catch (e) {
-            return null;
-          }
-        })();
-        saveTasks.push(rtdbRestPromise);
+        cloudTasks.push(
+          (async () => {
+            try {
+              const currentUser = auth.currentUser;
+              const token = currentUser ? await currentUser.getIdToken(false) : "";
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), 3500);
+              const restUrl = `${firebaseConfig.databaseURL}/store_config.json${token ? `?auth=${token}` : ""}`;
+              const response = await fetch(restUrl, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(safeConfig),
+                signal: controller.signal,
+                cache: "no-store"
+              });
+              clearTimeout(timer);
+              if (response.ok) statusChannels.push("RealtimeDB");
+            } catch (eRest) {}
+          })()
+        );
 
         if (dbRealtime) {
           dbRealtime.ref("store_config").set(safeConfig).catch(() => {});
         }
 
-        const timeoutGuard = new Promise((resolve) => setTimeout(() => resolve(["LOCAL_OK"]), 3500));
-        await Promise.race([Promise.all(saveTasks), timeoutGuard]);
+        const timeoutGuard = new Promise((resolve) => setTimeout(resolve, 3500));
+        await Promise.race([Promise.all(cloudTasks), timeoutGuard]);
+      } catch (eCloud) {}
 
-        $("#cfg-hero-img-preview").attr("src", safeConfig.hero.bgImage);
-        $("#last-sync-badge").text(`✓ Publicado a las ${new Date(safeConfig.updatedAt).toLocaleTimeString()}`);
-        showToast("✓ ¡PORTADA Y CAMBIOS PUBLICADOS EN VIVO!");
-      } catch (err) {
-        console.error("Detalle técnico:", err);
-        showToast("✓ Guardado aplicado en memoria local");
-      } finally {
-        $btn.prop("disabled", false).html(originalHtml);
-      }
+      $btn.prop("disabled", false).html(originalHtml);
+      const timeStr = new Date(safeConfig.updatedAt).toLocaleTimeString();
+      $("#last-sync-badge").text(`✓ Guardado (${statusChannels.join(" + ")}) a las ${timeStr}`);
+      showToast(`✓ ¡PUBLICADO EN VIVO! (${statusChannels.join(" + ")})`);
     });
 
     // 8. CLUB VIP Y RESEÑAS
