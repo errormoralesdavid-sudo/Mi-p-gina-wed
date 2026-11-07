@@ -115,23 +115,41 @@
       padding: 2px;
     }
 
-    .hero-img-preview-box {
+    /* ESTILO UNIVERSAL DE VISTA PREVIA PARA TODAS LAS IMÁGENES DEL PANEL */
+    .universal-img-preview-box {
       margin-top: 0.5rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
       background: #111;
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 0.45rem;
+      border: 1px solid rgba(255,255,255,0.09);
+      padding: 0.45rem 0.6rem;
       border-radius: 6px;
+      transition: border-color 0.25s ease;
     }
 
-    .hero-img-preview-box img {
-      width: 64px;
-      height: 48px;
+    .universal-img-preview-box.is-valid {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .universal-img-preview-box.is-error {
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .universal-img-preview-box img {
+      width: 60px;
+      height: 46px;
       object-fit: cover;
       border-radius: 4px;
       border: 1px solid var(--accent-gold);
+      background: #050505;
+      flex-shrink: 0;
+    }
+
+    .universal-img-status {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.3;
     }
 
     .btn-gold {
@@ -525,11 +543,7 @@
           </div>
           <div class="form-group">
             <label>URL de Foto de Portada (Acepta catbox.moe, imgur, etc.)</label>
-            <input type="text" id="cfg-hero-img" class="admin-input" placeholder="https://files.catbox.moe/ymi223.jpg">
-            <div class="hero-img-preview-box">
-              <img id="cfg-hero-img-preview" src="" alt="Vista previa portada">
-              <span id="cfg-hero-img-status" style="font-size:0.72rem; color:var(--text-muted);">Vista previa de tu imagen de portada</span>
-            </div>
+            <input type="text" id="cfg-hero-img" class="admin-input has-img-preview" placeholder="https://files.catbox.moe/ymi223.jpg">
           </div>
         </div>
         <div class="form-group">
@@ -661,7 +675,7 @@
         <h3>Editor Visual de Puntos Dorados (Toca la foto para agregar un punto)</h3>
         <div class="form-group">
           <label>URL de la Imagen del Escaparate ("Shop the Look")</label>
-          <input type="text" id="cfg-lookbook-img" class="admin-input">
+          <input type="text" id="cfg-lookbook-img" class="admin-input has-img-preview">
         </div>
 
         <div class="grid-2" style="align-items: start;">
@@ -798,7 +812,6 @@
     const dbRealtime = firebase.database();
     const dbFirestore = firebase.firestore();
 
-    // Limpia cualquier propiedad undefined que haría fallar a Firestore
     function cleanObjectForFirebase(obj) {
       return JSON.parse(
         JSON.stringify(obj, function (key, value) {
@@ -806,6 +819,67 @@
         })
       );
     }
+
+    /* ========================================================================
+       MOTOR UNIVERSAL DE VISTA PREVIA EN VIVO PARA TODAS LAS IMÁGENES DEL PANEL
+       ======================================================================== */
+    function attachUniversalImagePreviews() {
+      $(".has-img-preview, .srv-img, .reel-poster").each(function () {
+        const $input = $(this);
+        let $box = $input.next(".universal-img-preview-box");
+
+        if ($box.length === 0) {
+          $box = $(`
+            <div class="universal-img-preview-box">
+              <img src="" alt="Vista previa">
+              <span class="universal-img-status">Vista previa de la imagen</span>
+            </div>
+          `);
+          $input.after($box);
+
+          const $img = $box.find("img");
+          const $status = $box.find(".universal-img-status");
+
+          $img.on("load", function () {
+            $box.removeClass("is-error").addClass("is-valid");
+            $status.text("✓ Imagen cargada y lista para publicar").css("color", "#6ee7b7");
+          });
+
+          $img.on("error", function () {
+            const currentVal = ($input.val() || "").trim();
+            $box.removeClass("is-valid").addClass("is-error");
+            if (!currentVal) {
+              $status.text("Casilla vacía — pega un enlace de imagen").css("color", "#9e9a90");
+            } else {
+              $status.text("⚠️ Enlace inválido o no es imagen directa (.jpg / .png / .webp)").css("color", "#fca5a5");
+            }
+          });
+        }
+
+        const url = ($input.val() || "").trim();
+        const $img = $box.find("img");
+        if (url && $img.attr("src") !== url) {
+          $img.attr("src", url);
+        } else if (!url) {
+          $img.attr("src", "");
+        }
+      });
+    }
+
+    // Escucha en vivo cualquier cambio en cualquier casilla de imagen del panel
+    $(document).on("input change", ".has-img-preview, .srv-img, .reel-poster", function () {
+      const $input = $(this);
+      attachUniversalImagePreviews();
+      const url = ($input.val() || "").trim();
+      const $box = $input.next(".universal-img-preview-box");
+      if ($box.length) {
+        $box.find(".universal-img-status").text("Verificando imagen...").css("color", "#c9a86a");
+        $box.find("img").attr("src", url);
+      }
+      if ($input.attr("id") === "cfg-lookbook-img") {
+        $("#admin-lookbook-preview").attr("src", url);
+      }
+    });
 
     async function obtenerTasasOficialesBCV() {
       let tasaUSD = null;
@@ -972,19 +1046,6 @@
       $t.text(msg).fadeIn(200);
       setTimeout(() => $t.fadeOut(350), 3600);
     }
-
-    // Vista previa en vivo de la imagen de portada al pegar cualquier enlace (ej: catbox.moe)
-    $("#cfg-hero-img").on("input", function () {
-      const url = $(this).val().trim();
-      if (url) {
-        $("#cfg-hero-img-preview").attr("src", url);
-        $("#cfg-hero-img-status").text("✓ Enlace de portada listo para publicar").css("color", "#6ee7b7");
-      }
-    });
-
-    $("#cfg-hero-img-preview").on("error", function () {
-      $("#cfg-hero-img-status").text("⚠️ Verifica que el enlace sea directo (.jpg / .png / .webp)").css("color", "#fca5a5");
-    });
 
     // 1. AUTENTICACIÓN SEGURA
     auth.onAuthStateChanged(async (user) => {
@@ -1162,7 +1223,6 @@
         $("#cfg-hero-accent").val(currentConfig.hero.titleAccent || "");
         const heroBg = currentConfig.hero.bgImage || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=80";
         $("#cfg-hero-img").val(heroBg);
-        $("#cfg-hero-img-preview").attr("src", heroBg);
         $("#cfg-hero-lead").val(currentConfig.hero.lead || "");
       }
 
@@ -1182,6 +1242,9 @@
       renderReelsEditor(currentConfig.promoReels || []);
       renderServicesEditor("#sets-editor-container", currentConfig.setsProducts || [], false);
       renderServicesEditor("#arrivals-editor-container", currentConfig.arrivalsProducts || [], true);
+
+      // Activa las vistas previas en vivo en todas las imágenes cargadas
+      attachUniversalImagePreviews();
     }
 
     // 4. CITAS Y PEDIDOS CON GPS
@@ -1247,10 +1310,6 @@
     });
 
     // 5. EDITOR VISUAL TÁCTIL DE PUNTOS D3.JS Y DESPIECE 3D
-    $("#cfg-lookbook-img").on("input", function () {
-      $("#admin-lookbook-preview").attr("src", $(this).val().trim());
-    });
-
     function renderHotspotsEditor(hotspots) {
       const $list = $("#hotspots-editor-list");
       $list.empty();
@@ -1346,11 +1405,12 @@
       appendTechSpecRow("NUEVA CAPA TÉCNICA", "Nombre del Material", "Descripción de calidad y durabilidad.", "20deg 65deg 70%")
     );
 
-    // 6. EDITOR DE VIDEOS CORTOS / REELS Y CATÁLOGO
+    // 6. EDITOR DE VIDEOS CORTOS / REELS Y CATÁLOGO (CON PREVIEW EN CADA IMAGEN)
     function renderReelsEditor(reels) {
       const $box = $("#reels-editor-container");
       $box.empty();
       reels.forEach((r) => appendReelRow(r.tag, r.title, r.price, r.videoUrl, r.poster));
+      attachUniversalImagePreviews();
     }
 
     function appendReelRow(tag, title, price, videoUrl, poster) {
@@ -1377,7 +1437,7 @@
             </div>
             <div class="form-group">
               <label>URL de Imagen de Portada</label>
-              <input type="text" class="admin-input reel-poster" value="${sanitize(poster)}">
+              <input type="text" class="admin-input reel-poster has-img-preview" value="${sanitize(poster)}">
             </div>
           </div>
           <div style="text-align:right;">
@@ -1385,6 +1445,7 @@
           </div>
         </div>
       `);
+      attachUniversalImagePreviews();
     }
 
     $("#add-new-reel-btn").on("click", () =>
@@ -1422,7 +1483,7 @@
             <div class="grid-2">
               <div class="form-group">
                 <label>URL de Imagen</label>
-                <input type="text" class="admin-input srv-img" value="${sanitize(item.image)}">
+                <input type="text" class="admin-input srv-img has-img-preview" value="${sanitize(item.image)}">
               </div>
               ${includeCategory ? `
               <div class="form-group">
@@ -1439,6 +1500,7 @@
           </div>
         `);
       });
+      attachUniversalImagePreviews();
     }
 
     $(document).on("click", ".remove-srv-row", function () {
@@ -1455,13 +1517,14 @@
               <div><label>Precio Antes</label><input type="number" class="admin-input srv-oldprice" value="25"></div>
             </div>
           </div>
-          <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
+          <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img has-img-preview" value="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80"></div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <label style="font-size:0.78rem;"><input type="checkbox" class="srv-stock" checked> Disponible</label>
             <button type="button" class="btn-danger remove-srv-row">Quitar</button>
           </div>
         </div>
       `);
+      attachUniversalImagePreviews();
     });
 
     $("#add-new-arrival-btn").on("click", function () {
@@ -1475,7 +1538,7 @@
             </div>
           </div>
           <div class="grid-2">
-            <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img" value="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"></div>
+            <div class="form-group"><label>URL de Imagen</label><input type="text" class="admin-input srv-img has-img-preview" value="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80"></div>
             <div class="form-group"><label>Categoría</label><input type="text" class="admin-input srv-cat" value="POLYGEL"></div>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1484,9 +1547,10 @@
           </div>
         </div>
       `);
+      attachUniversalImagePreviews();
     });
 
-    // 7. GUARDADO LIMPIO ANTI-ERROR (LIMPIA UNDEFINED Y ACTUALIZA PORTADA AL INSTANTE)
+    // 7. GUARDADO LIMPIO ANTI-ERROR
     $("#save-all-cloud-btn").on("click", async function () {
       const $btn = $(this);
       const originalHtml = $btn.html();
@@ -1642,7 +1706,6 @@
 
         currentConfig.updatedAt = new Date().toISOString();
 
-        // Limpia cualquier undefined antes de guardar en LocalStorage, Firestore y Realtime DB
         const safeConfig = cleanObjectForFirebase(currentConfig);
         currentConfig = safeConfig;
 
@@ -1694,9 +1757,9 @@
         const timeoutGuard = new Promise((resolve) => setTimeout(() => resolve(["LOCAL_OK"]), 3500));
         await Promise.race([Promise.all(saveTasks), timeoutGuard]);
 
-        $("#cfg-hero-img-preview").attr("src", safeConfig.hero.bgImage);
+        attachUniversalImagePreviews();
         $("#last-sync-badge").text(`✓ Publicado a las ${new Date(safeConfig.updatedAt).toLocaleTimeString()}`);
-        showToast("✓ ¡PORTADA Y CAMBIOS PUBLICADOS EN VIVO!");
+        showToast("✓ ¡IMÁGENES Y CAMBIOS PUBLICADOS EN VIVO!");
       } catch (err) {
         console.error("Detalle técnico:", err);
         showToast("✓ Guardado aplicado en memoria local");
