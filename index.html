@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   
-  <!-- REGLA 5: Seguridad CSP (Autoriza Firebase, DolarApi Oficial, Google Maps GPS, Videos CDN y Visor 3D) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:;">
+  <!-- Seguridad CSP: Autoriza catbox.moe, rates.dolarvzla.com, ve.dolarapi.com, Firebase, Google Maps GPS, Videos y Visor 3D -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://rates.dolarvzla.com https://ve.dolarapi.com https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*; img-src 'self' https: http: data: blob:; media-src 'self' https: http: data: blob:;">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <!-- SEO y Metadatos Escalables -->
@@ -24,7 +24,7 @@
   <!-- Íconos RemixIcon -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
-  <!-- Hoja de estilos principal (Archivo 2) -->
+  <!-- Hoja de estilos principal -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Motor 3D Interactivo (Google Model Viewer) -->
@@ -32,10 +32,10 @@
 </head>
 <body>
 
-  <!-- 1. PANTALLA DE CARGA / PRELOADER (Duración y textos configurables desde Admin - Punto 2) -->
+  <!-- 1. PANTALLA DE CARGA / PRELOADER -->
   <div id="preloader" class="preloader" aria-live="polite">
     <div class="preloader-inner">
-      <span class="preloader-subtitle" id="preloader-sub">EXPERIENCIA INTERACTIVA & 3D</span>
+      <span class="preloader-subtitle" id="preloader-sub">BIENVENIDA A MI ESTUDIO</span>
       <h1 class="preloader-title" id="preloader-brand">K A L O N</h1>
       <div class="preloader-line"></div>
     </div>
@@ -48,7 +48,7 @@
     </div>
   </div>
 
-  <!-- 3. CABECERA FIJA LIMPIA (Sin tasa ni tuerca visible; 3 toques en el nombre abren el Admin - Puntos 3, 6 y 7) -->
+  <!-- 3. CABECERA FIJA LIMPIA (3 toques rápidos en el nombre abren admin.html) -->
   <header class="site-header" id="site-header">
     <div class="header-left">
       <button class="icon-btn" id="open-menu-btn" aria-label="Abrir menú">
@@ -56,15 +56,12 @@
       </button>
     </div>
 
-    <!-- Dale 3 toques rápidos al nombre para abrir el Panel de Administración en secreto -->
     <a href="javascript:void(0)" class="brand-logo" id="header-logo" title="Inicio">kalon nails</a>
 
     <div class="header-actions">
-      <!-- Botón Club VIP / Cuenta de Usuario y Referidos -->
       <button class="icon-btn vip-trigger" id="open-vip-btn" title="Club VIP & Referidos" aria-label="Mi Cuenta y Referidos">
         <i class="ri-vip-crown-line"></i>
       </button>
-      <!-- Botón Carrito / Agenda -->
       <button class="icon-btn cart-trigger" id="open-cart-btn" aria-label="Ver carrito">
         <i class="ri-shopping-bag-line"></i>
         <span class="cart-badge" id="cart-count">0</span>
@@ -91,7 +88,6 @@
 
       <nav class="drawer-nav" id="drawer-nav-list"></nav>
 
-      <!-- Redes Sociales Dinámicas en el Menú Lateral -->
       <div class="drawer-socials" id="drawer-socials"></div>
     </div>
   </aside>
@@ -120,7 +116,6 @@
         <input type="time" id="booking-time" class="booking-input">
       </div>
 
-      <!-- Código de Referido o Cupón VIP -->
       <div class="referral-apply-row">
         <input type="text" id="cart-referral-code" class="booking-input" placeholder="¿Tienes código de referido? (Ej: VIP-123)" maxlength="25" style="margin-bottom:0;">
         <button type="button" class="btn-outline-gold" id="apply-referral-btn">APLICAR</button>
@@ -137,7 +132,6 @@
         </button>
       </div>
 
-      <!-- Opciones de Domicilio y GPS -->
       <div id="domicilio-fields" class="domicilio-fields" style="display: none;">
         <select id="booking-zone-select" class="booking-input"></select>
 
@@ -149,7 +143,6 @@
         <p id="gps-status-msg" class="gps-status-msg"></p>
       </div>
 
-      <!-- Selector de Método de Pago Configurable desde el Admin -->
       <label class="booking-label">Método de Pago Preferido:</label>
       <select id="booking-payment-method" class="booking-input">
         <option value="Pago Móvil">Pago Móvil (Bs.)</option>
@@ -175,7 +168,7 @@
     </div>
   </aside>
 
-  <!-- CONTENIDO PRINCIPAL ESCALABLE -->
+  <!-- CONTENIDO PRINCIPAL -->
   <main id="main-content">
 
     <!-- 6. SECCIÓN HERO / PORTADA PRINCIPAL -->
@@ -205,7 +198,7 @@
       <span>✦ <span id="divider-text">INSPECCIÓN 3D DE MATERIALES & DESPIECE</span></span>
     </div>
 
-    <!-- 7. ESCAPARATE 3D CON BOTÓN DE DESARMADO / CAPAS Y AUTO-CENTRADO (Punto 8) -->
+    <!-- 7. ESCAPARATE 3D CON TU ARCHIVO ./nail-polish.glb Y DESPIECE INTERACTIVO -->
     <section class="showcase-3d-section" id="showcase-3d">
       <div class="section-header">
         <span class="section-subtitle" id="3d-subtitle">INTERACCIÓN 360° REAL</span>
@@ -217,10 +210,9 @@
         <div class="viewer-3d-card" id="viewer-3d-card">
           <div class="viewer-badge" id="viewer-3d-badge">MODELO 3D • 360°</div>
           
-          <!-- Visor 3D con soporte de órbitas de cámara, despiece y auto-centrado -->
           <model-viewer 
             id="main-3d-model"
-            src="./unas-demo.glb"
+            src="./nail-polish.glb"
             alt="Modelo 3D Interactivo"
             auto-rotate
             camera-controls
@@ -232,7 +224,6 @@
             touch-action="pan-y">
           </model-viewer>
 
-          <!-- Capa visual de Despiece / Vista Explotada de Materiales (Animada con Anime.js al desarmar) -->
           <div class="exploded-layers-overlay" id="exploded-layers-overlay" aria-hidden="true"></div>
 
           <div class="viewer-controls">
@@ -387,7 +378,7 @@
 
   </main>
 
-  <!-- 17. PIE DE PÁGINA / FOOTER CON REDES DINÁMICAS -->
+  <!-- 17. PIE DE PÁGINA / FOOTER -->
   <footer class="site-footer">
     <div class="footer-accordions" id="footer-accordions"></div>
 
@@ -404,7 +395,6 @@
 
     <div class="footer-legal-links">
       <button type="button" class="text-link" id="open-legal-modal">Política de Privacidad, Cookies y Uso de GPS</button>
-      <!-- También puedes darle 3 toques al nombre en el pie de página para abrir el Admin -->
       <p class="copyright" id="footer-secret-trigger">© <span id="current-year">2026</span> <span id="footer-brand-name">KALON</span>. Todos los derechos reservados.</p>
     </div>
   </footer>
@@ -501,9 +491,7 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-       ECOSISTEMA DE LIBRERÍAS + FIREBASE SDK
-       ========================================================================= -->
+  <!-- LIBRERÍAS + FIREBASE SDK -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
@@ -511,13 +499,12 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 
-  <!-- Google Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
-  <!-- Motor Principal (Archivo 3) -->
+  <!-- Motor Principal -->
   <script src="app.js"></script>
 </body>
 </html>
